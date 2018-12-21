@@ -1,6 +1,6 @@
 import Dependencies._
 
-lazy val root = (project in file(".")).
+lazy val pupe = (project in file(".")).
   settings(
     inThisBuild(List(
       scalaVersion := "2.12.7",
