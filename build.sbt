@@ -12,8 +12,17 @@ lazy val root = (project in file(".")).
       coverageMinimum := 40,
       coverageFailOnMinimum := true,
       coverageHighlighting := true,
+      resolvers += Resolver.bintrayRepo("hseeberger", "maven"),
       libraryDependencies ++= Seq(
-        scalaTest % Test
+        akkaHttp,
+        akkaHttpTestkit % Test,
+        cats,
+        httpCirce,
+        monix,
+        mySqlConnector,
+        pureConfig,
+        scalaTest % Test,
+        slick
       ),
       scalacOptions ++= Seq(
         "-deprecation",
