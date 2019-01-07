@@ -1,5 +1,3 @@
 package uco.pensum
 
-class a {
-
-}
+class a {}

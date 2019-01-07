@@ -13,6 +13,9 @@ lazy val root = (project in file(".")).
       coverageFailOnMinimum := true,
       coverageHighlighting := true,
       libraryDependencies ++= Seq(
+        pureConfig,
+        slick,
+        mysql,
         scalaTest % Test
       ),
       scalacOptions ++= Seq(
