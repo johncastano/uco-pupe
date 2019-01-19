@@ -77,3 +77,4 @@ lazy val pupe = (project in file(".")).
       )))
     ))
   )
+scalafmtOnCompile in ThisBuild := true
