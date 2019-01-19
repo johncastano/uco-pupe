@@ -1,9 +1,16 @@
 package uco.pensum.domain.planestudio
 
+import java.time.ZonedDateTime
+
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioDTO
 
-case class PlanDeEstudio(inp: String, creditos: Int)
+case class PlanDeEstudio(
+    inp: String,
+    creditos: Int,
+    fechaDeRegistro: ZonedDateTime,
+    fechaDeModificacion: ZonedDateTime
+)
 
 object PlanDeEstudio {
 
@@ -13,7 +20,7 @@ object PlanDeEstudio {
     for {
       inp <- validarCampoVacio(dto.inp, "inp")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-    } yield PlanDeEstudio(inp, creditos)
+    } yield PlanDeEstudio(inp, creditos, hora, hora)
 
   def validate(
       dtos: List[PlanDeEstudioDTO]
@@ -25,7 +32,7 @@ object PlanDeEstudio {
       for {
         inp <- validarCampoVacio(planEstudio.inp, "inp")
         creditos <- validarValorEntero(planEstudio.creditos, "creditos")
-      } yield PlanDeEstudio(inp, creditos)
+      } yield PlanDeEstudio(inp, creditos, hora, hora)
     }.sequence
   }
 

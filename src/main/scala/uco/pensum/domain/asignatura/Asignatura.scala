@@ -1,5 +1,7 @@
 package uco.pensum.domain.asignatura
 
+import java.time.ZonedDateTime
+
 import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.AsignaturaDTO
@@ -45,7 +47,9 @@ case class Asignatura(
     creditos: Int,
     horas: Horas,
     semestre: Int,
-    requisitos: List[Codigo]
+    requisitos: List[Codigo],
+    fechaDeRegistro: ZonedDateTime,
+    fechaDeModificacion: ZonedDateTime
 )
 
 object Asignatura {
@@ -71,7 +75,9 @@ object Asignatura {
         creditos = creditos,
         horas = Horas(dto.horasTeoricas, dto.horasLaboratorio),
         semestre = semestre,
-        requisitos = dto.requisitos.filterNot(v => v.isEmpty)
+        requisitos = dto.requisitos.filterNot(v => v.isEmpty),
+        fechaDeRegistro = hora,
+        fechaDeModificacion = hora
       )
   }
 
