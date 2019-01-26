@@ -2,7 +2,7 @@ package uco.pensum.infrastructure.http
 
 import akka.http.scaladsl.server._
 
-trait HttpService extends PensumRoutes {
+trait HttpService extends ProgramRoutes with CurriculumRoutes {
 
-  val routes: Route = pathPrefix("pensum")(pensumRoutes)
+  val routes: Route = pathPrefix("pensum")(programRoutes ~ curriculumRoutes)
 }

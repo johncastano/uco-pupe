@@ -1,22 +1,18 @@
 package uco.pensum.domain.services
 
-import java.time.ZonedDateTime
-
 import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.http.dtos.ProgramaDTO
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
+import uco.pensum.domain.hora
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ProgramServices {
 
   implicit val executionContext: ExecutionContext
-
-  def today: ZonedDateTime =
-    ZonedDateTime.now //TODO: To build mock entities, delete after Repository integration
 
   def agregarPrograma(
       programa: ProgramaDTO
@@ -48,11 +44,11 @@ trait ProgramServices {
           programId,
           "Test program",
           planesDeEstudio = List(
-            PlanDeEstudio("inpTest1", 140, today, today),
-            PlanDeEstudio("inpTest2", 140, today, today)
+            PlanDeEstudio("inpTest1", 140, hora, hora),
+            PlanDeEstudio("inpTest2", 140, hora, hora)
           ),
-          today,
-          today
+          hora,
+          hora
         )
       )
     )
@@ -64,11 +60,11 @@ trait ProgramServices {
         "id1",
         "Test program",
         planesDeEstudio = List(
-          PlanDeEstudio("inpTest1", 140, today, today),
-          PlanDeEstudio("inpTest2", 140, today, today)
+          PlanDeEstudio("inpTest1", 140, hora, hora),
+          PlanDeEstudio("inpTest2", 140, hora, hora)
         ),
-        today,
-        today
+        hora,
+        hora
       )
     Future.successful(
       List(program, program.copy(id = "id2"), program.copy(id = "id2"))

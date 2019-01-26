@@ -16,6 +16,11 @@ final case class ProgramaExistente(
     mensaje: String = "El programa ya existe"
 ) extends DomainError
 
+final case class CurriculumAlreadyExists(
+    codigo: Int = 100003,
+    mensaje: String = "El plan de estudio ya existe"
+) extends DomainError
+
 final case class ErrorDePersistencia(
     codigo: Int = 100003,
     mensaje: String =
@@ -28,6 +33,11 @@ final case class ErrorInterno(
 ) extends DomainError
 
 final case class ProgramNotFound(
+    codigo: Int = 100003,
+    mensaje: String = "El programa especificado no existe"
+) extends DomainError
+
+final case class CurriculumNotFound(
     codigo: Int = 100003,
     mensaje: String = "El programa especificado no existe"
 ) extends DomainError
