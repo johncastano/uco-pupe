@@ -20,10 +20,8 @@ abstract class BachelorsDAO(db: MySQLProfile.backend.Database)(implicit ec: Exec
   def findById(id: Int): Future[Option[BachelorRecord]] =
     db.run(this.filter(_.id === id).result).map(_.headOption)
 
-
   def store(bachelor: BachelorRecord): Future[BachelorRecord] =
     db.run(this returning this.map(_.id) into ((acc, id) => acc.copy(id = id)) += bachelor)
-
 
   def deleteById(id: Int): Future[Int] =
     db.run(this.filter(_.id === id).delete)

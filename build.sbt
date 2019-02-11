@@ -15,7 +15,7 @@ lazy val root = (project in file(".")).
       libraryDependencies ++= Seq(
         pureConfig,
         slick,
-        mysql,
+        postgresql,
         scalaTest % Test
       ),
       scalacOptions ++= Seq(
