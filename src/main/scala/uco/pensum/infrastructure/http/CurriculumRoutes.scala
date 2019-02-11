@@ -5,26 +5,29 @@ import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
-import uco.pensum.domain.errors.ProgramNotFound
+import uco.pensum.domain.errors.{
+  CurriculumNotFound,
+  ErrorGenerico,
+  ErrorInterno
+}
 import io.circe.java8.time._
-import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
-import uco.pensum.domain.services.ProgramServices
-import uco.pensum.infrastructure.http.dtos.ProgramaDTO
+import uco.pensum.domain.services.{CurriculumServices}
+import uco.pensum.infrastructure.http.dtos.{PlanDeEstudioDTO}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-trait PensumRoutes extends Directives with ProgramServices {
+trait CurriculumRoutes extends Directives with CurriculumServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
   implicit val executionContext: ExecutionContext
   implicit val materializer: Materializer
 
-  def agregarPrograma: Route = path("programa") {
+  def addCurriculum: Route = path("curriculum") {
     post {
-      entity(as[ProgramaDTO]) { programa =>
-        onComplete(agregarPrograma(programa)) {
+      entity(as[PlanDeEstudioDTO]) { curriculum =>
+        onComplete(addCurriculum(curriculum)) {
           case Failure(ex) => {
             println(s"Exception: $ex") // TODO: Implement appropiate log
             complete(InternalServerError -> ErrorInterno())
@@ -35,31 +38,31 @@ trait PensumRoutes extends Directives with ProgramServices {
                 complete(
                   BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                 ),
-              pr => complete(Created -> pr.to[ProgramaDTO])
+              pr => complete(Created -> pr.to[PlanDeEstudioDTO])
             )
         }
       }
     }
   }
 
-  def porgramaPorId: Route = path("programa" / Segment) { id =>
+  def getCurriculumById: Route = path("curriculum" / Segment) { id =>
     get {
-      onComplete(devolverPrograma(id)) {
+      onComplete(getCurriculumById(id)) {
         case Failure(ex) => {
           println(s"Exception: $ex") // TODO: Implement appropiate log
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
-          response.fold(complete(NotFound -> ProgramNotFound())) { r =>
+          response.fold(complete(NotFound -> CurriculumNotFound())) { r =>
             complete(OK -> r)
           }
       }
     }
   }
 
-  def programas: Route = path("programa") {
+  def getCurriculums: Route = path("curriculum") {
     get {
-      onComplete(devolverProgramas) {
+      onComplete(getAllCurriculums) {
         case Failure(ex) => {
           println(s"Exception: $ex")
           complete(InternalServerError -> ErrorInterno())
@@ -70,5 +73,7 @@ trait PensumRoutes extends Directives with ProgramServices {
     }
   }
 
-  val pensumRoutes: Route = agregarPrograma ~ porgramaPorId ~ programas
+  val curriculumRoutes
+    : Route = addCurriculum ~ getCurriculumById ~ getCurriculums
+
 }
