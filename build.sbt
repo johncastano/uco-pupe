@@ -23,10 +23,10 @@ lazy val pupe = (project in file(".")).
         circeParser,
         httpCirce,
         monix,
-        mySqlConnector,
         pureConfig,
         scalaTest % Test,
-        slick
+        slick,
+        postgresql
       ),
       scalacOptions ++= Seq(
         "-deprecation",
