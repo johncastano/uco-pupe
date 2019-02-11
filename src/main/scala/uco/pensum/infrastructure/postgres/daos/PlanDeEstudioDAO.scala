@@ -1,14 +1,13 @@
 package uco.pensum.infrastructure.postgres.daos
 
-import java.time.ZonedDateTime
-
 import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, tables}
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PlanesDeEstudio(tag: Tag) extends Table[PlanDeEstudioRecord](tag, "PLAN_DE_ESTUDIOS") {
+class PlanesDeEstudio(tag: Tag)
+    extends Table[PlanDeEstudioRecord](tag, "PLAN_DE_ESTUDIOS") {
   def inp = column[String]("PLAN_DE_ESTUDIO_ID", O.PrimaryKey)
   def creditos = column[Int]("PLAN_DE_ESTUDIO_CREDITOS")
   def fechaDeCreacion = column[String]("PLAN_DE_ESTUDIO_FECHA_DE_CREACION")
@@ -18,7 +17,8 @@ class PlanesDeEstudio(tag: Tag) extends Table[PlanDeEstudioRecord](tag, "PLAN_DE
     onUpdate = ForeignKeyAction.Restrict,
     onDelete = ForeignKeyAction.Cascade
   )
-  def * = (inp, creditos, fechaDeCreacion, programaId) <> (PlanDeEstudioRecord.tupled, PlanDeEstudioRecord.unapply)
+  def * =
+    (inp, creditos, fechaDeCreacion, programaId) <> (PlanDeEstudioRecord.tupled, PlanDeEstudioRecord.unapply)
 }
 
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(

@@ -1,41 +1,49 @@
 package uco.pensum.infrastructure.postgres.daos
 
-import uco.pensum.infrastructure.postgres.{AsignaturaRecord, BachelorRecord, tables}
+import uco.pensum.infrastructure.postgres.AsignaturaRecord
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-
-//TODO: Update fields of this DAO according to new design defined last week(Review names and missing fields)
-class Asignaturas(tag: Tag) extends Table[AsignaturaRecord](tag, "ASIGNATURAS") {
+class Asignaturas(tag: Tag)
+    extends Table[AsignaturaRecord](tag, "ASIGNATURAS") {
   def codigo = column[String]("ASIGNATURA_CODIGO", O.PrimaryKey)
-  def facultyId = column[Int]("FACULTY_ID")
-  def bachelorName = column[String]("BACHELOR_NAME")
-  def faculties =
-    foreignKey("FACULTY_ID", facultyId, tables.faculties)(
-      _.id,
-      onUpdate = ForeignKeyAction.Restrict,
-      onDelete = ForeignKeyAction.Cascade
-    )
-
+  def componenteDeFormacion =
+    column[String]("ASIGNATURA_COMPONENTE_DE_FORMACION")
+  def nombre = column[String]("ASIGNATURA_NOMBRE")
+  def creditos = column[Int]("ASIGNATURA_CREDITOS")
+  def horasTeoricas = column[Int]("ASIGNATURA_HORAS_TEORICAS")
+  def horasLaboratorio = column[Int]("ASIGNATURA_HORAS_LABORATORIO")
+  def semestre = column[Int]("ASIGNATURA_SEMESTRE")
+  def direccionPlanDeEstudios =
+    column[String]("ASIGNATURA_DIRECCION_PLAN_DE_ESTUDIOS_URL")
   def * =
-    (id, facultyId, bachelorName) <> (BachelorRecord.tupled, BachelorRecord.unapply)
+    (
+      codigo,
+      componenteDeFormacion,
+      nombre,
+      creditos,
+      horasTeoricas,
+      horasLaboratorio,
+      semestre,
+      direccionPlanDeEstudios
+    ) <> (AsignaturaRecord.tupled, AsignaturaRecord.unapply)
 }
 
-abstract class BachelorsDAO(db: PostgresProfile.backend.Database)(
+abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
-) extends TableQuery(new Bachelors(_)) {
-  def findById(id: Int): Future[Option[BachelorRecord]] =
-    db.run(this.filter(_.id === id).result).map(_.headOption)
+) extends TableQuery(new Asignaturas(_)) {
+  def encontrarPorCodigo(codigo: String): Future[Option[AsignaturaRecord]] =
+    db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
 
-  def store(bachelor: BachelorRecord): Future[BachelorRecord] =
+  def almacenar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
     db.run(
       this returning this
-        .map(_.id) into ((acc, id) => acc.copy(id = id)) += bachelor
+        .map(_.codigo) into ((acc, id) => acc.copy(codigo = id)) += asignatura
     )
 
-  def deleteById(id: Int): Future[Int] =
-    db.run(this.filter(_.id === id).delete)
+  def eliminarPorCodigo(codigo: String): Future[Int] =
+    db.run(this.filter(_.codigo === codigo).delete)
 
 }

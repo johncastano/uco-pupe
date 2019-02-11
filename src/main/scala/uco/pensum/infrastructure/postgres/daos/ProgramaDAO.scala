@@ -6,15 +6,15 @@ import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Programas(tag:Tag) extends Table[ProgramaRecord](tag, "PROGRAMAS"){
+class Programas(tag: Tag) extends Table[ProgramaRecord](tag, "PROGRAMAS") {
   def id = column[Int]("PROGRAMA_ID", O.PrimaryKey, O.AutoInc)
   def nombre = column[String]("PROGRAMA_NOMBRE")
 
-  def * = (id,nombre)<>(ProgramaRecord.tupled, ProgramaRecord.unapply)
+  def * = (id, nombre) <> (ProgramaRecord.tupled, ProgramaRecord.unapply)
 }
 
 abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
-                           implicit ec: ExecutionContext
+    implicit ec: ExecutionContext
 ) extends TableQuery(new Programas(_)) {
 
   def buscarPorId(id: Int): Future[Option[ProgramaRecord]] =
@@ -23,7 +23,7 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
   def almacenar(programa: ProgramaRecord): Future[ProgramaRecord] =
     db.run(
       this returning this
-          .map(_.id) into ((acc,id) => acc.copy(id = id)) += programa
+        .map(_.id) into ((acc, id) => acc.copy(id = id)) += programa
     )
 
   def eliminarPorId(id: Int): Future[Int] =
