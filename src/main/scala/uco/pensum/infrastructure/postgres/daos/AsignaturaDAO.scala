@@ -1,14 +1,15 @@
-package uco.pensum.infrastructure.mysql.daos
+package uco.pensum.infrastructure.postgres.daos
 
-import uco.pensum.infrastructure.mysql.{BachelorRecord, tables}
-
+import uco.pensum.infrastructure.postgres.{AsignaturaRecord, BachelorRecord, tables}
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Bachelors(tag: Tag) extends Table[BachelorRecord](tag, "BACHELORS") {
-  def id = column[Int]("BACHELOR_ID", O.PrimaryKey, O.AutoInc)
+
+//TODO: Update fields of this DAO according to new design defined last week(Review names and missing fields)
+class Asignaturas(tag: Tag) extends Table[AsignaturaRecord](tag, "ASIGNATURAS") {
+  def codigo = column[String]("ASIGNATURA_CODIGO", O.PrimaryKey)
   def facultyId = column[Int]("FACULTY_ID")
   def bachelorName = column[String]("BACHELOR_NAME")
   def faculties =
