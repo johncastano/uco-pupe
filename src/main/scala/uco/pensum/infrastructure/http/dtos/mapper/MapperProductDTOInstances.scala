@@ -2,7 +2,11 @@ package uco.pensum.infrastructure.http.dtos.mapper
 
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.{PlanDeEstudioDTO, ProgramaDTO}
+import uco.pensum.infrastructure.http.dtos.{
+  PlanDeEstudioDTO,
+  ProgramaDTO,
+  ProgramaResponseDTO
+}
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 
 class MapperProductDTOInstances extends MapperSugar {
@@ -16,6 +20,16 @@ class MapperProductDTOInstances extends MapperSugar {
           planesDeEstudio = programa.planesDeEstudio.map(_.to[PlanDeEstudioDTO]),
           fechaDeRegistro = Some(programa.fechaDeRegistro),
           fechaDeModificacion = Some(programa.fechaDeModificacion)
+        )
+    }
+
+  implicit def ProgramaToProgramaResponseDTO
+    : Mapper[Programa, ProgramaResponseDTO] =
+    new Mapper[Programa, ProgramaResponseDTO] {
+      override def to(programa: Programa): ProgramaResponseDTO =
+        ProgramaResponseDTO(
+          id = programa.id,
+          nombre = programa.nombre
         )
     }
 

@@ -16,5 +16,15 @@ object tables {
   def asignaturas = TableQuery[Asignaturas]
   def planDeEstudioAsignaturas = TableQuery[PlanDeEstudioAsignaturas]
   def prerequisitos = TableQuery[Prerequisitos]
+
+  val setup = DBIO.sequence(
+    List(
+      programas,
+      planesDeEstudio,
+      asignaturas,
+      planDeEstudioAsignaturas,
+      prerequisitos
+    ).map(_.schema.create)
+  )
 }
 // $COVERAGE-ON$

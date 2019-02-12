@@ -9,3 +9,8 @@ case class ProgramaDTO(
     fechaDeRegistro: Option[ZonedDateTime],
     fechaDeModificacion: Option[ZonedDateTime]
 )
+
+case class ProgramaResponseDTO(
+    id: String,
+    nombre: String
+)

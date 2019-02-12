@@ -2,36 +2,37 @@ package uco.pensum.domain.services
 
 import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.ProgramaDTO
+import uco.pensum.infrastructure.http.dtos.{ProgramaDTO, ProgramaResponseDTO}
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.hora
+import uco.pensum.domain.repositories.PensumRepository
+import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ProgramServices {
 
-  implicit val executionContext: ExecutionContext
+  import uco.pensum.infrastructure.mapper.MapperRecords._
+  import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
+  implicit val executionContext: ExecutionContext
+  implicit val repository: PensumRepository
+
+  //TODO: Verify composition types, is not compiling at the moment
+  // (OptionT[Future[DomainError] => EitherT[Future, DomainError, ProgramaResponsoDTO] needed)
   def agregarPrograma(
       programa: ProgramaDTO
-  ): Future[Either[DomainError, Programa]] =
+  ): Future[Either[DomainError, ProgramaResponseDTO]] =
     (for {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
-      _ <- OptionT(Future.successful(Option.empty[Programa])) //TODO: Add repository validation
-        .map(
-          _ => ProgramaExistente()
-        )
-        .toRight(())
+      _ <- OptionT(repository.buscarProgramaPorId(programa.id))
+        .map(_ => ProgramaExistente())
+          .toRight(())
         .swap
-      spd <- EitherT {
-        /*repository
-          .saveOrUpdateProgram(pd)
-          .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
-        Future.successful(Either.right[DomainError, Programa](pd))
-      } //TODO: Add repository insert
-    } yield spd).value
+      _ <- EitherT.right(repository.almacenarPrograma(pd.to[ProgramaRecord]))
+    } yield pd.to[ProgramaResponseDTO]).value
 
   def devolverPrograma(
       programId: String

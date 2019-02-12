@@ -8,6 +8,7 @@ import io.circe.generic.auto._
 import uco.pensum.domain.errors.ProgramNotFound
 import io.circe.java8.time._
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
+import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.services.ProgramServices
 import uco.pensum.infrastructure.http.dtos.ProgramaDTO
 
@@ -19,6 +20,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
   implicit val executionContext: ExecutionContext
+  implicit val repository: PensumRepository
   implicit val materializer: Materializer
 
   def agregarPrograma: Route = path("programa") {

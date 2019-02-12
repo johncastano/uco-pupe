@@ -4,7 +4,7 @@ sealed trait Record
 
 // $COVERAGE-OFF$
 
-final case class ProgramaRecord(id: Int, nombre: String) extends Record
+final case class ProgramaRecord(id: String, nombre: String) extends Record
 
 final case class PlanDeEstudioRecord(
     inp: String,
