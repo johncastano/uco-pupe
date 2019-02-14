@@ -2,7 +2,7 @@ package uco.pensum.domain.services
 
 import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.ProgramaDTO
+import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -15,9 +15,10 @@ trait ProgramServices {
   implicit val executionContext: ExecutionContext
 
   def agregarPrograma(
-      programa: ProgramaDTO
+      programa: ProgramaAsignacion
   ): Future[Either[DomainError, Programa]] =
     (for {
+      // _ <- repository.getProgramById //TODO: Validar que no exista un programa con el mismo ID
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
       _ <- OptionT(Future.successful(Option.empty[Programa])) //TODO: Add repository validation
         .map(
@@ -43,9 +44,10 @@ trait ProgramServices {
         Programa(
           programId,
           "Test program",
+          "snies",
           planesDeEstudio = List(
-            PlanDeEstudio("inpTest1", 140, hora, hora),
-            PlanDeEstudio("inpTest2", 140, hora, hora)
+            PlanDeEstudio("inpTest1", 140, programId, hora, hora),
+            PlanDeEstudio("inpTest2", 140, programId, hora, hora)
           ),
           hora,
           hora
@@ -59,9 +61,10 @@ trait ProgramServices {
       Programa(
         "id1",
         "Test program",
+        "snies",
         planesDeEstudio = List(
-          PlanDeEstudio("inpTest1", 140, hora, hora),
-          PlanDeEstudio("inpTest2", 140, hora, hora)
+          PlanDeEstudio("inpTest1", 140, "porgramId", hora, hora),
+          PlanDeEstudio("inpTest2", 140, "programId", hora, hora)
         ),
         hora,
         hora
