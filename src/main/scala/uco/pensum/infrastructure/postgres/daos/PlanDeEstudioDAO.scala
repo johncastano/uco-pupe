@@ -11,7 +11,7 @@ class PlanesDeEstudio(tag: Tag)
   def inp = column[String]("PLAN_DE_ESTUDIO_ID", O.PrimaryKey)
   def creditos = column[Int]("PLAN_DE_ESTUDIO_CREDITOS")
   def fechaDeCreacion = column[String]("PLAN_DE_ESTUDIO_FECHA_DE_CREACION")
-  def programaId = column[Int]("PROGRAMA_ID")
+  def programaId = column[String]("PROGRAMA_ID")
   def programas = foreignKey("PROGRAMA_ID", programaId, tables.programas)(
     _.id,
     onUpdate = ForeignKeyAction.Restrict,

@@ -20,16 +20,16 @@ object Main extends App with HttpService {
   implicit val executionContext: ExecutionContextExecutor = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
+  private val config = ConfigFactory.load()
+  private val host = config.getString("pupe.http.host")
+  private val port = config.getString("pupe.http.port").toInt
+
   val db: PostgresProfile.backend.Database = Database.forConfig("postgres")
 
   db.run(tables.setup)
 
   implicit val provider: PensumDatabase = new PensumDatabase(db)
   implicit val repository: PensumRepository = new PensumRepository
-
-  private val config = ConfigFactory.load()
-  private val host = config.getString("pupe.http.host")
-  private val port = config.getString("pupe.http.port").toInt
 
   // http://localhost:8080/pensum/programa
 

@@ -11,19 +11,19 @@ import slick.jdbc.MySQLProfile.api._
 // $COVERAGE-OFF$
 object tables {
 
-  def programas = TableQuery[Programas]
-  def planesDeEstudio = TableQuery[PlanesDeEstudio]
-  def asignaturas = TableQuery[Asignaturas]
-  def planDeEstudioAsignaturas = TableQuery[PlanDeEstudioAsignaturas]
-  def prerequisitos = TableQuery[Prerequisitos]
+  val programas = TableQuery[Programas]
+  val planesDeEstudio = TableQuery[PlanesDeEstudio]
+  val asignaturas = TableQuery[Asignaturas]
+  val planDeEstudioAsignaturas = TableQuery[PlanDeEstudioAsignaturas]
+  val prerequisitos = TableQuery[Prerequisitos]
 
-  val setup = DBIO.sequence(
+  val setup: DBIOAction[List[Unit], NoStream, Effect.Schema] = DBIO.sequence(
     List(
-      programas,
       planesDeEstudio,
       asignaturas,
       planDeEstudioAsignaturas,
-      prerequisitos
+      prerequisitos,
+      programas
     ).map(_.schema.create)
   )
 }

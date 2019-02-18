@@ -10,7 +10,7 @@ import io.circe.java8.time._
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.services.ProgramServices
-import uco.pensum.infrastructure.http.dtos.ProgramaDTO
+import uco.pensum.infrastructure.http.dtos.{ProgramaDTO, ProgramaResponseDTO}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -37,7 +37,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
                 complete(
                   BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                 ),
-              pr => complete(Created -> pr.to[ProgramaDTO])
+              pr => complete(Created -> pr.to[ProgramaResponseDTO])
             )
         }
       }

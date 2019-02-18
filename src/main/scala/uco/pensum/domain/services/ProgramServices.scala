@@ -2,7 +2,7 @@ package uco.pensum.domain.services
 
 import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.{ProgramaDTO, ProgramaResponseDTO}
+import uco.pensum.infrastructure.http.dtos.ProgramaDTO
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -14,25 +14,24 @@ import scala.concurrent.{ExecutionContext, Future}
 
 trait ProgramServices {
 
-  import uco.pensum.infrastructure.mapper.MapperRecords._
-  import uco.pensum.infrastructure.mapper.MapperProductDTO._
-
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
 
-  //TODO: Verify composition types, is not compiling at the moment
-  // (OptionT[Future[DomainError] => EitherT[Future, DomainError, ProgramaResponsoDTO] needed)
+  import uco.pensum.infrastructure.mapper.MapperRecords._
+
   def agregarPrograma(
       programa: ProgramaDTO
-  ): Future[Either[DomainError, ProgramaResponseDTO]] =
+  ): Future[Either[DomainError, Programa]] =
     (for {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
       _ <- OptionT(repository.buscarProgramaPorId(programa.id))
         .map(_ => ProgramaExistente())
-          .toRight(())
+        .toRight(())
         .swap
-      _ <- EitherT.right(repository.almacenarPrograma(pd.to[ProgramaRecord]))
-    } yield pd.to[ProgramaResponseDTO]).value
+      _ <- EitherT.right[DomainError](
+        repository.almacenarPrograma(pd.to[ProgramaRecord])
+      )
+    } yield pd).value
 
   def devolverPrograma(
       programId: String
