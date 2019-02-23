@@ -4,8 +4,8 @@
 ## Table of Contents
 
 * [Propósito](#propósito)
-* [Base de datos](#base de datos)
-* [Correr el servicio](#correr el servicio)
+* [Base de datos](#base-de-datos)
+* [Correr el servicio](#correr-el-servicio)
 
 ## Propósito
 El enfoque de este repositorio es ...
