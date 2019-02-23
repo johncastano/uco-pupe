@@ -12,19 +12,19 @@ import scala.concurrent.{ExecutionContext, Future}
 class PlanDeEstudioAsignaturas(tag: Tag)
     extends Table[PlanDeEstudioAsignaturaRecord](
       tag,
-      "PLAN_DE_ESTUDIO_ASIGNATURAS"
+      "plan_de_estudio_asignatura"
     ) {
-  def id = column[Int]("PLAN_DE_ESTUDIO_ASIGNATURA_ID")
-  def planDeEstudioINP = column[String]("PLAN_DE_ESTUDIO_INP")
-  def codigoAsignatura = column[String]("CODIGO_ASIGNATURA")
+  def id = column[Int]("id")
+  def planDeEstudioINP = column[String]("plan_de_estudio_inp")
+  def codigoAsignatura = column[String]("codigo_asignatura")
   def planesDeEstudio =
-    foreignKey("PLAN_DE_ESTUDIO_INP", planDeEstudioINP, tables.planesDeEstudio)(
+    foreignKey("plan_de_estudio_inp", planDeEstudioINP, tables.planesDeEstudio)(
       _.inp,
       onUpdate = ForeignKeyAction.Restrict,
       onDelete = ForeignKeyAction.Cascade
     )
   def asignaturas =
-    foreignKey("CODIGO_ASIGNATURA", codigoAsignatura, tables.asignaturas)(
+    foreignKey("codigo_asignatura", codigoAsignatura, tables.asignaturas)(
       _.codigo,
       onUpdate = ForeignKeyAction.Restrict,
       onDelete = ForeignKeyAction.Cascade

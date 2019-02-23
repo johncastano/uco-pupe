@@ -6,9 +6,9 @@ import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class Programas(tag: Tag) extends Table[ProgramaRecord](tag, "PROGRAMAS") {
-  def id = column[String]("ID", O.PrimaryKey)
-  def nombre = column[String]("NOMBRE")
+class Programas(tag: Tag) extends Table[ProgramaRecord](tag, "programas") {
+  def id = column[String]("id", O.PrimaryKey)
+  def nombre = column[String]("nombre")
 
   def * = (id, nombre) <> (ProgramaRecord.tupled, ProgramaRecord.unapply)
 }

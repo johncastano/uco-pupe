@@ -7,12 +7,12 @@ import uco.pensum.infrastructure.postgres.{PrerequisitoRecord, tables}
 import scala.concurrent.{ExecutionContext, Future}
 
 class Prerequisitos(tag: Tag)
-    extends Table[PrerequisitoRecord](tag, "PREREQUISITOS") {
-  def id = column[Int]("PREREQUISITO_ID")
-  def codigoAsignatura = column[String]("CODIGO_ASIGNATURA_PREREQUISITO")
+    extends Table[PrerequisitoRecord](tag, "prerequisitos") {
+  def id = column[Int]("id")
+  def codigoAsignatura = column[String]("codigo_asignatura_prerequisito")
   def codigosAsignaturaPR =
     foreignKey(
-      "CODIGO_ASIGNATURA_PREREQUISITO",
+      "codigo_asignatura_prerequisito",
       codigoAsignatura,
       tables.asignaturas
     )(

@@ -26,12 +26,10 @@ object Main extends App with HttpService {
 
   val db: PostgresProfile.backend.Database = Database.forConfig("postgres")
 
-  db.run(tables.setup)
+  tables.setup(db)
 
   implicit val provider: PensumDatabase = new PensumDatabase(db)
   implicit val repository: PensumRepository = new PensumRepository
-
-  // http://localhost:8080/pensum/programa
 
   println(s"Starting http service ....")
   Http().bindAndHandle(routes, host, port) onComplete {
@@ -40,7 +38,6 @@ object Main extends App with HttpService {
     case Failure(ex) =>
       println(s"There was an error starting http service $ex")
       Await.ready(system.terminate(), 5.seconds)
-
   }
 
 }

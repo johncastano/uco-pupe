@@ -7,12 +7,12 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 class PlanesDeEstudio(tag: Tag)
-    extends Table[PlanDeEstudioRecord](tag, "PLAN_DE_ESTUDIOS") {
-  def inp = column[String]("PLAN_DE_ESTUDIO_ID", O.PrimaryKey)
-  def creditos = column[Int]("PLAN_DE_ESTUDIO_CREDITOS")
-  def fechaDeCreacion = column[String]("PLAN_DE_ESTUDIO_FECHA_DE_CREACION")
-  def programaId = column[String]("PROGRAMA_ID")
-  def programas = foreignKey("PROGRAMA_ID", programaId, tables.programas)(
+    extends Table[PlanDeEstudioRecord](tag, "plan_de_estudios") {
+  def inp = column[String]("id", O.PrimaryKey)
+  def creditos = column[Int]("creditos")
+  def fechaDeCreacion = column[String]("fecha_de_creacion")
+  def programaId = column[String]("programa_id")
+  def programas = foreignKey("programa_id", programaId, tables.programas)(
     _.id,
     onUpdate = ForeignKeyAction.Restrict,
     onDelete = ForeignKeyAction.Cascade

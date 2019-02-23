@@ -7,17 +7,17 @@ import slick.jdbc.PostgresProfile.api._
 import scala.concurrent.{ExecutionContext, Future}
 
 class Asignaturas(tag: Tag)
-    extends Table[AsignaturaRecord](tag, "ASIGNATURAS") {
-  def codigo = column[String]("ASIGNATURA_CODIGO", O.PrimaryKey)
+    extends Table[AsignaturaRecord](tag, "asignaturas") {
+  def codigo = column[String]("codigo", O.PrimaryKey)
   def componenteDeFormacion =
-    column[String]("ASIGNATURA_COMPONENTE_DE_FORMACION")
-  def nombre = column[String]("ASIGNATURA_NOMBRE")
-  def creditos = column[Int]("ASIGNATURA_CREDITOS")
-  def horasTeoricas = column[Int]("ASIGNATURA_HORAS_TEORICAS")
-  def horasLaboratorio = column[Int]("ASIGNATURA_HORAS_LABORATORIO")
-  def semestre = column[Int]("ASIGNATURA_SEMESTRE")
+    column[String]("componente_de_formacion")
+  def nombre = column[String]("nombre")
+  def creditos = column[Int]("creditos")
+  def horasTeoricas = column[Int]("horas_teoricas")
+  def horasLaboratorio = column[Int]("horas_laboratorio")
+  def semestre = column[Int]("semestre")
   def direccionPlanDeEstudios =
-    column[String]("ASIGNATURA_DIRECCION_PLAN_DE_ESTUDIOS_URL")
+    column[String]("direccion_plan_de_estudio_url")
   def * =
     (
       codigo,
