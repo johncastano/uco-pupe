@@ -8,7 +8,6 @@ import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
-import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,8 +15,6 @@ trait ProgramServices {
 
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
-
-  import uco.pensum.infrastructure.mapper.MapperRecords._
 
   def agregarPrograma(
       programa: ProgramaAsignacion
@@ -29,7 +26,7 @@ trait ProgramServices {
         .toRight(())
         .swap
       _ <- EitherT.right[DomainError](
-        repository.almacenarPrograma(pd.to[ProgramaRecord])
+        repository.almacenarPrograma(pd)
       )
     } yield pd).value
 
