@@ -10,7 +10,10 @@ import io.circe.java8.time._
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.services.ProgramServices
-import uco.pensum.infrastructure.http.dtos.{ProgramaDTO, ProgramaResponseDTO}
+import uco.pensum.infrastructure.http.dtos.{
+  ProgramaAsignacion,
+  ProgramaRespuesta
+}
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -25,7 +28,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
 
   def agregarPrograma: Route = path("programa") {
     post {
-      entity(as[ProgramaDTO]) { programa =>
+      entity(as[ProgramaAsignacion]) { programa =>
         onComplete(agregarPrograma(programa)) {
           case Failure(ex) => {
             println(s"Exception: $ex") // TODO: Implement appropiate log
@@ -37,7 +40,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
                 complete(
                   BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                 ),
-              pr => complete(Created -> pr.to[ProgramaResponseDTO])
+              pr => complete(Created -> pr.to[ProgramaRespuesta])
             )
         }
       }
@@ -53,7 +56,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
         }
         case Success(response) =>
           response.fold(complete(NotFound -> ProgramNotFound())) { r =>
-            complete(OK -> r)
+            complete(OK -> r.to[ProgramaRespuesta])
           }
       }
     }
@@ -67,7 +70,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
-          complete(OK -> response)
+          complete(OK -> response.map(_.to[ProgramaRespuesta]))
       }
     }
   }

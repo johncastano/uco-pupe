@@ -2,7 +2,7 @@ package uco.pensum.domain.services
 
 import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.ProgramaDTO
+import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -20,7 +20,7 @@ trait ProgramServices {
   import uco.pensum.infrastructure.mapper.MapperRecords._
 
   def agregarPrograma(
-      programa: ProgramaDTO
+      programa: ProgramaAsignacion
   ): Future[Either[DomainError, Programa]] =
     (for {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
@@ -43,9 +43,10 @@ trait ProgramServices {
         Programa(
           programId,
           "Test program",
+          "snies",
           planesDeEstudio = List(
-            PlanDeEstudio("inpTest1", 140, hora, hora),
-            PlanDeEstudio("inpTest2", 140, hora, hora)
+            PlanDeEstudio("inpTest1", 140, programId, hora, hora),
+            PlanDeEstudio("inpTest2", 140, programId, hora, hora)
           ),
           hora,
           hora
@@ -59,9 +60,10 @@ trait ProgramServices {
       Programa(
         "id1",
         "Test program",
+        "snies",
         planesDeEstudio = List(
-          PlanDeEstudio("inpTest1", 140, hora, hora),
-          PlanDeEstudio("inpTest2", 140, hora, hora)
+          PlanDeEstudio("inpTest1", 140, "porgramId", hora, hora),
+          PlanDeEstudio("inpTest2", 140, "programId", hora, hora)
         ),
         hora,
         hora

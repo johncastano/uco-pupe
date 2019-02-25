@@ -3,8 +3,14 @@ package uco.pensum.infrastructure.postgres
 sealed trait Record
 
 // $COVERAGE-OFF$
-
-final case class ProgramaRecord(id: String, nombre: String) extends Record
+//TODO: Modify dataTypes of 'fehaDeCreacion y Modificacion'
+final case class ProgramaRecord(
+    id: String,
+    nombre: String,
+    codigoSnies: String,
+    fechaDeCreacion: String,
+    fechaDeModificacion: String
+) extends Record
 
 final case class PlanDeEstudioRecord(
     inp: String,

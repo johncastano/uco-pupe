@@ -4,20 +4,25 @@ import uco.pensum.domain.errors.{CurriculumAlreadyExists, DomainError}
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
-import uco.pensum.infrastructure.http.dtos.PlanDeEstudioDTO
+import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.domain.hora
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait CurriculumServices {
+trait PlanEstudioServices {
 
   implicit val executionContext: ExecutionContext
 
-  def addCurriculum(
-      curriculum: PlanDeEstudioDTO
+  def agregarPlanDeEstudio(
+      planDeEstudio: PlanDeEstudioAsignacion,
+      programId: String
   ): Future[Either[DomainError, PlanDeEstudio]] =
     (for {
-      cu <- EitherT.fromEither[Future](PlanDeEstudio.validate(curriculum))
+      //program <- repository.getPorgramaById(programId) //TODO: Validate if programExists
+      // _ <- repository.getPlanDeEstudioByProgramIdAndInp //TODO: Validate if there is a plan de estudio with the same inp
+      cu <- EitherT.fromEither[Future](
+        PlanDeEstudio.validar(planDeEstudio, programId)
+      )
       _ <- OptionT(Future.successful(Option.empty[PlanDeEstudio])) //TODO: Add repository validation
         .map(
           _ => CurriculumAlreadyExists()
@@ -32,19 +37,20 @@ trait CurriculumServices {
       } //TODO: Add repository insert
     } yield spd).value
 
-  def getCurriculumById(
+  def planDeEstudioPorId(
+      programId: String,
       inp: String
   ): Future[Option[PlanDeEstudio]] =
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    //repository.getProgramById(programId)
+    //repository.getPlanEstudioByProgramIdAndInp(programId, inp)
     Future.successful(
-      Some(PlanDeEstudio(inp, 140, hora, hora))
+      Some(PlanDeEstudio(inp, 140, programId, hora, hora))
     )
 
-  def getAllCurriculums: Future[List[PlanDeEstudio]] = {
-    //repository.getAllPrograms
+  def planesDeEstudio(programId: String): Future[List[PlanDeEstudio]] = {
+    //repository.getAllPlanEstudiosWhereProgramID == programId
     val curriculum =
-      PlanDeEstudio("inpTest1", 140, hora, hora)
+      PlanDeEstudio("inpTest1", 140, programId, hora, hora)
 
     Future.successful(
       List(

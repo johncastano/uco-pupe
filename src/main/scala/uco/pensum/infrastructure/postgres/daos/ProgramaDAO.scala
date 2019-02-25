@@ -9,8 +9,11 @@ import scala.concurrent.{ExecutionContext, Future}
 class Programas(tag: Tag) extends Table[ProgramaRecord](tag, "programas") {
   def id = column[String]("id", O.PrimaryKey)
   def nombre = column[String]("nombre")
-
-  def * = (id, nombre) <> (ProgramaRecord.tupled, ProgramaRecord.unapply)
+  def codigoSnies = column[String]("codigo_snies")
+  def fechaDeCreacion = column[String]("fecha_de_creacion")
+  def fechaDeModificacion = column[String]("fecha_de_modificacion")
+  def * =
+    (id, nombre, codigoSnies, fechaDeCreacion, fechaDeModificacion) <> (ProgramaRecord.tupled, ProgramaRecord.unapply)
 }
 
 abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(

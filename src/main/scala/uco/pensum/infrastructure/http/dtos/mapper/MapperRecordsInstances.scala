@@ -10,7 +10,10 @@ class MapperRecordsInstances extends MapperSugar {
     new Mapper[Programa, ProgramaRecord] {
       override def to(programa: Programa): ProgramaRecord = ProgramaRecord(
         programa.id,
-        programa.nombre
+        programa.nombre,
+        programa.snies,
+        programa.fechaDeRegistro.toString,
+        programa.fechaDeModificacion.toString
         //TODO: Add date fields(date of cration and create of alteration)
       )
     }
