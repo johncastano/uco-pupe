@@ -1,8 +1,13 @@
 package uco.pensum.domain.services
 
+import java.time.ZonedDateTime
+
 import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
+import uco.pensum.infrastructure.http.dtos.{
+  PlanDeEstudioRespuesta,
+  ProgramaAsignacion
+}
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -30,26 +35,24 @@ trait ProgramServices {
       )
     } yield pd).value
 
-  def devolverPrograma(
+  //TODO: Return ProgramaRespuesta instead PlanDeEstudioRespuesta, need to think how to solve fields of program that come from DB
+  def devolverProgramaConPlanesDeEstudio(
       programId: String
-  ): Future[Option[Programa]] =
-    //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    //repository.getProgramById(programId)
-    Future.successful(
-      Some(
-        Programa(
-          programId,
-          "Test program",
-          "snies",
-          planesDeEstudio = List(
-            PlanDeEstudio("inpTest1", 140, programId, hora, hora),
-            PlanDeEstudio("inpTest2", 140, programId, hora, hora)
-          ),
-          hora,
-          hora
+  ) =
+    repository
+      .buscarProgramaConPlanesDeEstudioPorId(programId)
+      .map(
+        _.map(
+          r =>
+            PlanDeEstudioRespuesta(
+              r.inp,
+              r.creditos,
+              programId,
+              Some(ZonedDateTime.now),
+              Some(ZonedDateTime.now)
+            )
         )
       )
-    )
 
   def devolverProgramas: Future[List[Programa]] = {
     //repository.getAllPrograms

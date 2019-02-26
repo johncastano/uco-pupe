@@ -25,5 +25,5 @@ object Programa {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       snies <- validarCampoVacio(dto.codigoSnies, "codigo SNIES")
       planes <- PlanDeEstudio.validar(dto.planesDeEstudio, id)
-    } yield Programa(id, snies, nombre, planes, hora, hora)
+    } yield Programa(id, nombre, snies, planes, hora, hora)
 }

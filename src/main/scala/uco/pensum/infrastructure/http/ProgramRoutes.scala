@@ -49,15 +49,14 @@ trait ProgramRoutes extends Directives with ProgramServices {
 
   def porgramaPorId: Route = path("programa" / Segment) { id =>
     get {
-      onComplete(devolverPrograma(id)) {
+      onComplete(devolverProgramaConPlanesDeEstudio(id)) {
         case Failure(ex) => {
           println(s"Exception: $ex") // TODO: Implement appropiate log
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
-          response.fold(complete(NotFound -> ProgramNotFound())) { r =>
-            complete(OK -> r.to[ProgramaRespuesta])
-          }
+          if (response.isEmpty) complete(NotFound -> ProgramNotFound())
+          else complete(OK -> response)
       }
     }
   }

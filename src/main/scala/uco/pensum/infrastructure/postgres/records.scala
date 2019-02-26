@@ -39,4 +39,12 @@ final case class AsignaturaRecord(
 final case class PrerequisitoRecord(id: Int, codigoAsignatura: String)
     extends Record
 
+final case class ProgramaConPlanesDeEstudioRecord(
+    programaId: String,
+    programaNombre: String,
+    programaCodigoSnies: String,
+    inp: String,
+    creditos: Int
+)
+
 // $COVERAGE-ON$

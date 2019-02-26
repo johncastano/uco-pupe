@@ -7,6 +7,7 @@ import uco.pensum.infrastructure.http.dtos.{
   ProgramaRespuesta
 }
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
+import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 class MapperDTOInstances extends MapperSugar {
 
@@ -19,8 +20,8 @@ class MapperDTOInstances extends MapperSugar {
           codigoSnies = programa.snies,
           planesDeEstudio =
             programa.planesDeEstudio.map(_.to[PlanDeEstudioRespuesta]),
-          fechaDeRegistro = Some(programa.fechaDeRegistro),
-          fechaDeModificacion = Some(programa.fechaDeModificacion)
+          fechaDeRegistro = programa.fechaDeRegistro.toString,
+          fechaDeModificacion = programa.fechaDeModificacion.toString
         )
     }
 
@@ -34,6 +35,20 @@ class MapperDTOInstances extends MapperSugar {
           programId = plan.programId,
           fechaDeRegistro = Some(plan.fechaDeRegistro),
           fechaDeModificacion = Some(plan.fechaDeModificacion)
+        )
+    }
+
+  implicit def ProgramaRecordToProgramaRespuesta
+    : Mapper[ProgramaRecord, ProgramaRespuesta] =
+    new Mapper[ProgramaRecord, ProgramaRespuesta] {
+      override def to(record: ProgramaRecord): ProgramaRespuesta =
+        ProgramaRespuesta(
+          record.id,
+          record.nombre,
+          record.codigoSnies,
+          List.empty,
+          record.fechaDeCreacion,
+          record.fechaDeModificacion
         )
     }
 

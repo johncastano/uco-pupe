@@ -2,7 +2,11 @@ package uco.pensum.domain.repositories
 
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
-import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, ProgramaRecord}
+import uco.pensum.infrastructure.postgres.{
+  PlanDeEstudioRecord,
+  ProgramaConPlanesDeEstudioRecord,
+  ProgramaRecord
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,5 +32,10 @@ class PensumRepository(
 
   def buscarProgramaPorId(id: String): Future[Option[ProgramaRecord]] =
     provider.programas.buscarPorId(id)
+
+  def buscarProgramaConPlanesDeEstudioPorId(
+      id: String
+  ): Future[Vector[ProgramaConPlanesDeEstudioRecord]] =
+    provider.programas.buscarPorIdConPlanesDeEstudio(id)
 
 }

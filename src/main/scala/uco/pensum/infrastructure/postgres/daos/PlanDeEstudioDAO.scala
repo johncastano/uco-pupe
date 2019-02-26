@@ -8,7 +8,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PlanesDeEstudio(tag: Tag)
     extends Table[PlanDeEstudioRecord](tag, "plan_de_estudios") {
-  def inp = column[String]("id", O.PrimaryKey)
+  def inp = column[String]("inp", O.PrimaryKey)
   def creditos = column[Int]("creditos")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def programaId = column[String]("programa_id")

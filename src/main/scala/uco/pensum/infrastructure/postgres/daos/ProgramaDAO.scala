@@ -2,7 +2,10 @@ package uco.pensum.infrastructure.postgres.daos
 
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
-import uco.pensum.infrastructure.postgres.ProgramaRecord
+import uco.pensum.infrastructure.postgres.{
+  ProgramaConPlanesDeEstudioRecord,
+  ProgramaRecord
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,6 +25,21 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
 
   def buscarPorId(id: String): Future[Option[ProgramaRecord]] =
     db.run(this.filter(_.id === id).result).map(_.headOption)
+
+  def buscarPorIdConPlanesDeEstudio(
+      id: String
+  ): Future[Vector[ProgramaConPlanesDeEstudioRecord]] = {
+    val action =
+      sql"select p.id,p.nombre,p.codigo_snies,pe.id,pe.creditos from programas p left join plan_de_estudios pe on p.id = pe.programa_id where p.id = $id;"
+        .as[(String, String, String, String, Int)]
+    db.run(
+      action.map(
+        _.map(
+          r => ProgramaConPlanesDeEstudioRecord(r._1, r._2, r._3, r._4, r._5)
+        )
+      )
+    )
+  }
 
   def almacenar(programa: ProgramaRecord): Future[ProgramaRecord] =
     db.run(
