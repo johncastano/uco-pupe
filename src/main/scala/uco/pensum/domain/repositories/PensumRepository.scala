@@ -35,7 +35,7 @@ class PensumRepository(
 
   def buscarProgramaConPlanesDeEstudioPorId(
       id: String
-  ): Future[Vector[ProgramaConPlanesDeEstudioRecord]] =
+  ): Future[Seq[ProgramaConPlanesDeEstudioRecord]] =
     provider.programas.buscarPorIdConPlanesDeEstudio(id)
 
 }

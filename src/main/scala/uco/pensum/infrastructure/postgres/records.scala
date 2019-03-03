@@ -43,8 +43,8 @@ final case class ProgramaConPlanesDeEstudioRecord(
     programaId: String,
     programaNombre: String,
     programaCodigoSnies: String,
-    inp: String,
-    creditos: Int
+    inp: Option[String],
+    creditos: Option[Int]
 )
 
 // $COVERAGE-ON$

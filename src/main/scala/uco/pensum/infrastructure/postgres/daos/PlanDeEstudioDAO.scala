@@ -18,7 +18,7 @@ class PlanesDeEstudio(tag: Tag)
     onDelete = ForeignKeyAction.Cascade
   )
   def * =
-    (inp, creditos, fechaDeCreacion, programaId) <> (PlanDeEstudioRecord.tupled, PlanDeEstudioRecord.unapply)
+    (inp, creditos, fechaDeCreacion, programaId).mapTo[PlanDeEstudioRecord]
 }
 
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(

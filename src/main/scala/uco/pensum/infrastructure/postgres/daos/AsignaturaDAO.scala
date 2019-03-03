@@ -28,7 +28,7 @@ class Asignaturas(tag: Tag)
       horasLaboratorio,
       semestre,
       direccionPlanDeEstudios
-    ) <> (AsignaturaRecord.tupled, AsignaturaRecord.unapply)
+    ).mapTo[AsignaturaRecord]
 }
 
 abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(

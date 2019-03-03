@@ -6,6 +6,7 @@ import uco.pensum.infrastructure.postgres.{
   ProgramaConPlanesDeEstudioRecord,
   ProgramaRecord
 }
+import uco.pensum.infrastructure.postgres.tables
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -16,7 +17,8 @@ class Programas(tag: Tag) extends Table[ProgramaRecord](tag, "programas") {
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
   def * =
-    (id, nombre, codigoSnies, fechaDeCreacion, fechaDeModificacion) <> (ProgramaRecord.tupled, ProgramaRecord.unapply)
+    (id, nombre, codigoSnies, fechaDeCreacion, fechaDeModificacion)
+      .mapTo[ProgramaRecord]
 }
 
 abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
@@ -28,16 +30,14 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
 
   def buscarPorIdConPlanesDeEstudio(
       id: String
-  ): Future[Vector[ProgramaConPlanesDeEstudioRecord]] = {
-    val action =
-      sql"select p.id,p.nombre,p.codigo_snies,pe.id,pe.creditos from programas p left join plan_de_estudios pe on p.id = pe.programa_id where p.id = $id;"
-        .as[(String, String, String, String, Int)]
+  ) = {
     db.run(
-      action.map(
-        _.map(
-          r => ProgramaConPlanesDeEstudioRecord(r._1, r._2, r._3, r._4, r._5)
-        )
-      )
+      (for {
+        (p, pe) <- tables.programas joinLeft tables.planesDeEstudio on (_.id === _.programaId)
+        if (p.id === id)
+      } yield
+        (p.id, p.nombre, p.codigoSnies, pe.map(_.inp), pe.map(_.creditos))
+          .mapTo[ProgramaConPlanesDeEstudioRecord]).result
     )
   }
 

@@ -45,8 +45,8 @@ trait ProgramServices {
         _.map(
           r =>
             PlanDeEstudioRespuesta(
-              r.inp,
-              r.creditos,
+              r.inp.getOrElse(""),
+              r.creditos.getOrElse(0),
               programId,
               Some(ZonedDateTime.now),
               Some(ZonedDateTime.now)
