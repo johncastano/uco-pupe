@@ -1,9 +1,11 @@
 package uco.pensum.domain.planestudio
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
+import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 case class PlanDeEstudio(
     inp: String,
@@ -41,5 +43,18 @@ object PlanDeEstudio {
       } yield PlanDeEstudio(inp, creditos, programId, hora, hora)
     }.sequence
   }
+
+  def fromRecord(record: PlanDeEstudioRecord): PlanDeEstudio =
+    PlanDeEstudio(
+      inp = record.inp,
+      creditos = record.creditos,
+      programId = record.programaId,
+      fechaDeRegistro = ZonedDateTime
+        .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
+      fechaDeModificacion = ZonedDateTime.parse(
+        record.fechaDeModificacion,
+        DateTimeFormatter.ISO_ZONED_DATE_TIME
+      )
+    )
 
 }

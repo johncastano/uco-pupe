@@ -14,8 +14,8 @@ case class ProgramaRespuesta(
     nombre: String,
     codigoSnies: String,
     planesDeEstudio: List[PlanDeEstudioRespuesta],
-    fechaDeRegistro: Option[ZonedDateTime],
-    fechaDeModificacion: Option[ZonedDateTime]
+    fechaDeRegistro: ZonedDateTime,
+    fechaDeModificacion: ZonedDateTime
 )
 
 case class ProgramaResponseDTO(

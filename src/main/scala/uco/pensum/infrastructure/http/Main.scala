@@ -31,12 +31,12 @@ object Main extends App with HttpService {
   implicit val provider: PensumDatabase = new PensumDatabase(db)
   implicit val repository: PensumRepository = new PensumRepository
 
-  println(s"Starting http service ....")
+  logger.info(s"Starting http service ....")
   Http().bindAndHandle(routes, host, port) onComplete {
     case Success(Http.ServerBinding(address)) =>
-      println(s"Http service listening on $address ...")
+      logger.info(s"Http service listening on $address ...")
     case Failure(ex) =>
-      println(s"There was an error starting http service $ex")
+      logger.error(s"There was an error starting http service $ex")
       Await.ready(system.terminate(), 5.seconds)
   }
 

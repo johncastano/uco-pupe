@@ -11,6 +11,7 @@ class PlanesDeEstudio(tag: Tag)
   def inp = column[String]("id", O.PrimaryKey)
   def creditos = column[Int]("creditos")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
+  def fechaDeModificacion = column[String]("fecha_de_modificacion")
   def programaId = column[String]("programa_id")
   def programas = foreignKey("programa_id", programaId, tables.programas)(
     _.id,
@@ -18,7 +19,7 @@ class PlanesDeEstudio(tag: Tag)
     onDelete = ForeignKeyAction.Cascade
   )
   def * =
-    (inp, creditos, fechaDeCreacion, programaId) <> (PlanDeEstudioRecord.tupled, PlanDeEstudioRecord.unapply)
+    (inp, creditos, fechaDeCreacion, fechaDeModificacion, programaId) <> (PlanDeEstudioRecord.tupled, PlanDeEstudioRecord.unapply)
 }
 
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(

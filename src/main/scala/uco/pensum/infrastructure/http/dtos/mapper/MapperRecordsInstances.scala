@@ -1,5 +1,7 @@
 package uco.pensum.infrastructure.http.dtos.mapper
 
+import java.time.format.DateTimeFormatter
+
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
@@ -14,8 +16,10 @@ class MapperRecordsInstances extends MapperSugar {
         programa.id,
         programa.nombre,
         programa.snies,
-        programa.fechaDeRegistro.toString,
-        programa.fechaDeModificacion.toString
+        DateTimeFormatter.ISO_ZONED_DATE_TIME.format(programa.fechaDeRegistro),
+        DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
+          programa.fechaDeModificacion
+        )
       )
     }
 
@@ -26,8 +30,12 @@ class MapperRecordsInstances extends MapperSugar {
         PlanDeEstudioRecord(
           planDeEstudio.inp,
           planDeEstudio.creditos,
-          planDeEstudio.fechaDeRegistro.toString,
-          planDeEstudio.programId
+          DateTimeFormatter.ISO_ZONED_DATE_TIME
+            .format(planDeEstudio.fechaDeRegistro),
+          planDeEstudio.programId,
+          DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
+            planDeEstudio.fechaDeModificacion
+          )
         )
     }
 

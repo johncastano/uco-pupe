@@ -5,13 +5,14 @@ import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ProgramServices {
+trait ProgramServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
@@ -34,22 +35,9 @@ trait ProgramServices {
       programId: String
   ): Future[Option[Programa]] =
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    //repository.getProgramById(programId)
-    Future.successful(
-      Some(
-        Programa(
-          programId,
-          "Test program",
-          "snies",
-          planesDeEstudio = List(
-            PlanDeEstudio("inpTest1", 140, programId, hora, hora),
-            PlanDeEstudio("inpTest2", 140, programId, hora, hora)
-          ),
-          hora,
-          hora
-        )
-      )
-    )
+    OptionT(repository.buscarProgramaPorId(programId))
+      .map(Programa.fromRecord)
+      .value
 
   def devolverProgramas: Future[List[Programa]] = {
     //repository.getAllPrograms

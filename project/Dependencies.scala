@@ -14,6 +14,9 @@ object Dependencies {
   lazy val monix = "io.monix" %% "monix" % "3.0.0-RC2"
   lazy val slick = "com.typesafe.slick" %% "slick" % "3.3.0"
   lazy val pureConfig = "com.github.pureconfig" %% "pureconfig" % "0.10.1"
+  
+  lazy val logBack = "ch.qos.logback" % "logback-classic" % "1.2.3"
+  lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
 
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion

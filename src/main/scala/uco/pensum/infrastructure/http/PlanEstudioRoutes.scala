@@ -33,7 +33,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
         entity(as[PlanDeEstudioAsignacion]) { planDeEstudio =>
           onComplete(agregarPlanDeEstudio(planDeEstudio, programId)) {
             case Failure(ex) => {
-              println(s"Exception: $ex") // TODO: Implement appropiate log
+              logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
@@ -54,7 +54,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
       get {
         onComplete(planDeEstudioPorId(programId, inp)) {
           case Failure(ex) => {
-            println(s"Exception: $ex") // TODO: Implement appropiate log
+            logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
@@ -70,7 +70,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
       get {
         onComplete(planesDeEstudio(programId)) {
           case Failure(ex) => {
-            println(s"Exception: $ex")
+            logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>

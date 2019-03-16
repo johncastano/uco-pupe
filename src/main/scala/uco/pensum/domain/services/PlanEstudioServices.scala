@@ -3,13 +3,14 @@ package uco.pensum.domain.services
 import uco.pensum.domain.errors.{CurriculumAlreadyExists, DomainError}
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.domain.hora
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait PlanEstudioServices {
+trait PlanEstudioServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
 

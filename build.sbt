@@ -26,7 +26,9 @@ lazy val pupe = (project in file(".")).
         pureConfig,
         scalaTest % Test,
         slick,
-        postgresql
+        postgresql,
+        logBack,
+        scalaLogging
       ),
       scalacOptions ++= Seq(
         "-deprecation",
