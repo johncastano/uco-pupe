@@ -19,7 +19,7 @@ class PensumRepository(
 
   def almacenarPrograma(
       programa: Programa
-  ) = {
+  ): Future[(ProgramaRecord, List[PlanDeEstudioRecord])] = {
     for {
       pr <- provider.programas.almacenar(programa.to[ProgramaRecord])
       b <- Future.sequence(

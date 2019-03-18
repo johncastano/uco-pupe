@@ -30,7 +30,7 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
 
   def buscarPorIdConPlanesDeEstudio(
       id: String
-  ) = {
+  ): Future[Seq[ProgramaConPlanesDeEstudioRecord]] = {
     db.run(
       (for {
         (p, pe) <- tables.programas joinLeft tables.planesDeEstudio on (_.id === _.programaId)
