@@ -4,7 +4,10 @@ import java.time.ZonedDateTime
 
 import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.infrastructure.http.dtos.AsignaturaDTO
+import uco.pensum.infrastructure.http.dtos.{
+  AsignaturaActualizacion,
+  AsignaturaAsignacion
+}
 
 sealed trait ComponenteDeFormacion
 
@@ -58,10 +61,12 @@ object Asignatura {
 
   type Codigo = String
 
-  def validar(dto: AsignaturaDTO): Either[DomainError, Asignatura] = {
+  def validar(
+      dto: AsignaturaAsignacion,
+      inp: String
+  ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
-      inp <- validarCampoVacio(dto.inp, "inp")
       id <- validarComponenteDeFormacion(dto.id)
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
@@ -77,6 +82,30 @@ object Asignatura {
         semestre = semestre,
         requisitos = dto.requisitos.filterNot(v => v.isEmpty),
         fechaDeRegistro = hora,
+        fechaDeModificacion = hora
+      )
+  }
+
+  def validar(
+      dto: AsignaturaActualizacion,
+      original: Asignatura
+  ): Either[DomainError, Asignatura] = {
+    for {
+      id <- validarComponenteDeFormacion(dto.id)
+      nombre <- validarCampoVacio(dto.nombre, "nombre")
+      creditos <- validarValorEntero(dto.creditos, "creditos")
+      semestre <- validarValorEntero(dto.semestre, "semestre")
+    } yield
+      Asignatura(
+        codigo = original.codigo,
+        inp = original.inp,
+        id = id,
+        nombre = nombre,
+        creditos = creditos,
+        horas = Horas(dto.horasTeoricas, dto.horasLaboratorio),
+        semestre = semestre,
+        requisitos = original.requisitos,
+        fechaDeRegistro = original.fechaDeRegistro,
         fechaDeModificacion = hora
       )
   }

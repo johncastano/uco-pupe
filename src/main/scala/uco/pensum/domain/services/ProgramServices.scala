@@ -10,13 +10,14 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
+import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ProgramServices {
+trait ProgramServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
@@ -48,8 +49,8 @@ trait ProgramServices {
               r.inp.getOrElse(""),
               r.creditos.getOrElse(0),
               programId,
-              Some(ZonedDateTime.now),
-              Some(ZonedDateTime.now)
+              ZonedDateTime.now,
+              ZonedDateTime.now
             )
         )
       )

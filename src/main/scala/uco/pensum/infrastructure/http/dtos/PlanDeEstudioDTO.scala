@@ -6,8 +6,8 @@ case class PlanDeEstudioRespuesta(
     inp: String,
     creditos: Int,
     programId: String,
-    fechaDeRegistro: Option[ZonedDateTime],
-    fechaDeModificacion: Option[ZonedDateTime]
+    fechaDeRegistro: ZonedDateTime,
+    fechaDeModificacion: ZonedDateTime
 )
 
 case class PlanDeEstudioAsignacion(

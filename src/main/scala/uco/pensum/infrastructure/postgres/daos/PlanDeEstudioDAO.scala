@@ -11,6 +11,7 @@ class PlanesDeEstudio(tag: Tag)
   def inp = column[String]("inp", O.PrimaryKey)
   def creditos = column[Int]("creditos")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
+  def fechaDeModificacion = column[String]("fecha_de_modificacion")
   def programaId = column[String]("programa_id")
   def programas = foreignKey("programa_id", programaId, tables.programas)(
     _.id,
@@ -18,7 +19,8 @@ class PlanesDeEstudio(tag: Tag)
     onDelete = ForeignKeyAction.Cascade
   )
   def * =
-    (inp, creditos, fechaDeCreacion, programaId).mapTo[PlanDeEstudioRecord]
+    (inp, creditos, programaId, fechaDeCreacion, fechaDeModificacion)
+      .mapTo[PlanDeEstudioRecord]
 }
 
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
@@ -27,10 +29,10 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
   def encontrarPorINP(inp: String): Future[Option[PlanDeEstudioRecord]] =
     db.run(this.filter(_.inp === inp).result).map(_.headOption)
 
-  def almacenar(faculty: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] =
+  def almacenar(record: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] =
     db.run(
       this returning this
-        .map(_.inp) into ((acc, id) => acc.copy(inp = id)) += faculty
+        .map(_.inp) into ((acc, id) => acc.copy(inp = id)) += record
     )
 
   def eliminarPorINP(inp: String): Future[Int] =

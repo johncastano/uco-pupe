@@ -1,5 +1,7 @@
 package uco.pensum.infrastructure.http.dtos
 
+import java.time.ZonedDateTime
+
 case class ProgramaAsignacion(
     id: String,
     nombre: String,
@@ -12,8 +14,8 @@ case class ProgramaRespuesta(
     nombre: String,
     codigoSnies: String,
     planesDeEstudio: List[PlanDeEstudioRespuesta],
-    fechaDeRegistro: String,
-    fechaDeModificacion: String
+    fechaDeRegistro: ZonedDateTime,
+    fechaDeModificacion: ZonedDateTime
 )
 
 case class ProgramaResponseDTO(

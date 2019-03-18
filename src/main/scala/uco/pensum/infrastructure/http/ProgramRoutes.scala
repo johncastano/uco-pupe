@@ -3,6 +3,7 @@ package uco.pensum.infrastructure.http
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
+import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import uco.pensum.domain.errors.ProgramNotFound
@@ -18,7 +19,7 @@ import uco.pensum.infrastructure.http.dtos.{
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-trait ProgramRoutes extends Directives with ProgramServices {
+trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
@@ -31,7 +32,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
       entity(as[ProgramaAsignacion]) { programa =>
         onComplete(agregarPrograma(programa)) {
           case Failure(ex) => {
-            println(s"Exception: $ex") // TODO: Implement appropiate log
+            logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
@@ -51,7 +52,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
     get {
       onComplete(devolverProgramaConPlanesDeEstudio(id)) {
         case Failure(ex) => {
-          println(s"Exception: $ex") // TODO: Implement appropiate log
+          logger.error(s"Exception: $ex")
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
@@ -65,7 +66,7 @@ trait ProgramRoutes extends Directives with ProgramServices {
     get {
       onComplete(devolverProgramas) {
         case Failure(ex) => {
-          println(s"Exception: $ex")
+          logger.error(s"Exception: $ex")
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
