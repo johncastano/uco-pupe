@@ -19,8 +19,6 @@ class MapperDTOInstances extends MapperSugar {
           id = programa.id,
           nombre = programa.nombre,
           codigoSnies = programa.snies,
-          planesDeEstudio =
-            programa.planesDeEstudio.map(_.to[PlanDeEstudioRespuesta]),
           fechaDeRegistro = programa.fechaDeRegistro,
           fechaDeModificacion = programa.fechaDeModificacion
         )

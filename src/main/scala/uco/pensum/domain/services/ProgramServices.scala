@@ -6,7 +6,6 @@ import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
 
@@ -46,10 +45,6 @@ trait ProgramServices extends LazyLogging {
         "id1",
         "Test program",
         "snies",
-        planesDeEstudio = List(
-          PlanDeEstudio("inpTest1", 140, "porgramId", hora, hora),
-          PlanDeEstudio("inpTest2", 140, "programId", hora, hora)
-        ),
         hora,
         hora
       )
