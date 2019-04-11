@@ -4,7 +4,10 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
+import uco.pensum.infrastructure.http.dtos.{
+  ProgramaActualizacion,
+  ProgramaAsignacion
+}
 import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 case class Programa(
@@ -25,6 +28,22 @@ object Programa {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       snies <- validarCampoVacio(dto.codigoSnies, "codigo SNIES")
     } yield Programa(id, nombre, snies, hora, hora)
+
+  def validate(
+      dto: ProgramaActualizacion,
+      programaOriginal: Programa
+  ): Either[DomainError, Programa] =
+    for {
+      nombre <- validarCampoVacio(dto.nombre, "nombre")
+      snies <- validarCampoVacio(dto.codigoSnies, "codigo SNIES")
+    } yield
+      Programa(
+        programaOriginal.id,
+        nombre,
+        snies,
+        programaOriginal.fechaDeRegistro,
+        hora
+      )
 
   def fromRecord(record: ProgramaRecord): Programa =
     Programa(

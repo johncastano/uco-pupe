@@ -8,6 +8,11 @@ case class ProgramaAsignacion(
     codigoSnies: String
 )
 
+case class ProgramaActualizacion(
+    nombre: String,
+    codigoSnies: String
+)
+
 case class ProgramaRespuesta(
     id: String,
     nombre: String,

@@ -1,8 +1,15 @@
 package uco.pensum.domain.services
 
-import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
+import uco.pensum.domain.errors.{
+  DomainError,
+  ProgramNotFound,
+  ProgramaExistente
+}
 import uco.pensum.domain.programa.Programa
-import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
+import uco.pensum.infrastructure.http.dtos.{
+  ProgramaActualizacion,
+  ProgramaAsignacion
+}
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
@@ -25,6 +32,22 @@ trait ProgramServices extends LazyLogging {
         .map(_ => ProgramaExistente())
         .toRight(())
         .swap
+      _ <- EitherT.right[DomainError](
+        repository.almacenarPrograma(pd)
+      )
+    } yield pd).value
+
+  def actualizarPrograma(
+      id: String,
+      programa: ProgramaActualizacion
+  ): Future[Either[DomainError, Programa]] =
+    (for {
+      original <- EitherT(
+        repository.buscarProgramaPorId(id).map(_.toRight(ProgramNotFound()))
+      )
+      pd <- EitherT.fromEither[Future](
+        Programa.validate(programa, Programa.fromRecord(original))
+      )
       _ <- EitherT.right[DomainError](
         repository.almacenarPrograma(pd)
       )
