@@ -30,48 +30,51 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
   implicit val materializer: Materializer
 
   def agregarAsignatura: Route =
-    path("programa" / Segment / "planEstudio" / Segment) { (programId, inp) =>
-      post {
-        entity(as[AsignaturaAsignacion]) { asignatura =>
-          onComplete(agregarAsignatura(asignatura, programId, inp)) {
-            case Failure(ex) => {
-              logger.error(s"Exception: $ex")
-              complete(InternalServerError -> ErrorInterno())
+    path("programa" / Segment / "planEstudio" / Segment / "asignatura") {
+      (programId, inp) =>
+        post {
+          entity(as[AsignaturaAsignacion]) { asignatura =>
+            onComplete(agregarAsignatura(asignatura, programId, inp)) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  asignatura =>
+                    complete(Created -> asignatura.to[AsignaturaRespuesta])
+                )
             }
-            case Success(response) =>
-              response.fold(
-                err =>
-                  complete(
-                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                  ),
-                asignatura =>
-                  complete(Created -> asignatura.to[AsignaturaRespuesta])
-              )
           }
         }
-      }
     }
 
   def actualizarAsignatura: Route =
-    path("programa" / Segment / "codigo" / Segment) { (programId, codigo) =>
-      put {
-        entity(as[AsignaturaActualizacion]) { asignatura =>
-          onComplete(actualizarAsignatura(asignatura, programId, codigo)) {
-            case Failure(ex) => {
-              logger.error(s"Exception: $ex")
-              complete(InternalServerError -> ErrorInterno())
+    path("programa" / Segment / "codigo" / Segment / "asignatura") {
+      (programId, codigo) =>
+        put {
+          entity(as[AsignaturaActualizacion]) { asignatura =>
+            onComplete(actualizarAsignatura(asignatura, programId, codigo)) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  asignatura =>
+                    complete(OK -> asignatura.to[AsignaturaRespuesta])
+                )
             }
-            case Success(response) =>
-              response.fold(
-                err =>
-                  complete(
-                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                  ),
-                asignatura => complete(OK -> asignatura.to[AsignaturaRespuesta])
-              )
           }
         }
-      }
     }
 
   def agregarRequisito: Route =
@@ -155,17 +158,18 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     }
 
   def asignaturasPorInp: Route =
-    path("programa" / Segment / "planEstudio" / Segment) { (programId, inp) =>
-      get {
-        onComplete(asignaturasPorInp(programId, inp)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
+    path("programa" / Segment / "planEstudio" / Segment / "asignatura") {
+      (programId, inp) =>
+        get {
+          onComplete(asignaturasPorInp(programId, inp)) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              complete(OK -> response.map(_.to[AsignaturaRespuesta]))
           }
-          case Success(response) =>
-            complete(OK -> response.map(_.to[AsignaturaRespuesta]))
         }
-      }
     }
 
   def eliminarAsignatura: Route =
