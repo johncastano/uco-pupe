@@ -1,42 +1,44 @@
 package uco.pensum.domain.services
 
-import uco.pensum.domain.errors.{CurriculumAlreadyExists, DomainError}
+import uco.pensum.domain.errors.{
+  CurriculumAlreadyExists,
+  DomainError,
+  ProgramNotFound
+}
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.domain.hora
+import uco.pensum.domain.repositories.PensumRepository
 
 import scala.concurrent.{ExecutionContext, Future}
 
 trait PlanEstudioServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
+  implicit val repository: PensumRepository
 
   def agregarPlanDeEstudio(
       planDeEstudio: PlanDeEstudioAsignacion,
       programId: String
   ): Future[Either[DomainError, PlanDeEstudio]] =
     (for {
-      //program <- repository.getPorgramaById(programId) //TODO: Validate if programExists
-      // _ <- repository.getPlanDeEstudioByProgramIdAndInp //TODO: Validate if there is a plan de estudio with the same inp
-      cu <- EitherT.fromEither[Future](
+      _ <- EitherT.fromOptionF(
+        repository.buscarProgramaPorId(programId),
+        ProgramNotFound()
+      )
+      _ <- OptionT(repository.buscarPlanDeEstudioPorINP(planDeEstudio.inp))
+        .map(_ => CurriculumAlreadyExists())
+        .toLeft(())
+      pe <- EitherT.fromEither[Future](
         PlanDeEstudio.validar(planDeEstudio, programId)
       )
-      _ <- OptionT(Future.successful(Option.empty[PlanDeEstudio])) //TODO: Add repository validation
-        .map(
-          _ => CurriculumAlreadyExists()
-        )
-        .toRight(())
-        .swap
-      spd <- EitherT {
-        /*repository
-          .saveOrUpdateProgram(pd)
-          .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
-        Future.successful(Either.right[DomainError, PlanDeEstudio](cu))
-      } //TODO: Add repository insert
-    } yield spd).value
+      _ <- EitherT.right[DomainError](
+        repository.almacenarPlanDeEstudios(pe)
+      )
+    } yield pe).value
 
   def planDeEstudioPorId(
       programId: String,

@@ -26,7 +26,7 @@ class PlanesDeEstudio(tag: Tag)
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new PlanesDeEstudio(_)) {
-  def encontrarPorINP(inp: String): Future[Option[PlanDeEstudioRecord]] =
+  def buscarPorINP(inp: String): Future[Option[PlanDeEstudioRecord]] =
     db.run(this.filter(_.inp === inp).result).map(_.headOption)
 
   def almacenar(record: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] =

@@ -4,7 +4,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.ProgramaAsignacion
 import uco.pensum.infrastructure.postgres.ProgramaRecord
 
@@ -12,7 +11,6 @@ case class Programa(
     id: String, //TODO: Ask if SNIES code could be an unique id and if is appropiate to identify program uniqueness
     nombre: String,
     snies: String,
-    planesDeEstudio: List[PlanDeEstudio],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )
@@ -26,15 +24,13 @@ object Programa {
       id <- validarCampoVacio(dto.id, "ID")
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       snies <- validarCampoVacio(dto.codigoSnies, "codigo SNIES")
-      planes <- PlanDeEstudio.validar(dto.planesDeEstudio, id)
-    } yield Programa(id, nombre, snies, planes, hora, hora)
+    } yield Programa(id, nombre, snies, hora, hora)
 
   def fromRecord(record: ProgramaRecord): Programa =
     Programa(
       id = record.id,
       nombre = record.nombre,
       snies = record.codigoSnies,
-      planesDeEstudio = Nil, //TODO: Agregar planes de estudio al record y devolver cuando se busque un programa
       fechaDeRegistro = ZonedDateTime
         .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
       fechaDeModificacion = ZonedDateTime.parse(
