@@ -52,6 +52,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
   def planDeEstudioPorId: Route =
     path("programa" / Segment / "planEstudio" / Segment) { (programId, inp) =>
       get {
+        import uco.pensum.infrastructure.mapper.MapperResponses._
         onComplete(planDeEstudioPorId(programId, inp)) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")

@@ -38,4 +38,10 @@ class PensumRepository(
   ): Future[Option[PlanDeEstudioRecord]] =
     provider.planesDeEstudio.buscarPorINP(inp)
 
+  def buscarPlanDeEstudioPorINPYProgramaId(
+      inp: String,
+      programaId: String
+  ): Future[Option[PlanDeEstudioRecord]] =
+    provider.planesDeEstudio.buscarPorProgramIdAndINP(inp, programaId)
+
 }

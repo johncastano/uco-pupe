@@ -38,7 +38,7 @@ trait ProgramServices extends LazyLogging {
   //TODO: Return ProgramaRespuesta instead PlanDeEstudioRespuesta, need to think how to solve fields of program that come from DB
   def devolverProgramaConPlanesDeEstudio(
       programId: String
-  ) =
+  ): Future[Seq[PlanDeEstudioRespuesta]] =
     repository
       .buscarProgramaConPlanesDeEstudioPorId(programId)
       .map(

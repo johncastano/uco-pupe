@@ -12,6 +12,7 @@ import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
+import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -43,12 +44,9 @@ trait PlanEstudioServices extends LazyLogging {
   def planDeEstudioPorId(
       programId: String,
       inp: String
-  ): Future[Option[PlanDeEstudio]] =
+  ): Future[Option[PlanDeEstudioRecord]] =
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    //repository.getPlanEstudioByProgramIdAndInp(programId, inp)
-    Future.successful(
-      Some(PlanDeEstudio(inp, 140, programId, hora, hora))
-    )
+    repository.buscarPlanDeEstudioPorINPYProgramaId(inp, programId)
 
   def planesDeEstudio(programId: String): Future[List[PlanDeEstudio]] = {
     //repository.getAllPlanEstudiosWhereProgramID == programId
