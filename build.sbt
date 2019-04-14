@@ -28,7 +28,8 @@ lazy val pupe = (project in file(".")).
         slick,
         postgresql,
         logBack,
-        scalaLogging
+        scalaLogging,
+        httpCors
       ),
       scalacOptions ++= Seq(
         "-deprecation",

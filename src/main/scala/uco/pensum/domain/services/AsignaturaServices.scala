@@ -4,12 +4,7 @@ import cats.data.EitherT
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.asignatura.Asignatura.Codigo
-import uco.pensum.domain.asignatura.{
-  Asignatura,
-  CienciaBasicaIngenieria,
-  Horas,
-  IngenieriaAplicada
-}
+import uco.pensum.domain.asignatura._
 import uco.pensum.domain.errors.{CampoVacio, DomainError}
 import uco.pensum.domain.hora
 import uco.pensum.infrastructure.http.dtos.{
@@ -171,12 +166,49 @@ trait AsignaturaServices extends LazyLogging {
     //repository.getAsignaturaPorProgramIdandInp(programId, inp)
     Future.successful(
       List(
+        asignaturaMock.copy(codigo = "ISH0122", semestre = 1),
+        asignaturaMock.copy(codigo = "ISH0101", semestre = 2),
         asignaturaMock.copy(requisitos = List("ISH0122", "ISH101")),
-        asignaturaMock,
         asignaturaMock.copy(
-          codigo = "ISH0122",
+          codigo = "ISH909",
+          nombre = "Programacion lineal",
+          semestre = 4
+        ),
+        asignaturaMock.copy(
+          codigo = "ISH0127",
           id = IngenieriaAplicada,
-          nombre = "Programacion OO"
+          nombre = "Programacion O1",
+          semestre = 6
+        ),
+        asignaturaMock.copy(
+          codigo = "ISH0128",
+          id = FormacionComplementaria,
+          nombre = "Programacion O2",
+          semestre = 7
+        ),
+        asignaturaMock.copy(
+          codigo = "ISH0129",
+          id = Optativa,
+          nombre = "Programacion O3",
+          semestre = 8
+        ),
+        asignaturaMock.copy(
+          codigo = "ISH0130",
+          id = CienciaBasicaIngenieria,
+          nombre = "Programacion OO",
+          semestre = 9
+        ),
+        asignaturaMock.copy(
+          codigo = "ISH0131",
+          id = CienciaBasica,
+          nombre = "Programacion OO",
+          semestre = 10
+        ),
+        asignaturaMock.copy(
+          codigo = "ISH0132",
+          id = IngenieriaAplicada,
+          nombre = "Programacion OO",
+          semestre = 5
         )
       )
     )

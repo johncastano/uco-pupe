@@ -5,15 +5,13 @@ import java.time.ZonedDateTime
 case class ProgramaAsignacion(
     id: String,
     nombre: String,
-    codigoSnies: String,
-    planesDeEstudio: List[PlanDeEstudioAsignacion]
+    codigoSnies: String
 )
 
 case class ProgramaRespuesta(
     id: String,
     nombre: String,
     codigoSnies: String,
-    planesDeEstudio: List[PlanDeEstudioRespuesta],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )
