@@ -176,37 +176,37 @@ trait AsignaturaServices extends LazyLogging {
         ),
         asignaturaMock.copy(
           codigo = "ISH0127",
-          id = IngenieriaAplicada,
+          componenteDeFormacion = IngenieriaAplicada,
           nombre = "Programacion O1",
           semestre = 6
         ),
         asignaturaMock.copy(
           codigo = "ISH0128",
-          id = FormacionComplementaria,
+          componenteDeFormacion = FormacionComplementaria,
           nombre = "Programacion O2",
           semestre = 7
         ),
         asignaturaMock.copy(
           codigo = "ISH0129",
-          id = Optativa,
+          componenteDeFormacion = Optativa,
           nombre = "Programacion O3",
           semestre = 8
         ),
         asignaturaMock.copy(
           codigo = "ISH0130",
-          id = CienciaBasicaIngenieria,
+          componenteDeFormacion = CienciaBasicaIngenieria,
           nombre = "Programacion OO",
           semestre = 9
         ),
         asignaturaMock.copy(
           codigo = "ISH0131",
-          id = CienciaBasica,
+          componenteDeFormacion = CienciaBasica,
           nombre = "Programacion OO",
           semestre = 10
         ),
         asignaturaMock.copy(
           codigo = "ISH0132",
-          id = IngenieriaAplicada,
+          componenteDeFormacion = IngenieriaAplicada,
           nombre = "Programacion OO",
           semestre = 5
         )
