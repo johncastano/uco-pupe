@@ -7,6 +7,7 @@ import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaRespuesta,
+  ComponenteDeFormacionRespuesta,
   PlanDeEstudioRespuesta,
   ProgramaRespuesta
 }
@@ -59,7 +60,10 @@ class MapperDTOInstances extends MapperSugar {
         AsignaturaRespuesta(
           codigo = asignatura.codigo,
           inp = asignatura.inp,
-          id = asignatura.id.toString,
+          componenteDeFormacion = ComponenteDeFormacionRespuesta(
+            codigo = asignatura.componenteDeFormacion.codigo,
+            nombre = asignatura.componenteDeFormacion.toString
+          ),
           nombre = asignatura.nombre,
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horas.teoricas,
