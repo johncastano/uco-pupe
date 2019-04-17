@@ -29,6 +29,17 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
   def buscarPorINP(inp: String): Future[Option[PlanDeEstudioRecord]] =
     db.run(this.filter(_.inp === inp).result).map(_.headOption)
 
+  def buscarPlanesDeEstudioPorProgramaId(
+      programaId: String
+  ): Future[Seq[PlanDeEstudioRecord]] =
+    db.run(
+      this
+        .filter(
+          _.programaId === programaId
+        )
+        .result
+    )
+
   def buscarPorProgramIdAndINP(
       inp: String,
       programId: String

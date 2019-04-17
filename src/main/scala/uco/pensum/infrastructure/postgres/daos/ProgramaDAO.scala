@@ -25,6 +25,13 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Programas(_)) {
 
+  def obtenerTodosLosProgramas: Future[Seq[ProgramaRecord]] =
+    db.run(
+      (for {
+        p <- tables.programas
+      } yield p.mapTo[ProgramaRecord]).result
+    )
+
   def buscarPorId(id: String): Future[Option[ProgramaRecord]] =
     db.run(this.filter(_.id === id).result).map(_.headOption)
 

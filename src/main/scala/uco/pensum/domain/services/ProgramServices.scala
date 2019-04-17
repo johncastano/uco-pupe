@@ -13,6 +13,7 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
+import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -26,12 +27,13 @@ trait ProgramServices extends LazyLogging {
   ): Future[Either[DomainError, Programa]] =
     (for {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
-      _ <- OptionT(repository.buscarProgramaPorId(programa.id))
-        .map(_ => ProgramaExistente())
+      _ <- OptionT(
+        repository.programaRepository.buscarProgramaPorId(programa.id)
+      ).map(_ => ProgramaExistente())
         .toRight(())
         .swap
       _ <- EitherT.right[DomainError](
-        repository.almacenarPrograma(pd)
+        repository.programaRepository.almacenarPrograma(pd)
       )
     } yield pd).value
 
@@ -39,7 +41,7 @@ trait ProgramServices extends LazyLogging {
   def devolverProgramaConPlanesDeEstudio(
       programId: String
   ): Future[Seq[PlanDeEstudioRespuesta]] =
-    repository
+    repository.programaRepository
       .buscarProgramaConPlanesDeEstudioPorId(programId)
       .map(
         _.map(
@@ -54,19 +56,7 @@ trait ProgramServices extends LazyLogging {
         )
       )
 
-  def devolverProgramas: Future[List[Programa]] = {
-    //repository.getAllPrograms
-    val program =
-      Programa(
-        "id1",
-        "Test program",
-        "snies",
-        hora,
-        hora
-      )
-    Future.successful(
-      List(program, program.copy(id = "id2"), program.copy(id = "id2"))
-    )
-  }
+  def devolverProgramas: Future[Seq[ProgramaRecord]] =
+    repository.programaRepository.obtenerTodosLosProgramas
 
 }

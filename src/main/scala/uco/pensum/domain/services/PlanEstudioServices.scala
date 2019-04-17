@@ -10,7 +10,6 @@ import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
-import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
@@ -27,17 +26,19 @@ trait PlanEstudioServices extends LazyLogging {
   ): Future[Either[DomainError, PlanDeEstudio]] =
     (for {
       _ <- EitherT.fromOptionF(
-        repository.buscarProgramaPorId(programId),
+        repository.programaRepository.buscarProgramaPorId(programId),
         ProgramNotFound()
       )
-      _ <- OptionT(repository.buscarPlanDeEstudioPorINP(planDeEstudio.inp))
-        .map(_ => CurriculumAlreadyExists())
+      _ <- OptionT(
+        repository.planDeEstudioRepository
+          .buscarPlanDeEstudioPorINP(planDeEstudio.inp)
+      ).map(_ => CurriculumAlreadyExists())
         .toLeft(())
       pe <- EitherT.fromEither[Future](
         PlanDeEstudio.validar(planDeEstudio, programId)
       )
       _ <- EitherT.right[DomainError](
-        repository.almacenarPlanDeEstudios(pe)
+        repository.planDeEstudioRepository.almacenarPlanDeEstudios(pe)
       )
     } yield pe).value
 
@@ -46,20 +47,12 @@ trait PlanEstudioServices extends LazyLogging {
       inp: String
   ): Future[Option[PlanDeEstudioRecord]] =
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    repository.buscarPlanDeEstudioPorINPYProgramaId(inp, programId)
+    repository.planDeEstudioRepository
+      .buscarPlanDeEstudioPorINPYProgramaId(inp, programId)
 
-  def planesDeEstudio(programId: String): Future[List[PlanDeEstudio]] = {
-    //repository.getAllPlanEstudiosWhereProgramID == programId
-    val curriculum =
-      PlanDeEstudio("inpTest1", 140, programId, hora, hora)
-
-    Future.successful(
-      List(
-        curriculum,
-        curriculum.copy(inp = "id2"),
-        curriculum.copy(inp = "id2")
-      )
-    )
+  def planesDeEstudio(programId: String): Future[Seq[PlanDeEstudioRecord]] = {
+    repository.planDeEstudioRepository
+      .obtenerTodosLosPlanesDeEstudioPorPrograma(programId)
   }
 
 }
