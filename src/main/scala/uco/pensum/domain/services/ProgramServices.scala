@@ -11,7 +11,6 @@ import uco.pensum.infrastructure.http.dtos.{
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import uco.pensum.domain.hora
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.postgres.ProgramaRecord
 

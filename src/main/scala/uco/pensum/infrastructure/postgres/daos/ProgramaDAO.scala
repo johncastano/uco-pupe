@@ -27,9 +27,7 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
 
   def obtenerTodosLosProgramas: Future[Seq[ProgramaRecord]] =
     db.run(
-      (for {
-        p <- tables.programas
-      } yield p.mapTo[ProgramaRecord]).result
+      this.result
     )
 
   def buscarPorId(id: String): Future[Option[ProgramaRecord]] =
