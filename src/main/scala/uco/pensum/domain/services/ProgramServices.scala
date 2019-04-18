@@ -1,5 +1,7 @@
 package uco.pensum.domain.services
 
+import java.time.ZonedDateTime
+
 import uco.pensum.domain.errors.{
   DomainError,
   ProgramNotFound,
@@ -7,6 +9,7 @@ import uco.pensum.domain.errors.{
 }
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.http.dtos.{
+  PlanDeEstudioRespuesta,
   ProgramaActualizacion,
   ProgramaAsignacion
 }
@@ -53,13 +56,24 @@ trait ProgramServices extends LazyLogging {
       )
     } yield pd).value
 
-  def devolverPrograma(
+  //TODO: Return ProgramaRespuesta instead PlanDeEstudioRespuesta, need to think how to solve fields of program that come from DB
+  def devolverProgramaConPlanesDeEstudio(
       programId: String
-  ): Future[Option[Programa]] =
-    //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    OptionT(repository.buscarProgramaPorId(programId))
-      .map(Programa.fromRecord)
-      .value
+  ) =
+    repository
+      .buscarProgramaConPlanesDeEstudioPorId(programId)
+      .map(
+        _.map(
+          r =>
+            PlanDeEstudioRespuesta(
+              r.inp.getOrElse(""),
+              r.creditos.getOrElse(0),
+              programId,
+              ZonedDateTime.now,
+              ZonedDateTime.now
+            )
+        )
+      )
 
   def devolverProgramas: Future[List[Programa]] = {
     //repository.getAllPrograms

@@ -1,16 +1,20 @@
 package uco.pensum.infrastructure.http.dtos.mapper
 
+import java.time.ZonedDateTime
+
 import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaRespuesta,
+  ComponenteDeFormacionRespuesta,
   PlanDeEstudioRespuesta,
   ProgramaRespuesta,
   UsuarioRespuesta
 }
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
+import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 class MapperDTOInstances extends MapperSugar {
 
@@ -45,7 +49,10 @@ class MapperDTOInstances extends MapperSugar {
         AsignaturaRespuesta(
           codigo = asignatura.codigo,
           inp = asignatura.inp,
-          id = asignatura.id.toString,
+          componenteDeFormacion = ComponenteDeFormacionRespuesta(
+            codigo = asignatura.componenteDeFormacion.codigo,
+            nombre = asignatura.componenteDeFormacion.toString
+          ),
           nombre = asignatura.nombre,
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horas.teoricas,
@@ -72,6 +79,19 @@ class MapperDTOInstances extends MapperSugar {
           celular = usuario.celular,
           fechaRegistro = usuario.fechaRegistro,
           fechaModificacion = usuario.fechaModificacion
+        )
+    }
+
+  implicit def ProgramaRecordToProgramaRespuesta
+    : Mapper[ProgramaRecord, ProgramaRespuesta] =
+    new Mapper[ProgramaRecord, ProgramaRespuesta] {
+      override def to(record: ProgramaRecord): ProgramaRespuesta =
+        ProgramaRespuesta(
+          record.id,
+          record.nombre,
+          record.codigoSnies,
+          ZonedDateTime.parse(record.fechaDeCreacion),
+          ZonedDateTime.parse(record.fechaDeModificacion)
         )
     }
 

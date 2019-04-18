@@ -30,9 +30,9 @@ class MapperRecordsInstances extends MapperSugar {
         PlanDeEstudioRecord(
           planDeEstudio.inp,
           planDeEstudio.creditos,
+          planDeEstudio.programId,
           DateTimeFormatter.ISO_ZONED_DATE_TIME
             .format(planDeEstudio.fechaDeRegistro),
-          planDeEstudio.programId,
           DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
             planDeEstudio.fechaDeModificacion
           )

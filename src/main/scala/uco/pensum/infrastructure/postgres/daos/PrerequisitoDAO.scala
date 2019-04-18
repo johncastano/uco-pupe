@@ -21,7 +21,7 @@ class Prerequisitos(tag: Tag)
       onDelete = ForeignKeyAction.Cascade
     )
   def * =
-    (id, codigoAsignatura) <> (PrerequisitoRecord.tupled, PrerequisitoRecord.unapply)
+    (id, codigoAsignatura).mapTo[PrerequisitoRecord]
 }
 
 abstract class PrerequisitosDAO(db: PostgresProfile.backend.Database)(

@@ -15,8 +15,8 @@ final case class ProgramaRecord(
 final case class PlanDeEstudioRecord(
     inp: String,
     creditos: Int,
-    fechaDeCreacion: String,
     programaId: String,
+    fechaDeCreacion: String,
     fechaDeModificacion: String
 ) extends Record
 
@@ -39,5 +39,13 @@ final case class AsignaturaRecord(
 
 final case class PrerequisitoRecord(id: Int, codigoAsignatura: String)
     extends Record
+
+final case class ProgramaConPlanesDeEstudioRecord(
+    programaId: String,
+    programaNombre: String,
+    programaCodigoSnies: String,
+    inp: Option[String],
+    creditos: Option[Int]
+)
 
 // $COVERAGE-ON$
