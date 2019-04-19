@@ -47,13 +47,15 @@ trait ProgramServices extends LazyLogging {
   ): Future[Either[DomainError, Programa]] =
     (for {
       original <- EitherT(
-        repository.buscarProgramaPorId(id).map(_.toRight(ProgramNotFound()))
+        repository.programaRepository
+          .buscarProgramaPorId(id)
+          .map(_.toRight(ProgramNotFound()))
       )
       pd <- EitherT.fromEither[Future](
         Programa.validate(programa, Programa.fromRecord(original))
       )
       _ <- EitherT.right[DomainError](
-        repository.almacenarPrograma(pd)
+        repository.programaRepository.almacenarPrograma(pd)
       )
     } yield pd).value
 
