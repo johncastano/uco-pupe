@@ -5,11 +5,13 @@ import java.time.ZonedDateTime
 import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
+import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaRespuesta,
   ComponenteDeFormacionRespuesta,
   PlanDeEstudioRespuesta,
-  ProgramaRespuesta
+  ProgramaRespuesta,
+  UsuarioRespuesta
 }
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, ProgramaRecord}
@@ -72,6 +74,24 @@ class MapperDTOInstances extends MapperSugar {
           requisitos = asignatura.requisitos,
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
+        )
+    }
+
+  implicit def UsuarioToRespuesta: Mapper[Usuario, UsuarioRespuesta] =
+    new Mapper[Usuario, UsuarioRespuesta] {
+      override def to(usuario: Usuario): UsuarioRespuesta =
+        UsuarioRespuesta(
+          nombre = usuario.nombre,
+          primerApellido = usuario.primerApellido,
+          segundoApellido = usuario.segundoApellido,
+          fechaNacimiento = usuario.fechaNacimiento,
+          correo = usuario.correo,
+          password = usuario.password,
+          usuario = usuario.usuario,
+          direccion = usuario.direccion,
+          celular = usuario.celular,
+          fechaRegistro = usuario.fechaRegistro,
+          fechaModificacion = usuario.fechaModificacion
         )
     }
 

@@ -26,6 +26,15 @@ package object domain {
     else
       Right(valor)
 
+  def validarCampoVacioOpcional(
+      valor: Option[String],
+      campo: String
+  ): Either[DomainError, Option[String]] =
+    if (valor.exists(_.isEmpty))
+      Left(CampoVacio(campo))
+    else
+      Right(valor)
+
   def validarValorEntero(
       valor: Int,
       campo: String

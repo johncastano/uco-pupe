@@ -11,6 +11,5 @@ case class PlanDeEstudioRespuesta(
 )
 
 case class PlanDeEstudioAsignacion(
-    inp: String,
-    creditos: Int
+    inp: String
 )

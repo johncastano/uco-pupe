@@ -2,10 +2,15 @@ package uco.pensum.domain.services
 
 import java.time.ZonedDateTime
 
-import uco.pensum.domain.errors.{DomainError, ProgramaExistente}
+import uco.pensum.domain.errors.{
+  DomainError,
+  ProgramNotFound,
+  ProgramaExistente
+}
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.http.dtos.{
   PlanDeEstudioRespuesta,
+  ProgramaActualizacion,
   ProgramaAsignacion
 }
 import cats.data.{EitherT, OptionT}
@@ -33,6 +38,22 @@ trait ProgramServices extends LazyLogging {
         .swap
       _ <- EitherT.right[DomainError](
         repository.programaRepository.almacenarPrograma(pd)
+      )
+    } yield pd).value
+
+  def actualizarPrograma(
+      id: String,
+      programa: ProgramaActualizacion
+  ): Future[Either[DomainError, Programa]] =
+    (for {
+      original <- EitherT(
+        repository.buscarProgramaPorId(id).map(_.toRight(ProgramNotFound()))
+      )
+      pd <- EitherT.fromEither[Future](
+        Programa.validate(programa, Programa.fromRecord(original))
+      )
+      _ <- EitherT.right[DomainError](
+        repository.almacenarPrograma(pd)
       )
     } yield pd).value
 

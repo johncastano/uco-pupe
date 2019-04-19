@@ -1,5 +1,7 @@
 package uco.pensum.domain.services
 
+import java.time.format.DateTimeFormatter
+
 import cats.data.EitherT
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
@@ -7,11 +9,13 @@ import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.asignatura._
 import uco.pensum.domain.errors.{CampoVacio, DomainError}
 import uco.pensum.domain.hora
+import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion,
   RequisitosActualizacion
 }
+import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -26,11 +30,22 @@ trait AsignaturaServices extends LazyLogging {
   ): Future[Either[DomainError, Asignatura]] =
     (for {
       //program <- repository.getPorgramaById(programId) //TODO: Validate if programExists
-      // _ <- repository.getPlanDeEstudioByProgramIdAndInp(programId, inp) //TODO: Validate if there is a plan de estudio with the same inp
+      // planDeEstudio <- repository.getPlanDeEstudioByProgramIdAndInp(programId, inp) //TODO: Validate if there is a plan de estudio with the same inp
       // _ <- repository.getAsignaturaByCodigoAndInpAndProgramId //TODO: validate if the entity with given ids exist
       cu <- EitherT.fromEither[Future](
         Asignatura.validar(asignatura, inp)
       )
+      mockPlanEstudio = PlanDeEstudioRecord(
+        inp = inp,
+        creditos = 0,
+        programaId = programId,
+        fechaDeCreacion = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(hora),
+        fechaDeModificacion = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(hora)
+      )
+      sumarCreditos <- EitherT.fromEither[Future](
+        PlanDeEstudio.sumarCreditos(mockPlanEstudio, cu).asRight[DomainError]
+      )
+      //_ <- repository.updatePlanDeEstudio(sumarCreditos)
       _ = println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
       spd <- EitherT {
         /*repository

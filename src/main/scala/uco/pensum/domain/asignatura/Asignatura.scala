@@ -76,7 +76,7 @@ object Asignatura {
   ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
-      id <- validarComponenteDeFormacion(dto.componenteDeFormacion)
+      cf <- validarComponenteDeFormacion(dto.componenteDeFormacion)
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
       semestre <- validarValorEntero(dto.semestre, "semestre")
@@ -84,7 +84,7 @@ object Asignatura {
       Asignatura(
         codigo = codigo,
         inp = inp,
-        componenteDeFormacion = id,
+        componenteDeFormacion = cf,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(dto.horasTeoricas, dto.horasLaboratorio),
@@ -100,7 +100,7 @@ object Asignatura {
       original: Asignatura
   ): Either[DomainError, Asignatura] = {
     for {
-      id <- validarComponenteDeFormacion(dto.componenteDeFormacion)
+      cf <- validarComponenteDeFormacion(dto.componenteDeFormacion)
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
       semestre <- validarValorEntero(dto.semestre, "semestre")
@@ -108,7 +108,7 @@ object Asignatura {
       Asignatura(
         codigo = original.codigo,
         inp = original.inp,
-        componenteDeFormacion = id,
+        componenteDeFormacion = cf,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(dto.horasTeoricas, dto.horasLaboratorio),
