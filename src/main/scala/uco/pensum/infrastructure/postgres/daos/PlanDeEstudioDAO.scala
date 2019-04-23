@@ -8,7 +8,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PlanesDeEstudio(tag: Tag)
     extends Table[PlanDeEstudioRecord](tag, "plan_de_estudios") {
-  def inp = column[String]("inp", O.PrimaryKey)
+  def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
+  def inp = column[String]("inp")
   def creditos = column[Int]("creditos")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
@@ -19,7 +20,7 @@ class PlanesDeEstudio(tag: Tag)
     onDelete = ForeignKeyAction.Cascade
   )
   def * =
-    (inp, creditos, programaId, fechaDeCreacion, fechaDeModificacion)
+    (inp, creditos, programaId, fechaDeCreacion, fechaDeModificacion, id)
       .mapTo[PlanDeEstudioRecord]
 }
 
@@ -56,7 +57,7 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
   def almacenar(record: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] =
     db.run(
       this returning this
-        .map(_.inp) into ((acc, id) => acc.copy(inp = id)) += record
+        .map(_.id) into ((acc, id) => acc.copy(id = id)) += record
     )
 
   def eliminarPorINP(inp: String): Future[Int] =

@@ -17,12 +17,13 @@ final case class PlanDeEstudioRecord(
     creditos: Int,
     programaId: String,
     fechaDeCreacion: String,
-    fechaDeModificacion: String
+    fechaDeModificacion: String,
+    id: Int = 0
 ) extends Record
 
 final case class PlanDeEstudioAsignaturaRecord(
     id: Int,
-    planDeEstudioINP: String,
+    planDeEstudioID: Int,
     codigoAsignatura: String
 ) extends Record
 

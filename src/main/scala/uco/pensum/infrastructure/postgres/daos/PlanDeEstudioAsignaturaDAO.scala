@@ -15,11 +15,11 @@ class PlanDeEstudioAsignaturas(tag: Tag)
       "plan_de_estudio_asignatura"
     ) {
   def id = column[Int]("id")
-  def planDeEstudioINP = column[String]("plan_de_estudio_inp")
+  def planDeEstudioID = column[Int]("plan_de_estudio_id")
   def codigoAsignatura = column[String]("codigo_asignatura")
   def planesDeEstudio =
-    foreignKey("plan_de_estudio_inp", planDeEstudioINP, tables.planesDeEstudio)(
-      _.inp,
+    foreignKey("plan_de_estudio_id", planDeEstudioID, tables.planesDeEstudio)(
+      _.id,
       onUpdate = ForeignKeyAction.Restrict,
       onDelete = ForeignKeyAction.Cascade
     )
@@ -30,7 +30,7 @@ class PlanDeEstudioAsignaturas(tag: Tag)
       onDelete = ForeignKeyAction.Cascade
     )
   def * =
-    (id, planDeEstudioINP, codigoAsignatura)
+    (id, planDeEstudioID, codigoAsignatura)
       .mapTo[PlanDeEstudioAsignaturaRecord]
 }
 

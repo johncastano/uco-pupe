@@ -31,7 +31,7 @@ trait PlanEstudioServices extends LazyLogging {
       )
       _ <- OptionT(
         repository.planDeEstudioRepository
-          .buscarPlanDeEstudioPorINP(planDeEstudio.inp)
+          .buscarPlanDeEstudioPorINPYProgramaId(planDeEstudio.inp, programId)
       ).map(_ => CurriculumAlreadyExists())
         .toLeft(())
       pe <- EitherT.fromEither[Future](
