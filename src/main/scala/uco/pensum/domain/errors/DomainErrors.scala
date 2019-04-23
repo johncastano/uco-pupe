@@ -18,7 +18,8 @@ final case class ProgramaExistente(
 
 final case class CurriculumAlreadyExists(
     codigo: Int = 100003,
-    mensaje: String = "El plan de estudio ya existe"
+    mensaje: String =
+      "El plan de estudio ya existe para el programa especificado"
 ) extends DomainError
 
 final case class ErrorDePersistencia(
