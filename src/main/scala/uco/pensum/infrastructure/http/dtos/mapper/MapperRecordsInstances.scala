@@ -2,10 +2,11 @@ package uco.pensum.infrastructure.http.dtos.mapper
 
 import java.time.format.DateTimeFormatter
 
+import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
-import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, ProgramaRecord}
+import uco.pensum.infrastructure.postgres.{AsignaturaRecord, PlanDeEstudioRecord, ProgramaRecord}
 
 class MapperRecordsInstances extends MapperSugar {
 
@@ -39,4 +40,19 @@ class MapperRecordsInstances extends MapperSugar {
         )
     }
 
+  implicit def AsignaturaToAsignaturaRecord
+  : Mapper[Asignatura, AsignaturaRecord] =
+    new Mapper[Asignatura, AsignaturaRecord] {
+      override def to(asignatura: Asignatura): AsignaturaRecord=
+        AsignaturaRecord(
+          asignatura.codigo,
+          asignatura.componenteDeFormacion.toString,
+          asignatura.nombre,
+          asignatura.creditos,
+          asignatura.horas.teoricas,
+          asignatura.horas.laboratorio,
+          asignatura.semestre,
+          "" //TODO : Address of Google docs
+        )
+    }
 }

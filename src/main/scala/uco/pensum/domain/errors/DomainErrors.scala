@@ -42,6 +42,11 @@ final case class CurriculumNotFound(
     mensaje: String = "El programa especificado no existe"
 ) extends DomainError
 
+final case class AsignaturaExistente(
+                                    codigo: Int = 100004,
+                                    mensaje: String = "La asignatura ya existe"
+                                    ) extends DomainError
+
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError
 
 final case class ComponenteDeFormacionDesconocido(

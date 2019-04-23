@@ -30,9 +30,7 @@ trait ProgramServices extends LazyLogging {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
       _ <- OptionT(
         repository.programaRepository.buscarProgramaPorId(programa.id)
-      ).map(_ => ProgramaExistente())
-        .toRight(())
-        .swap
+      ).map(_ => ProgramaExistente()).toLeft(())
       _ <- EitherT.right[DomainError](
         repository.programaRepository.almacenarPrograma(pd)
       )

@@ -2,19 +2,16 @@ package uco.pensum.domain.services
 
 import java.time.format.DateTimeFormatter
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.asignatura._
-import uco.pensum.domain.errors.{CampoVacio, DomainError}
+import uco.pensum.domain.errors._
 import uco.pensum.domain.hora
 import uco.pensum.domain.planestudio.PlanDeEstudio
-import uco.pensum.infrastructure.http.dtos.{
-  AsignaturaActualizacion,
-  AsignaturaAsignacion,
-  RequisitosActualizacion
-}
+import uco.pensum.domain.repositories.PensumRepository
+import uco.pensum.infrastructure.http.dtos.{AsignaturaActualizacion, AsignaturaAsignacion, RequisitosActualizacion}
 import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,6 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
 trait AsignaturaServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
+  implicit val repository: PensumRepository
 
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
@@ -29,9 +27,9 @@ trait AsignaturaServices extends LazyLogging {
       inp: String
   ): Future[Either[DomainError, Asignatura]] =
     (for {
-      //program <- repository.getPorgramaById(programId) //TODO: Validate if programExists
-      // planDeEstudio <- repository.getPlanDeEstudioByProgramIdAndInp(programId, inp) //TODO: Validate if there is a plan de estudio with the same inp
-      // _ <- repository.getAsignaturaByCodigoAndInpAndProgramId //TODO: validate if the entity with given ids exist
+      program <- EitherT.fromOptionF(repository.programaRepository.buscarProgramaPorId(programId),ProgramNotFound())
+      pe <- EitherT.fromOptionF(repository.planDeEstudioRepository.buscarPlanDeEstudioPorINP(inp),CurriculumNotFound())
+      _ <- OptionT(repository.asignaturaRepository.buscarAsignaturaPorCodigo(asignatura.codigo)).map(_ => AsignaturaExistente()).toLeft(())
       cu <- EitherT.fromEither[Future](
         Asignatura.validar(asignatura, inp)
       )
