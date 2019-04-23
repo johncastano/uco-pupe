@@ -11,7 +11,7 @@ import uco.pensum.infrastructure.http.dtos.{
 import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 case class Programa(
-    id: String, //TODO: Ask if SNIES code could be an unique id and if is appropiate to identify program uniqueness
+    id: String,
     nombre: String,
     snies: String,
     fechaDeRegistro: ZonedDateTime,
@@ -27,7 +27,8 @@ object Programa {
       id <- validarCampoVacio(dto.id, "ID")
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       snies <- validarCampoVacio(dto.codigoSnies, "codigo SNIES")
-    } yield Programa(id, nombre, snies, hora, hora)
+      fechaHoy = hora
+    } yield Programa(id, nombre, snies, fechaHoy, fechaHoy)
 
   def validate(
       dto: ProgramaActualizacion,

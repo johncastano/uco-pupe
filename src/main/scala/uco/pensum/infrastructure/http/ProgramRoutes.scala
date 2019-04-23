@@ -6,7 +6,6 @@ import akka.stream.Materializer
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
-import uco.pensum.domain.errors.ProgramNotFound
 import io.circe.java8.time._
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.repositories.PensumRepository
@@ -72,14 +71,19 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def porgramaPorId: Route = path("programa" / Segment) { id =>
     get {
-      onComplete(devolverProgramaConPlanesDeEstudio(id)) {
+      onComplete(devolverProgramaPorId(id)) {
         case Failure(ex) => {
           logger.error(s"Exception: $ex")
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
-          if (response.isEmpty) complete(NotFound -> ProgramNotFound())
-          else complete(OK -> response)
+          response.fold(
+            err =>
+              complete(
+                NotFound -> ErrorGenerico(err.codigo, err.mensaje)
+              ),
+            pr => complete(OK -> pr.to[ProgramaRespuesta])
+          )
       }
     }
   }

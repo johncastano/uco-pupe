@@ -1,6 +1,7 @@
 package uco.pensum.infrastructure.http.dtos.mapper
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -103,8 +104,14 @@ class MapperDTOInstances extends MapperSugar {
           record.id,
           record.nombre,
           record.codigoSnies,
-          ZonedDateTime.parse(record.fechaDeCreacion),
-          ZonedDateTime.parse(record.fechaDeModificacion)
+          ZonedDateTime.parse(
+            record.fechaDeCreacion,
+            DateTimeFormatter.ISO_ZONED_DATE_TIME
+          ),
+          ZonedDateTime.parse(
+            record.fechaDeModificacion,
+            DateTimeFormatter.ISO_ZONED_DATE_TIME
+          )
         )
     }
 

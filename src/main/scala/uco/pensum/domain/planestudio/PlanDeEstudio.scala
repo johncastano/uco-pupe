@@ -27,7 +27,8 @@ object PlanDeEstudio {
     for {
       inp <- validarCampoVacio(dto.inp, "inp")
       programId <- validarCampoVacio(programId, "programId")
-    } yield PlanDeEstudio(inp, 0, programId, hora, hora)
+      fechaHoy = hora
+    } yield PlanDeEstudio(inp, 0, programId, fechaHoy, fechaHoy)
 
   def validar(
       dtos: List[PlanDeEstudioAsignacion],

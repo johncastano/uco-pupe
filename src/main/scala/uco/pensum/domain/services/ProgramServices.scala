@@ -1,7 +1,5 @@
 package uco.pensum.domain.services
 
-import java.time.ZonedDateTime
-
 import uco.pensum.domain.errors.{
   DomainError,
   ProgramNotFound,
@@ -9,7 +7,6 @@ import uco.pensum.domain.errors.{
 }
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.http.dtos.{
-  PlanDeEstudioRespuesta,
   ProgramaActualizacion,
   ProgramaAsignacion
 }
@@ -59,24 +56,14 @@ trait ProgramServices extends LazyLogging {
       )
     } yield pd).value
 
-  //TODO: Return ProgramaRespuesta instead PlanDeEstudioRespuesta, need to think how to solve fields of program that come from DB
-  def devolverProgramaConPlanesDeEstudio(
+  def devolverProgramaPorId(
       programId: String
-  ): Future[Seq[PlanDeEstudioRespuesta]] =
-    repository.programaRepository
-      .buscarProgramaConPlanesDeEstudioPorId(programId)
-      .map(
-        _.map(
-          r =>
-            PlanDeEstudioRespuesta(
-              r.inp.getOrElse(""),
-              r.creditos.getOrElse(0),
-              programId,
-              ZonedDateTime.now,
-              ZonedDateTime.now
-            )
-        )
-      )
+  ): Future[Either[DomainError, ProgramaRecord]] =
+    EitherT(
+      repository.programaRepository
+        .buscarProgramaPorId(programId)
+        .map(_.toRight(ProgramNotFound()))
+    ).value
 
   def devolverProgramas: Future[Seq[ProgramaRecord]] =
     repository.programaRepository.obtenerTodosLosProgramas
