@@ -18,7 +18,7 @@ final case class PlanDeEstudioRecord(
     programaId: String,
     fechaDeCreacion: String,
     fechaDeModificacion: String,
-    id: Int = 0
+    id: Int
 ) extends Record
 
 final case class PlanDeEstudioAsignaturaRecord(

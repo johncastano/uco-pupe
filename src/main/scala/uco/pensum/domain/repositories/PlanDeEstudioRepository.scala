@@ -11,7 +11,7 @@ class PlanDeEstudioRepository(
 ) {
   import uco.pensum.infrastructure.mapper.MapperRecords._
 
-  def almacenarPlanDeEstudios(
+  def almacenarOActualizarPlanDeEstudios(
       planDeEstudio: PlanDeEstudio
   ): Future[PlanDeEstudioRecord] =
     provider.planesDeEstudio.almacenar(planDeEstudio.to[PlanDeEstudioRecord])

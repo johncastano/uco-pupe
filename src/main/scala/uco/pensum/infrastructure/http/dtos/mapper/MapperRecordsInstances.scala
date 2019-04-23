@@ -6,7 +6,11 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
-import uco.pensum.infrastructure.postgres.{AsignaturaRecord, PlanDeEstudioRecord, ProgramaRecord}
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaRecord,
+  PlanDeEstudioRecord,
+  ProgramaRecord
+}
 
 class MapperRecordsInstances extends MapperSugar {
 
@@ -36,14 +40,15 @@ class MapperRecordsInstances extends MapperSugar {
             .format(planDeEstudio.fechaDeRegistro),
           DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
             planDeEstudio.fechaDeModificacion
-          )
+          ),
+          planDeEstudio.id.getOrElse(0)
         )
     }
 
   implicit def AsignaturaToAsignaturaRecord
-  : Mapper[Asignatura, AsignaturaRecord] =
+    : Mapper[Asignatura, AsignaturaRecord] =
     new Mapper[Asignatura, AsignaturaRecord] {
-      override def to(asignatura: Asignatura): AsignaturaRecord=
+      override def to(asignatura: Asignatura): AsignaturaRecord =
         AsignaturaRecord(
           asignatura.codigo,
           asignatura.componenteDeFormacion.toString,

@@ -40,13 +40,13 @@ final case class ProgramNotFound(
 
 final case class CurriculumNotFound(
     codigo: Int = 100003,
-    mensaje: String = "El programa especificado no existe"
+    mensaje: String = "El INP especificado no existe para el programa dado"
 ) extends DomainError
 
 final case class AsignaturaExistente(
-                                    codigo: Int = 100004,
-                                    mensaje: String = "La asignatura ya existe"
-                                    ) extends DomainError
+    codigo: Int = 100004,
+    mensaje: String = "La asignatura ya existe"
+) extends DomainError
 
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError
 

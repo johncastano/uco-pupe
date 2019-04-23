@@ -38,7 +38,8 @@ trait PlanEstudioServices extends LazyLogging {
         PlanDeEstudio.validar(planDeEstudio, programId)
       )
       _ <- EitherT.right[DomainError](
-        repository.planDeEstudioRepository.almacenarPlanDeEstudios(pe)
+        repository.planDeEstudioRepository
+          .almacenarOActualizarPlanDeEstudios(pe)
       )
     } yield pe).value
 

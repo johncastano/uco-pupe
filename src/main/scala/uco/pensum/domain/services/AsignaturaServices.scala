@@ -1,7 +1,5 @@
 package uco.pensum.domain.services
 
-import java.time.format.DateTimeFormatter
-
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
@@ -11,9 +9,11 @@ import uco.pensum.domain.errors._
 import uco.pensum.domain.hora
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.repositories.PensumRepository
-import uco.pensum.infrastructure.http.dtos.{AsignaturaActualizacion, AsignaturaAsignacion, RequisitosActualizacion}
-import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
-
+import uco.pensum.infrastructure.http.dtos.{
+  AsignaturaActualizacion,
+  AsignaturaAsignacion,
+  RequisitosActualizacion
+}
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AsignaturaServices extends LazyLogging {
@@ -21,37 +21,42 @@ trait AsignaturaServices extends LazyLogging {
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
 
+  //TODO: Have in mind prerequisitos when they come ...
+  //TODO: Fix update of plan de estudio after adding creditos, is not updating but creating a new object 
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
       programId: String,
       inp: String
   ): Future[Either[DomainError, Asignatura]] =
     (for {
-      program <- EitherT.fromOptionF(repository.programaRepository.buscarProgramaPorId(programId),ProgramNotFound())
-      pe <- EitherT.fromOptionF(repository.planDeEstudioRepository.buscarPlanDeEstudioPorINP(inp),CurriculumNotFound())
-      _ <- OptionT(repository.asignaturaRepository.buscarAsignaturaPorCodigo(asignatura.codigo)).map(_ => AsignaturaExistente()).toLeft(())
-      cu <- EitherT.fromEither[Future](
+      _ <- EitherT.fromOptionF(
+        repository.programaRepository.buscarProgramaPorId(programId),
+        ProgramNotFound()
+      )
+      pe <- EitherT.fromOptionF(
+        repository.planDeEstudioRepository
+          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId),
+        CurriculumNotFound()
+      )
+      _ <- OptionT(
+        repository.asignaturaRepository
+          .buscarAsignaturaPorCodigo(asignatura.codigo)
+      ).map(_ => AsignaturaExistente()).toLeft(())
+      a <- EitherT.fromEither[Future](
         Asignatura.validar(asignatura, inp)
       )
-      mockPlanEstudio = PlanDeEstudioRecord(
-        inp = inp,
-        creditos = 0,
-        programaId = programId,
-        fechaDeCreacion = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(hora),
-        fechaDeModificacion = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(hora)
+      upd <- EitherT.fromEither[Future](
+        PlanDeEstudio.sumarCreditos(pe, a).asRight[DomainError]
       )
-      sumarCreditos <- EitherT.fromEither[Future](
-        PlanDeEstudio.sumarCreditos(mockPlanEstudio, cu).asRight[DomainError]
+      _ = println(s"Plan de estudio a actualizar => $upd")
+      _ <- EitherT.right[DomainError](
+        repository.planDeEstudioRepository
+          .almacenarOActualizarPlanDeEstudios(upd)
       )
-      //_ <- repository.updatePlanDeEstudio(sumarCreditos)
-      _ = println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-      spd <- EitherT {
-        /*repository
-          .saveOrAsignatura(pd)
-          .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
-        Future.successful(Either.right[DomainError, Asignatura](cu))
-      } //TODO: Add repository insert
-    } yield spd).value
+      _ <- EitherT.right[DomainError](
+        repository.asignaturaRepository.almacenarAsignatura(a)
+      )
+    } yield a).value
 
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,

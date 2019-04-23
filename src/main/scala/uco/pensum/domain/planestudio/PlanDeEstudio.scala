@@ -13,7 +13,8 @@ case class PlanDeEstudio(
     creditos: Int,
     programId: String,
     fechaDeRegistro: ZonedDateTime,
-    fechaDeModificacion: ZonedDateTime
+    fechaDeModificacion: ZonedDateTime,
+    id: Option[Int] = Some(0)
 )
 
 object PlanDeEstudio {
@@ -67,7 +68,8 @@ object PlanDeEstudio {
       programId = record.programaId,
       fechaDeRegistro = ZonedDateTime
         .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
-      fechaDeModificacion = hora
+      fechaDeModificacion = hora,
+      id = Some(record.id)
     )
 
 }

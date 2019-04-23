@@ -54,12 +54,14 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
         .map(_.headOption)
     )
 
-  def almacenar(record: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] =
+  def almacenar(record: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] = {
+    println(s"Plan de estudio almacenado => $record")
     db.run(
       this returning this
         .map(_.id) into ((acc, id) => acc.copy(id = id)) += record
     )
 
+  }
   def eliminarPorINP(inp: String): Future[Int] =
     db.run(this.filter(_.inp === inp).delete)
 
