@@ -54,11 +54,12 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
         .map(_.headOption)
     )
 
-  def almacenar(record: PlanDeEstudioRecord): Future[PlanDeEstudioRecord] = {
+  def almacenarOActualizar(
+      record: PlanDeEstudioRecord
+  ): Future[Option[PlanDeEstudioRecord]] = {
     println(s"Plan de estudio almacenado => $record")
     db.run(
-      this returning this
-        .map(_.id) into ((acc, id) => acc.copy(id = id)) += record
+      (this returning this).insertOrUpdate(record)
     )
 
   }

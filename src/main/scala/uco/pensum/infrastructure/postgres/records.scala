@@ -22,9 +22,9 @@ final case class PlanDeEstudioRecord(
 ) extends Record
 
 final case class PlanDeEstudioAsignaturaRecord(
-    id: Int,
     planDeEstudioID: Int,
-    codigoAsignatura: String
+    codigoAsignatura: String,
+    id: Int = 0
 ) extends Record
 
 final case class AsignaturaRecord(

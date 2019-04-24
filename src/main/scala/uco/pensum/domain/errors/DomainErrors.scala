@@ -48,6 +48,12 @@ final case class AsignaturaExistente(
     mensaje: String = "La asignatura ya existe"
 ) extends DomainError
 
+final case class CannotUpdatePlanDeEstudio(
+    codigo: Int = 10005,
+    mensaje: String =
+      "No se pudo actualizar el plan de estudio con los créditos de la nueva asignatura"
+) extends DomainError
+
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError
 
 final case class ComponenteDeFormacionDesconocido(

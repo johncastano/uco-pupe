@@ -14,7 +14,7 @@ class PlanDeEstudioAsignaturas(tag: Tag)
       tag,
       "plan_de_estudio_asignatura"
     ) {
-  def id = column[Int]("id")
+  def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
   def planDeEstudioID = column[Int]("plan_de_estudio_id")
   def codigoAsignatura = column[String]("codigo_asignatura")
   def planesDeEstudio =
@@ -30,7 +30,7 @@ class PlanDeEstudioAsignaturas(tag: Tag)
       onDelete = ForeignKeyAction.Cascade
     )
   def * =
-    (id, planDeEstudioID, codigoAsignatura)
+    (planDeEstudioID, codigoAsignatura, id)
       .mapTo[PlanDeEstudioAsignaturaRecord]
 }
 

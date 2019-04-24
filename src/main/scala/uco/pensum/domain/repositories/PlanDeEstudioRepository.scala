@@ -13,8 +13,10 @@ class PlanDeEstudioRepository(
 
   def almacenarOActualizarPlanDeEstudios(
       planDeEstudio: PlanDeEstudio
-  ): Future[PlanDeEstudioRecord] =
-    provider.planesDeEstudio.almacenar(planDeEstudio.to[PlanDeEstudioRecord])
+  ): Future[Option[PlanDeEstudioRecord]] =
+    provider.planesDeEstudio.almacenarOActualizar(
+      planDeEstudio.to[PlanDeEstudioRecord]
+    )
 
   def buscarPlanDeEstudioPorINP(
       inp: String

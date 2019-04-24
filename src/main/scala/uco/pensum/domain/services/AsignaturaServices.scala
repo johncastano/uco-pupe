@@ -22,7 +22,6 @@ trait AsignaturaServices extends LazyLogging {
   implicit val repository: PensumRepository
 
   //TODO: Have in mind prerequisitos when they come ...
-  //TODO: Fix update of plan de estudio after adding creditos, is not updating but creating a new object 
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
       programId: String,
@@ -48,13 +47,16 @@ trait AsignaturaServices extends LazyLogging {
       upd <- EitherT.fromEither[Future](
         PlanDeEstudio.sumarCreditos(pe, a).asRight[DomainError]
       )
-      _ = println(s"Plan de estudio a actualizar => $upd")
-      _ <- EitherT.right[DomainError](
+      _ <- OptionT(
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(upd)
-      )
+      ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.almacenarAsignatura(a)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.planDeEstudioAsignaturaRepository
+          .almacenarOActualizarPlaDeEstudioAsignatura(pe.id, a.codigo)
       )
     } yield a).value
 

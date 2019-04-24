@@ -6,12 +6,7 @@ import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
-import uco.pensum.domain.repositories.{
-  AsignaturaRepository,
-  PensumRepository,
-  PlanDeEstudioRepository,
-  ProgramaRepository
-}
+import uco.pensum.domain.repositories._
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.tables
 
@@ -44,6 +39,10 @@ object Main extends App with HttpService {
 
     override def asignaturaRepository: AsignaturaRepository =
       new AsignaturaRepository
+
+    override def planDeEstudioAsignaturaRepository
+      : PlanDeEstudioAsignaturaRepository =
+      new PlanDeEstudioAsignaturaRepository
   }
 
   logger.info(s"Starting http service ....")
