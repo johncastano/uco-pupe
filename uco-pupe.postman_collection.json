@@ -1,0 +1,202 @@
+{
+	"info": {
+		"_postman_id": "42d3e2a6-3218-4375-98cb-ef8a9130863d",
+		"name": "uco-pupe",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Crear programa",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\":\"ProgramId2\",\n\t\"nombre\":\"Ingeniería Industrial\",\n\t\"codigoSnies\":\"Cod1\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar programa por id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa/ProgramId3",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa",
+						"ProgramId3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear plan de estudios",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"inp\":\"INP11-1\"\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa/ProgramId2/planEstudio",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa",
+						"ProgramId2",
+						"planEstudio"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Buscar plan de estudio por id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa/ProgramId3/planEstudio/INP11-2",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa",
+						"ProgramId3",
+						"planEstudio",
+						"INP11-2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener planes de estudio de un programa",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa/ProgramId3/planEstudio",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa",
+						"ProgramId3",
+						"planEstudio"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Obtener programas",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Crear asignatura",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"codigo\": \"ISH0127\",\n    \"componenteDeFormacion\": \"Linea dedicada\",\n    \"nombre\": \"Programación orientada a objetos\",\n    \"creditos\": 6,\n    \"horasTeoricas\": 2,\n    \"horasLaboratorio\": 4,\n    \"semestre\": 3,\n    \"requisitos\": []\n}"
+				},
+				"url": {
+					"raw": "localhost:8080/pensum/programa/ProgramId1/planEstudio/INP11-1",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"pensum",
+						"programa",
+						"ProgramId1",
+						"planEstudio",
+						"INP11-1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
