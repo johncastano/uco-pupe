@@ -57,7 +57,9 @@ class MapperRecordsInstances extends MapperSugar {
           asignatura.horas.teoricas,
           asignatura.horas.laboratorio,
           asignatura.semestre,
-          "" //TODO : Address of Google docs
+          "", //TODO : Address of Google docs
+          asignatura.fechaDeRegistro.toString,
+          asignatura.fechaDeModificacion.toString
         )
     }
 }

@@ -16,4 +16,10 @@ class AsignaturaRepository(implicit val provider: PensumDatabase) {
       codigo: String
   ): Future[Option[AsignaturaRecord]] =
     provider.asignaturas.encontrarPorCodigo(codigo)
+
+  def obtenerAsignaturasPorINPYPrograma(
+      programaId: String,
+      inp: String
+  ): Future[Seq[AsignaturaRecord]] =
+    provider.asignaturas.obtenerAsignaturasPorINPYPrograma(programaId, inp)
 }

@@ -14,6 +14,8 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaAsignacion,
   RequisitosActualizacion
 }
+import uco.pensum.infrastructure.postgres.AsignaturaRecord
+
 import scala.concurrent.{ExecutionContext, Future}
 
 trait AsignaturaServices extends LazyLogging {
@@ -168,71 +170,9 @@ trait AsignaturaServices extends LazyLogging {
   def asignaturasPorInp(
       programId: String,
       inp: String
-  ): Future[List[Asignatura]] = {
-    val asignaturaMock = Asignatura(
-      "ISH0123",
-      inp,
-      CienciaBasicaIngenieria,
-      "Calculo",
-      5,
-      Horas(6, 4),
-      3,
-      Nil,
-      hora,
-      hora
-    )
-    println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-    //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    //repository.getAsignaturaPorProgramIdandInp(programId, inp)
-    Future.successful(
-      List(
-        asignaturaMock.copy(codigo = "ISH0122", semestre = 1),
-        asignaturaMock.copy(codigo = "ISH0101", semestre = 2),
-        asignaturaMock.copy(requisitos = List("ISH0122", "ISH101")),
-        asignaturaMock.copy(
-          codigo = "ISH909",
-          nombre = "Programacion lineal",
-          semestre = 4
-        ),
-        asignaturaMock.copy(
-          codigo = "ISH0127",
-          componenteDeFormacion = IngenieriaAplicada,
-          nombre = "Programacion O1",
-          semestre = 6
-        ),
-        asignaturaMock.copy(
-          codigo = "ISH0128",
-          componenteDeFormacion = FormacionComplementaria,
-          nombre = "Programacion O2",
-          semestre = 7
-        ),
-        asignaturaMock.copy(
-          codigo = "ISH0129",
-          componenteDeFormacion = Optativa,
-          nombre = "Programacion O3",
-          semestre = 8
-        ),
-        asignaturaMock.copy(
-          codigo = "ISH0130",
-          componenteDeFormacion = CienciaBasicaIngenieria,
-          nombre = "Programacion OO",
-          semestre = 9
-        ),
-        asignaturaMock.copy(
-          codigo = "ISH0131",
-          componenteDeFormacion = CienciaBasica,
-          nombre = "Programacion OO",
-          semestre = 10
-        ),
-        asignaturaMock.copy(
-          codigo = "ISH0132",
-          componenteDeFormacion = IngenieriaAplicada,
-          nombre = "Programacion OO",
-          semestre = 5
-        )
-      )
-    )
-  }
+  ): Future[Seq[AsignaturaRecord]] =
+    repository.asignaturaRepository
+      .obtenerAsignaturasPorINPYPrograma(programId, inp)
 
   def eliminarAsignatura(
       programId: String,

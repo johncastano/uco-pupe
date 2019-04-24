@@ -15,7 +15,11 @@ import uco.pensum.infrastructure.http.dtos.{
   UsuarioRespuesta
 }
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
-import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, ProgramaRecord}
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaRecord,
+  PlanDeEstudioRecord,
+  ProgramaRecord
+}
 
 class MapperDTOInstances extends MapperSugar {
 
@@ -76,6 +80,31 @@ class MapperDTOInstances extends MapperSugar {
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
         )
+    }
+
+  implicit def AsignaturaRecordToRespuesta
+    : Mapper[(String, AsignaturaRecord), AsignaturaRespuesta] =
+    new Mapper[(String, AsignaturaRecord), AsignaturaRespuesta] {
+      override def to(in: (String, AsignaturaRecord)): AsignaturaRespuesta = {
+        val (inp, record) = in
+        AsignaturaRespuesta(
+          codigo = record.codigo,
+          inp = inp,
+          componenteDeFormacion = ComponenteDeFormacionRespuesta(
+            codigo = record.componenteDeFormacion,
+            nombre = record.componenteDeFormacion
+          ),
+          nombre = record.nombre,
+          creditos = record.creditos,
+          horasTeoricas = record.horasTeoricas,
+          horasLaboratorio = record.horasLaboratorio,
+          semestre = record.semestre,
+          requisitos = Nil, // TODO: Change
+          fechaDeRegistro = ZonedDateTime.parse(record.fechaDeCreacion),
+          fechaDeModificacion = ZonedDateTime.parse(record.fechaDeModificacion)
+        )
+      }
+
     }
 
   implicit def UsuarioToRespuesta: Mapper[Usuario, UsuarioRespuesta] =

@@ -35,7 +35,9 @@ final case class AsignaturaRecord(
     horasTeoricas: Int,
     horasLaboratorio: Int,
     semestre: Int,
-    direccionPlanDeEstudios: String
+    direccionPlanDeEstudios: String,
+    fechaDeCreacion: String,
+    fechaDeModificacion: String
 ) extends Record
 
 final case class PrerequisitoRecord(id: Int, codigoAsignatura: String)

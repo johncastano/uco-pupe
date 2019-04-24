@@ -167,7 +167,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
-              complete(OK -> response.map(_.to[AsignaturaRespuesta]))
+              complete(
+                OK -> response.map(r => (inp, r).to[AsignaturaRespuesta])
+              )
           }
         }
     }
