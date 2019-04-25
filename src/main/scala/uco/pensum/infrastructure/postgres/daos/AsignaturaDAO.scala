@@ -10,8 +10,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class Asignaturas(tag: Tag)
     extends Table[AsignaturaRecord](tag, "asignaturas") {
   def codigo = column[String]("codigo", O.PrimaryKey)
-  def componenteDeFormacion =
-    column[String]("componente_de_formacion")
+  def componenteDeFormacionNombre =
+    column[String]("componente_de_formacion_nombre")
+  def componenteDeFormacionCodigo =
+    column[String]("componente_de_formacion_codigo")
   def nombre = column[String]("nombre")
   def creditos = column[Int]("creditos")
   def horasTeoricas = column[Int]("horas_teoricas")
@@ -24,7 +26,8 @@ class Asignaturas(tag: Tag)
   def * =
     (
       codigo,
-      componenteDeFormacion,
+      componenteDeFormacionNombre,
+      componenteDeFormacionCodigo,
       nombre,
       creditos,
       horasTeoricas,
@@ -62,7 +65,8 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
       } yield
         (
           a.codigo,
-          a.componenteDeFormacion,
+          a.componenteDeFormacionNombre,
+          a.componenteDeFormacionCodigo,
           a.nombre,
           a.creditos,
           a.horasTeoricas,

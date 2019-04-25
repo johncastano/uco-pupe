@@ -29,7 +29,8 @@ final case class PlanDeEstudioAsignaturaRecord(
 
 final case class AsignaturaRecord(
     codigo: String,
-    componenteDeFormacion: String,
+    componenteDeFormacionNombre: String,
+    componenteDeFormacionCodigo: String,
     nombre: String,
     creditos: Int,
     horasTeoricas: Int,

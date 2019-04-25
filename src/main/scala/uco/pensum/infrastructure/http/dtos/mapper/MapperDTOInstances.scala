@@ -91,8 +91,8 @@ class MapperDTOInstances extends MapperSugar {
           codigo = record.codigo,
           inp = inp,
           componenteDeFormacion = ComponenteDeFormacionRespuesta(
-            codigo = record.componenteDeFormacion,
-            nombre = record.componenteDeFormacion
+            codigo = record.componenteDeFormacionCodigo,
+            nombre = record.componenteDeFormacionNombre
           ),
           nombre = record.nombre,
           creditos = record.creditos,

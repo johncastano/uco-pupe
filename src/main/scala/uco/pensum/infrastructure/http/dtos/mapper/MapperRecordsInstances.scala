@@ -52,6 +52,7 @@ class MapperRecordsInstances extends MapperSugar {
         AsignaturaRecord(
           asignatura.codigo,
           asignatura.componenteDeFormacion.toString,
+          asignatura.componenteDeFormacion.codigo,
           asignatura.nombre,
           asignatura.creditos,
           asignatura.horas.teoricas,
