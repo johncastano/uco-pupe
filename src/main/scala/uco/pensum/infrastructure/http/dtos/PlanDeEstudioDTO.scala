@@ -5,6 +5,9 @@ import java.time.ZonedDateTime
 case class PlanDeEstudioRespuesta(
     inp: String,
     creditos: Int,
+    horasTeoricas: Int,
+    horasLaboratorio: Int,
+    horasPracticas: Int,
     programId: String,
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime

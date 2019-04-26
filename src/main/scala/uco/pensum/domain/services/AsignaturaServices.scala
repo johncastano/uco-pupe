@@ -47,7 +47,7 @@ trait AsignaturaServices extends LazyLogging {
         Asignatura.validar(asignatura, inp)
       )
       upd <- EitherT.fromEither[Future](
-        PlanDeEstudio.sumarCreditos(pe, a).asRight[DomainError]
+        PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
       )
       _ <- OptionT(
         repository.planDeEstudioRepository
@@ -79,7 +79,7 @@ trait AsignaturaServices extends LazyLogging {
             CienciaBasicaIngenieria,
             "Test",
             3,
-            Horas(3, 3),
+            Horas(3, 3, 0, 6),
             2,
             Nil,
             hora,
@@ -118,7 +118,7 @@ trait AsignaturaServices extends LazyLogging {
         CienciaBasicaIngenieria,
         "Calculo",
         5,
-        Horas(6, 4),
+        Horas(6, 4, 0, 5),
         3,
         List(requisito),
         hora,
@@ -153,7 +153,7 @@ trait AsignaturaServices extends LazyLogging {
       CienciaBasicaIngenieria,
       "Calculo",
       5,
-      Horas(6, 4),
+      Horas(6, 4, 0, 6),
       3,
       Nil,
       hora,
@@ -185,7 +185,7 @@ trait AsignaturaServices extends LazyLogging {
       CienciaBasicaIngenieria,
       "Calculo",
       5,
-      Horas(6, 4),
+      Horas(6, 4, 0, 5),
       3,
       Nil,
       hora,

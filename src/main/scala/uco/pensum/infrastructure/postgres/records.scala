@@ -15,6 +15,9 @@ final case class ProgramaRecord(
 final case class PlanDeEstudioRecord(
     inp: String,
     creditos: Int,
+    horasTeoricas: Int,
+    horasLaboratorio: Int,
+    horasPracticas: Int,
     programaId: String,
     fechaDeCreacion: String,
     fechaDeModificacion: String,
@@ -35,6 +38,8 @@ final case class AsignaturaRecord(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    horasPracticas: Int,
+    trabajoDelEstudiante: Int,
     semestre: Int,
     direccionPlanDeEstudios: String,
     fechaDeCreacion: String,

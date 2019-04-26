@@ -11,6 +11,9 @@ import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 case class PlanDeEstudio(
     inp: String,
     creditos: Int,
+    horasTeoricas: Int,
+    horasLaboratorio: Int,
+    horasPracticas: Int,
     programId: String,
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime,
@@ -29,7 +32,7 @@ object PlanDeEstudio {
       inp <- validarCampoVacio(dto.inp, "inp")
       programId <- validarCampoVacio(programId, "programId")
       fechaHoy = hora
-    } yield PlanDeEstudio(inp, 0, programId, fechaHoy, fechaHoy)
+    } yield PlanDeEstudio(inp, 0, 0, 0, 0, programId, fechaHoy, fechaHoy)
 
   def validar(
       dtos: List[PlanDeEstudioAsignacion],
@@ -41,7 +44,7 @@ object PlanDeEstudio {
     dtos.map { planEstudio =>
       for {
         inp <- validarCampoVacio(planEstudio.inp, "inp")
-      } yield PlanDeEstudio(inp, 0, programId, hora, hora)
+      } yield PlanDeEstudio(inp, 0, 0, 0, 0, programId, hora, hora)
     }.sequence
   }
 
@@ -49,6 +52,9 @@ object PlanDeEstudio {
     PlanDeEstudio(
       inp = record.inp,
       creditos = record.creditos,
+      horasTeoricas = record.horasTeoricas,
+      horasLaboratorio = record.horasLaboratorio,
+      horasPracticas = record.horasPracticas,
       programId = record.programaId,
       fechaDeRegistro = ZonedDateTime
         .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
@@ -58,13 +64,16 @@ object PlanDeEstudio {
       )
     )
 
-  def sumarCreditos(
+  def sumarCampos(
       record: PlanDeEstudioRecord,
       asignatura: Asignatura
   ): PlanDeEstudio =
     PlanDeEstudio(
       inp = record.inp,
       creditos = record.creditos + asignatura.creditos,
+      horasTeoricas = record.horasTeoricas + asignatura.horas.teoricas,
+      horasLaboratorio = record.horasLaboratorio + asignatura.horas.laboratorio,
+      horasPracticas = record.horasPracticas + asignatura.horas.practicas,
       programId = record.programaId,
       fechaDeRegistro = ZonedDateTime
         .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),

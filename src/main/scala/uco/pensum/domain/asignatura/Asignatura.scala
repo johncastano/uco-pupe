@@ -49,7 +49,12 @@ object ComponenteDeFormacion {
     }
 }
 
-case class Horas(teoricas: Int, laboratorio: Int)
+case class Horas(
+    teoricas: Int,
+    laboratorio: Int,
+    practicas: Int,
+    independietesDelEstudiante: Int
+)
 
 case class Asignatura(
     codigo: Codigo,
@@ -87,7 +92,12 @@ object Asignatura {
         componenteDeFormacion = cf,
         nombre = nombre,
         creditos = creditos,
-        horas = Horas(dto.horasTeoricas, dto.horasLaboratorio),
+        horas = Horas(
+          dto.horasTeoricas,
+          dto.horasLaboratorio,
+          dto.horasPracticas,
+          dto.trabajoIndependienteEstudiante
+        ),
         semestre = semestre,
         requisitos = dto.requisitos.filterNot(v => v.isEmpty),
         fechaDeRegistro = hora,
@@ -111,7 +121,12 @@ object Asignatura {
         componenteDeFormacion = cf,
         nombre = nombre,
         creditos = creditos,
-        horas = Horas(dto.horasTeoricas, dto.horasLaboratorio),
+        horas = Horas(
+          dto.horasTeoricas,
+          dto.horasLaboratorio,
+          dto.productArity,
+          dto.trabajoIndependienteEstudiante
+        ),
         semestre = semestre,
         requisitos = original.requisitos,
         fechaDeRegistro = original.fechaDeRegistro,

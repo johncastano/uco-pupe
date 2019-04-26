@@ -42,6 +42,9 @@ class MapperDTOInstances extends MapperSugar {
         PlanDeEstudioRespuesta(
           inp = plan.inp,
           creditos = plan.creditos,
+          horasTeoricas = plan.horasTeoricas,
+          horasLaboratorio = plan.horasLaboratorio,
+          horasPracticas = plan.horasPracticas,
           programId = plan.programId,
           fechaDeRegistro = plan.fechaDeRegistro,
           fechaDeModificacion = plan.fechaDeModificacion
@@ -55,6 +58,9 @@ class MapperDTOInstances extends MapperSugar {
         PlanDeEstudioRespuesta(
           record.inp,
           record.creditos,
+          record.horasTeoricas,
+          record.horasLaboratorio,
+          record.horasPracticas,
           record.programaId,
           ZonedDateTime.parse(record.fechaDeCreacion),
           ZonedDateTime.parse(record.fechaDeModificacion)

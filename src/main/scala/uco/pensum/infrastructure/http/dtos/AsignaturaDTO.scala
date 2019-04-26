@@ -9,6 +9,8 @@ case class AsignaturaAsignacion(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    horasPracticas: Int,
+    trabajoIndependienteEstudiante: Int,
     semestre: Int,
     requisitos: List[String]
 )
@@ -19,6 +21,8 @@ case class AsignaturaActualizacion(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    horasPracticas: Int,
+    trabajoIndependienteEstudiante: Int,
     semestre: Int
 )
 

@@ -18,6 +18,8 @@ class Asignaturas(tag: Tag)
   def creditos = column[Int]("creditos")
   def horasTeoricas = column[Int]("horas_teoricas")
   def horasLaboratorio = column[Int]("horas_laboratorio")
+  def horasPracticas = column[Int]("horas_practicas")
+  def trabajoDelEstudiante = column[Int]("TIE")
   def semestre = column[Int]("semestre")
   def direccionPlanDeEstudios =
     column[String]("direccion_plan_de_estudio_url")
@@ -32,6 +34,8 @@ class Asignaturas(tag: Tag)
       creditos,
       horasTeoricas,
       horasLaboratorio,
+      horasPracticas,
+      trabajoDelEstudiante,
       semestre,
       direccionPlanDeEstudios,
       fechaDeCreacion,
@@ -71,6 +75,8 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           a.creditos,
           a.horasTeoricas,
           a.horasLaboratorio,
+          a.horasPracticas,
+          a.trabajoDelEstudiante,
           a.semestre,
           a.direccionPlanDeEstudios,
           a.fechaDeCreacion,

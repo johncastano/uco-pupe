@@ -11,6 +11,9 @@ class PlanesDeEstudio(tag: Tag)
   def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
   def inp = column[String]("inp")
   def creditos = column[Int]("creditos")
+  def horasTeoricas = column[Int]("horas_teoricas")
+  def horasLaboratorio = column[Int]("horas_laboratorio")
+  def horasPracticas = column[Int]("horas_practicas")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
   def programaId = column[String]("programa_id")
@@ -20,8 +23,17 @@ class PlanesDeEstudio(tag: Tag)
     onDelete = ForeignKeyAction.Cascade
   )
   def * =
-    (inp, creditos, programaId, fechaDeCreacion, fechaDeModificacion, id)
-      .mapTo[PlanDeEstudioRecord]
+    (
+      inp,
+      creditos,
+      horasTeoricas,
+      horasLaboratorio,
+      horasPracticas,
+      programaId,
+      fechaDeCreacion,
+      fechaDeModificacion,
+      id
+    ).mapTo[PlanDeEstudioRecord]
 }
 
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(

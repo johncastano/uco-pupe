@@ -35,6 +35,9 @@ class MapperRecordsInstances extends MapperSugar {
         PlanDeEstudioRecord(
           planDeEstudio.inp,
           planDeEstudio.creditos,
+          planDeEstudio.horasTeoricas,
+          planDeEstudio.horasLaboratorio,
+          planDeEstudio.horasPracticas,
           planDeEstudio.programId,
           DateTimeFormatter.ISO_ZONED_DATE_TIME
             .format(planDeEstudio.fechaDeRegistro),
@@ -57,6 +60,8 @@ class MapperRecordsInstances extends MapperSugar {
           asignatura.creditos,
           asignatura.horas.teoricas,
           asignatura.horas.laboratorio,
+          asignatura.horas.practicas,
+          asignatura.horas.independietesDelEstudiante,
           asignatura.semestre,
           "", //TODO : Address of Google docs
           asignatura.fechaDeRegistro.toString,
