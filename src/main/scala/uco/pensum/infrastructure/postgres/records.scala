@@ -46,6 +46,13 @@ final case class AsignaturaRecord(
     fechaDeModificacion: String
 ) extends Record
 
+final case class ComponenteDeFormacionRecord(
+                                            id: Int,
+                                            nombre: String,
+                                            abreviatura: String,
+                                            color: String
+                                            ) extends Record
+
 final case class PrerequisitoRecord(id: Int, codigoAsignatura: String)
     extends Record
 

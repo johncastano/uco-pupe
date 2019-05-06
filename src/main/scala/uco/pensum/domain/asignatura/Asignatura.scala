@@ -3,51 +3,9 @@ package uco.pensum.domain.asignatura
 import java.time.ZonedDateTime
 
 import uco.pensum.domain.asignatura.Asignatura.Codigo
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.infrastructure.http.dtos.{
-  AsignaturaActualizacion,
-  AsignaturaAsignacion
-}
-
-sealed trait ComponenteDeFormacion {
-  def codigo: String
-}
-
-case object CienciaBasicaIngenieria extends ComponenteDeFormacion {
-  override def toString: String = "Ciencia basica de Ingenieria"
-  override def codigo: String = "CBI"
-}
-case object CienciaBasica extends ComponenteDeFormacion {
-  override def toString: String = "Ciencia basica"
-  override def codigo: String = "CB"
-}
-case object FormacionComplementaria extends ComponenteDeFormacion {
-  override def toString: String = "Formacion complementaria"
-  override def codigo: String = "FC"
-}
-case object IngenieriaAplicada extends ComponenteDeFormacion {
-  override def toString: String = "Ingenieria aplicada"
-  override def codigo: String = "IA"
-}
-case object Optativa extends ComponenteDeFormacion {
-  override def toString: String = "Optativa interdisciplinaria"
-  override def codigo: String = "O"
-}
-case object ComponenteDesconocido extends ComponenteDeFormacion {
-  override def codigo: String = "Desconocido"
-}
-
-object ComponenteDeFormacion {
-  def apply(valor: String): ComponenteDeFormacion =
-    valor.filterNot(_.isWhitespace).toLowerCase match {
-      case "cienciabasicadeingenieria"  => CienciaBasicaIngenieria
-      case "cienciabasica"              => CienciaBasica
-      case "formacioncomplementaria"    => FormacionComplementaria
-      case "ingenieriaaplicada"         => IngenieriaAplicada
-      case "optativainterdisciplinaria" => Optativa
-      case _                            => ComponenteDesconocido
-    }
-}
+import uco.pensum.infrastructure.http.dtos.{AsignaturaActualizacion, AsignaturaAsignacion}
 
 case class Horas(
     teoricas: Int,
@@ -81,7 +39,7 @@ object Asignatura {
   ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
-      cf <- validarComponenteDeFormacion(dto.componenteDeFormacion)
+      cf <- ComponenteDeFormacion.validar()
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
       semestre <- validarValorEntero(dto.semestre, "semestre")
