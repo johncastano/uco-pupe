@@ -57,4 +57,21 @@ final case class ProgramaConPlanesDeEstudioRecord(
     creditos: Option[Int]
 )
 
+final case class UsuarioRecord(
+    id: Int,
+    nombre: String,
+    primerApellido: String,
+    segundoApellido: String,
+    fechaNacimiento: String,
+    fechaRegistro: String,
+    fechaModificacion: String
+)
+
+final case class AuthRecord(
+    correo: String,
+    password: String,
+    userId: Int,
+    token: String
+)
+
 // $COVERAGE-ON$

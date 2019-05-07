@@ -5,25 +5,19 @@ import java.time.{LocalDate, ZonedDateTime}
 case class UsuarioRegistro(
     nombre: String,
     primerApellido: String,
-    segundoApellido: Option[String],
+    segundoApellido: String,
     fechaNacimiento: LocalDate,
     correo: String,
-    password: String,
-    usuario: String,
-    direccion: String,
-    celular: String
+    password: String
 )
 
 case class UsuarioRespuesta(
     nombre: String,
     primerApellido: String,
-    segundoApellido: Option[String],
+    segundoApellido: String,
     fechaNacimiento: LocalDate,
     correo: String,
-    password: String,
-    usuario: String,
-    direccion: String,
-    celular: String,
+    token: String,
     fechaRegistro: ZonedDateTime,
     fechaModificacion: ZonedDateTime
 )

@@ -3,10 +3,12 @@ package uco.pensum.infrastructure.postgres
 import slick.jdbc.PostgresProfile
 import uco.pensum.infrastructure.postgres.daos.{
   Asignaturas,
+  Auth,
   PlanDeEstudioAsignaturas,
   PlanesDeEstudio,
   Prerequisitos,
-  Programas
+  Programas,
+  Usuario
 }
 import slick.jdbc.meta.MTable
 import slick.jdbc.PostgresProfile.api._
@@ -20,12 +22,16 @@ object tables {
   val asignaturas = TableQuery[Asignaturas]
   val planDeEstudioAsignaturas = TableQuery[PlanDeEstudioAsignaturas]
   val prerequisitos = TableQuery[Prerequisitos]
+  val usuarios = TableQuery[Usuario]
+  val auth = TableQuery[Auth]
   val tables = List(
     programas,
     planesDeEstudio,
     asignaturas,
     planDeEstudioAsignaturas,
-    prerequisitos
+    prerequisitos,
+    usuarios,
+    auth
   )
 
   def setup(

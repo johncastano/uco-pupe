@@ -8,13 +8,11 @@ import uco.pensum.infrastructure.http.dtos.{UsuarioLogin, UsuarioRegistro}
 case class Usuario(
     nombre: String,
     primerApellido: String,
-    segundoApellido: Option[String],
+    segundoApellido: String,
     fechaNacimiento: LocalDate,
     correo: String,
     password: String,
-    usuario: String,
-    direccion: String,
-    celular: String,
+    token: String,
     fechaRegistro: ZonedDateTime,
     fechaModificacion: ZonedDateTime
 )
@@ -29,15 +27,12 @@ object Usuario {
     for {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       primerApellido <- validarCampoVacio(dto.primerApellido, "primer apellido")
-      segundoApellido <- validarCampoVacioOpcional(
+      segundoApellido <- validarCampoVacio(
         dto.segundoApellido,
         "segundo apellido"
       )
       correo <- validarCampoVacio(dto.correo, "correo")
       password <- validarCampoVacio(dto.password, "password")
-      usuario <- validarCampoVacio(dto.usuario, "usuario")
-      direccion <- validarCampoVacio(dto.direccion, "direccion")
-      celular <- validarCampoVacio(dto.celular, "celular")
       fecha = hora
     } yield
       Usuario(
@@ -47,12 +42,12 @@ object Usuario {
         fechaNacimiento = dto.fechaNacimiento,
         correo = correo,
         password = password,
-        usuario = usuario,
-        direccion = direccion,
-        celular = celular,
         fechaRegistro = fecha,
-        fechaModificacion = fecha
+        fechaModificacion = fecha,
+        token = generarToken
       )
+
+  def generarToken = "123456"
 
 }
 

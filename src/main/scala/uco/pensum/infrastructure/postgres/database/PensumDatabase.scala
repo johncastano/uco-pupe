@@ -14,5 +14,7 @@ class PensumDatabase(database: PostgresProfile.backend.Database)(
   object planesDeEstudioAsignatura extends PlanDeEstudioAsignaturasDAO(database)
   object asignaturas extends AsignaturasDAO(database)
   object prerequisitos extends PrerequisitosDAO(database)
+  object usuarios extends UsuarioDAO(database)
+  object auth extends AuthDAO(database)
 
 }

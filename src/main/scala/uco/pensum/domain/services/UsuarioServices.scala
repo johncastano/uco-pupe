@@ -41,15 +41,13 @@ trait UsuarioServices extends LazyLogging {
       usuarioMock = Usuario(
         nombre = "Juan Fernando",
         primerApellido = "Restrepo",
-        segundoApellido = None,
+        segundoApellido = "Moreno",
         fechaNacimiento = hora.toLocalDate,
         correo = "juanfernando@hotmail.com",
         password = usu.password,
-        usuario = usu.usuario,
-        direccion = "Sajonia",
-        celular = "1234569876",
         fechaRegistro = hora,
-        fechaModificacion = hora
+        fechaModificacion = hora,
+        token = "1234"
       )
     } yield usuarioMock).value
 

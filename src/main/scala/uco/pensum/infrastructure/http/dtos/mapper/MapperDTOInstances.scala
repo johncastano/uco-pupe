@@ -122,10 +122,7 @@ class MapperDTOInstances extends MapperSugar {
           segundoApellido = usuario.segundoApellido,
           fechaNacimiento = usuario.fechaNacimiento,
           correo = usuario.correo,
-          password = usuario.password,
-          usuario = usuario.usuario,
-          direccion = usuario.direccion,
-          celular = usuario.celular,
+          token = usuario.token,
           fechaRegistro = usuario.fechaRegistro,
           fechaModificacion = usuario.fechaModificacion
         )
