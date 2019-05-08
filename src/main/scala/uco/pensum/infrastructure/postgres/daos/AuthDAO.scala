@@ -42,7 +42,7 @@ abstract class AuthDAO(db: PostgresProfile.backend.Database)(
       (this returning this).insertOrUpdate(record)
     )
 
-  def encontrarPorId(correo: String): Future[Option[AuthRecord]] =
+  def encontrarPorCorreo(correo: String): Future[Option[AuthRecord]] =
     db.run(this.filter(_.correo === correo).result).map(_.headOption)
 
   def eliminarPorId(correo: String): Future[Int] =

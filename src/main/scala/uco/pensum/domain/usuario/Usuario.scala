@@ -6,6 +6,7 @@ import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.{UsuarioLogin, UsuarioRegistro}
 
 case class Usuario(
+    id: Option[Int],
     nombre: String,
     primerApellido: String,
     segundoApellido: String,
@@ -17,7 +18,7 @@ case class Usuario(
     fechaModificacion: ZonedDateTime
 )
 
-case class Login(usuario: String, password: String)
+case class Login(correo: String, password: String)
 
 object Usuario {
 
@@ -36,6 +37,7 @@ object Usuario {
       fecha = hora
     } yield
       Usuario(
+        id = None,
         nombre = nombre,
         primerApellido = primerApellido,
         segundoApellido = segundoApellido,
@@ -59,6 +61,6 @@ object Login {
     for {
       usuario <- validarCampoVacio(dto.usuario, "usuario")
       password <- validarCampoVacio(dto.password, "password")
-    } yield Login(usuario = usuario, password = password)
+    } yield Login(correo = usuario, password = password)
 
 }

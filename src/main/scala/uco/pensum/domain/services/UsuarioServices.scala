@@ -1,9 +1,9 @@
 package uco.pensum.domain.services
 
-import cats.data.EitherT
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import uco.pensum.domain.errors.DomainError
+import uco.pensum.domain.errors.{DomainError, UsuarioExistente}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.usuario.{Login, Usuario}
 import uco.pensum.infrastructure.http.dtos.{UsuarioLogin, UsuarioRegistro}
@@ -21,12 +21,12 @@ trait UsuarioServices extends LazyLogging {
   ): Future[Either[DomainError, Usuario]] =
     (for {
       usu <- EitherT.fromEither[Future](Usuario.validate(usuario))
-      /*_ <- OptionT(repository.buscarUsuarioPorEmailAndUserName(usuario.correo, usuario.userName))
+      _ <- OptionT(repository.authRepository.buscarCorreo(usu.correo))
         .map(_ => UsuarioExistente())
-        .toRight(())
-        .swap*/
-      /*user <- EitherT.right[DomainError](
-        repository.almacenarUsuario(pd)*/
+        .toLeft(())
+      _ <- EitherT.right[DomainError](
+        repository.authRepository.almacenarOActualizarUsuario(usu)
+      )
     } yield usu).value
 
   def login(usuario: UsuarioLogin): Future[Either[DomainError, Usuario]] =
@@ -39,6 +39,7 @@ trait UsuarioServices extends LazyLogging {
       /*user <- EitherT.right[DomainError](
         repository.almacenarUsuario(pd)*/
       usuarioMock = Usuario(
+        id = Some(1234),
         nombre = "Juan Fernando",
         primerApellido = "Restrepo",
         segundoApellido = "Moreno",

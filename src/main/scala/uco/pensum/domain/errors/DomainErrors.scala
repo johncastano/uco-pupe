@@ -61,6 +61,11 @@ final case class ComponenteDeFormacionDesconocido(
     mensaje: String = "componente de formacion desconocido"
 ) extends DomainError
 
+final case class UsuarioExistente(
+    codigo: Int = 9898,
+    mensaje: String = "El correo ya se encuentra registrado"
+) extends DomainError
+
 object CampoVacio {
   def apply(campo: String): CampoVacio =
     new CampoVacio(mensaje = s"El $campo esta vacio")

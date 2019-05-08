@@ -43,6 +43,8 @@ object Main extends App with HttpService {
     override def planDeEstudioAsignaturaRepository
       : PlanDeEstudioAsignaturaRepository =
       new PlanDeEstudioAsignaturaRepository
+
+    override def authRepository: AuthRepository = new AuthRepository
   }
 
   logger.info(s"Starting http service ....")
