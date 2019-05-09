@@ -1,6 +1,6 @@
 package uco.pensum.infrastructure.postgres.daos
 
-import uco.pensum.infrastructure.postgres.AsignaturaRecord
+import uco.pensum.infrastructure.postgres.{AsignaturaRecord, tables}
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.infrastructure.postgres.tables
@@ -10,33 +10,39 @@ import scala.concurrent.{ExecutionContext, Future}
 class Asignaturas(tag: Tag)
     extends Table[AsignaturaRecord](tag, "asignaturas") {
   def codigo = column[String]("codigo", O.PrimaryKey)
-  def componenteDeFormacionNombre =
-    column[String]("componente_de_formacion_nombre")
-  def componenteDeFormacionCodigo =
-    column[String]("componente_de_formacion_codigo")
   def nombre = column[String]("nombre")
   def creditos = column[Int]("creditos")
   def horasTeoricas = column[Int]("horas_teoricas")
   def horasLaboratorio = column[Int]("horas_laboratorio")
   def horasPracticas = column[Int]("horas_practicas")
   def trabajoDelEstudiante = column[Int]("TIE")
-  def semestre = column[Int]("semestre")
+  def nivel = column[Int]("nivel")
+  def componenteDeFormacionId = column[Int]("componente_de_formacion_id")
   def direccionPlanDeEstudios =
     column[String]("direccion_plan_de_estudio_url")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
+  def componenteDeFormacion =
+    foreignKey(
+      "componente_de_formacion_id",
+      componenteDeFormacionId,
+      tables.componentesDeFormacion
+    )(
+      _.id,
+      onUpdate = ForeignKeyAction.Restrict,
+      onDelete = ForeignKeyAction.Cascade
+    )
   def * =
     (
       codigo,
-      componenteDeFormacionNombre,
-      componenteDeFormacionCodigo,
       nombre,
       creditos,
       horasTeoricas,
       horasLaboratorio,
       horasPracticas,
       trabajoDelEstudiante,
-      semestre,
+      nivel,
+      componenteDeFormacionId,
       direccionPlanDeEstudios,
       fechaDeCreacion,
       fechaDeModificacion
@@ -69,15 +75,14 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
       } yield
         (
           a.codigo,
-          a.componenteDeFormacionNombre,
-          a.componenteDeFormacionCodigo,
           a.nombre,
           a.creditos,
           a.horasTeoricas,
           a.horasLaboratorio,
           a.horasPracticas,
           a.trabajoDelEstudiante,
-          a.semestre,
+          a.nivel,
+          a.componenteDeFormacionId,
           a.direccionPlanDeEstudios,
           a.fechaDeCreacion,
           a.fechaDeModificacion

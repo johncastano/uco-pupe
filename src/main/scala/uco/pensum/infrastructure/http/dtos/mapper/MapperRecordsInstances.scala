@@ -3,11 +3,13 @@ package uco.pensum.infrastructure.http.dtos.mapper
 import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 import uco.pensum.infrastructure.postgres.{
   AsignaturaRecord,
+  ComponenteDeFormacionRecord,
   PlanDeEstudioRecord,
   ProgramaRecord
 }
@@ -54,18 +56,31 @@ class MapperRecordsInstances extends MapperSugar {
       override def to(asignatura: Asignatura): AsignaturaRecord =
         AsignaturaRecord(
           asignatura.codigo,
-          asignatura.componenteDeFormacion.toString,
-          asignatura.componenteDeFormacion.codigo,
           asignatura.nombre,
           asignatura.creditos,
           asignatura.horas.teoricas,
           asignatura.horas.laboratorio,
           asignatura.horas.practicas,
           asignatura.horas.independietesDelEstudiante,
-          asignatura.semestre,
+          asignatura.nivel,
+          asignatura.componenteDeFormacionId,
           "", //TODO : Address of Google docs
           asignatura.fechaDeRegistro.toString,
           asignatura.fechaDeModificacion.toString
         )
     }
+
+  implicit def ComponenteDeFormacionToComponenteDeFormacionRecord
+    : Mapper[ComponenteDeFormacion, ComponenteDeFormacionRecord] =
+    new Mapper[ComponenteDeFormacion, ComponenteDeFormacionRecord] {
+      override def to(
+          componente: ComponenteDeFormacion
+      ): ComponenteDeFormacionRecord = ComponenteDeFormacionRecord(
+        nombre = componente.nombre,
+        abreviatura = componente.abreviatura,
+        color = componente.color,
+        id = componente.id.getOrElse(0)
+      )
+    }
+
 }

@@ -4,6 +4,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.domain.usuario.Usuario
@@ -74,14 +75,16 @@ class MapperDTOInstances extends MapperSugar {
           codigo = asignatura.codigo,
           inp = asignatura.inp,
           componenteDeFormacion = ComponenteDeFormacionRespuesta(
-            codigo = asignatura.componenteDeFormacion.codigo,
-            nombre = asignatura.componenteDeFormacion.toString
+            id = 0,
+            abreviatura = "",
+            nombre = "",
+            color = ""
           ),
           nombre = asignatura.nombre,
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horas.teoricas,
           horasLaboratorio = asignatura.horas.laboratorio,
-          semestre = asignatura.semestre,
+          semestre = asignatura.nivel,
           requisitos = asignatura.requisitos,
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
@@ -97,14 +100,16 @@ class MapperDTOInstances extends MapperSugar {
           codigo = record.codigo,
           inp = inp,
           componenteDeFormacion = ComponenteDeFormacionRespuesta(
-            codigo = record.componenteDeFormacionCodigo,
-            nombre = record.componenteDeFormacionNombre
+            id = 0,
+            abreviatura = "",
+            nombre = "",
+            color = ""
           ),
           nombre = record.nombre,
           creditos = record.creditos,
           horasTeoricas = record.horasTeoricas,
           horasLaboratorio = record.horasLaboratorio,
-          semestre = record.semestre,
+          semestre = record.nivel,
           requisitos = Nil, // TODO: Change
           fechaDeRegistro = ZonedDateTime.parse(record.fechaDeCreacion),
           fechaDeModificacion = ZonedDateTime.parse(record.fechaDeModificacion)
@@ -147,6 +152,20 @@ class MapperDTOInstances extends MapperSugar {
             record.fechaDeModificacion,
             DateTimeFormatter.ISO_ZONED_DATE_TIME
           )
+        )
+    }
+
+  implicit def ComponenteDeFormacionToComponenteDeFormacionRespuesta
+    : Mapper[ComponenteDeFormacion, ComponenteDeFormacionRespuesta] =
+    new Mapper[ComponenteDeFormacion, ComponenteDeFormacionRespuesta] {
+      override def to(
+          componente: ComponenteDeFormacion
+      ): ComponenteDeFormacionRespuesta =
+        ComponenteDeFormacionRespuesta(
+          id = componente.id.getOrElse(0),
+          abreviatura = componente.abreviatura,
+          nombre = componente.nombre,
+          color = componente.color
         )
     }
 

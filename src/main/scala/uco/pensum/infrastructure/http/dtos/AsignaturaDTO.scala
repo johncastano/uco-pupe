@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 case class AsignaturaAsignacion(
     codigo: String,
-    componenteDeFormacion: ComponenteDeFormacionAsignacion,
+    componenteDeFormacionNombre: String,
     nombre: String,
     creditos: Int,
     horasTeoricas: Int,
@@ -14,12 +14,6 @@ case class AsignaturaAsignacion(
     semestre: Int,
     requisitos: List[String]
 )
-
-case class ComponenteDeFormacionAsignacion(
-                                          nombre: String,
-                                          abreviatura: String,
-                                          color: String
-                                          )
 
 case class AsignaturaActualizacion(
     componenteDeFormacion: String,
@@ -50,4 +44,9 @@ case class AsignaturaRespuesta(
     fechaDeModificacion: ZonedDateTime
 )
 
-case class ComponenteDeFormacionRespuesta(codigo: String, nombre: String)
+case class ComponenteDeFormacionRespuesta(
+    id: Int,
+    abreviatura: String,
+    nombre: String,
+    color: String
+)

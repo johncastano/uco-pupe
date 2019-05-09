@@ -3,9 +3,11 @@ package uco.pensum.domain.asignatura
 import java.time.ZonedDateTime
 
 import uco.pensum.domain.asignatura.Asignatura.Codigo
-import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.infrastructure.http.dtos.{AsignaturaActualizacion, AsignaturaAsignacion}
+import uco.pensum.infrastructure.http.dtos.{
+  AsignaturaActualizacion,
+  AsignaturaAsignacion
+}
 
 case class Horas(
     teoricas: Int,
@@ -17,11 +19,11 @@ case class Horas(
 case class Asignatura(
     codigo: Codigo,
     inp: String,
-    componenteDeFormacion: ComponenteDeFormacion,
+    componenteDeFormacionId: Int,
     nombre: String,
     creditos: Int,
     horas: Horas,
-    semestre: Int,
+    nivel: Int,
     requisitos: List[Codigo],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
@@ -35,19 +37,19 @@ object Asignatura {
 
   def validar(
       dto: AsignaturaAsignacion,
-      inp: String
+      inp: String,
+      componenteDeFormacionId: Int
   ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
-      cf <- ComponenteDeFormacion.validar()
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-      semestre <- validarValorEntero(dto.semestre, "semestre")
+      nivel <- validarValorEntero(dto.semestre, "nivel")
     } yield
       Asignatura(
         codigo = codigo,
         inp = inp,
-        componenteDeFormacion = cf,
+        componenteDeFormacionId = componenteDeFormacionId,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
@@ -56,7 +58,7 @@ object Asignatura {
           dto.horasPracticas,
           dto.trabajoIndependienteEstudiante
         ),
-        semestre = semestre,
+        nivel = nivel,
         requisitos = dto.requisitos.filterNot(v => v.isEmpty),
         fechaDeRegistro = hora,
         fechaDeModificacion = hora
@@ -68,15 +70,14 @@ object Asignatura {
       original: Asignatura
   ): Either[DomainError, Asignatura] = {
     for {
-      cf <- validarComponenteDeFormacion(dto.componenteDeFormacion)
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-      semestre <- validarValorEntero(dto.semestre, "semestre")
+      nivel <- validarValorEntero(dto.semestre, "nivel")
     } yield
       Asignatura(
         codigo = original.codigo,
         inp = original.inp,
-        componenteDeFormacion = cf,
+        componenteDeFormacionId = original.componenteDeFormacionId,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
@@ -85,7 +86,7 @@ object Asignatura {
           dto.productArity,
           dto.trabajoIndependienteEstudiante
         ),
-        semestre = semestre,
+        nivel = nivel,
         requisitos = original.requisitos,
         fechaDeRegistro = original.fechaDeRegistro,
         fechaDeModificacion = hora

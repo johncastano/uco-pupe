@@ -7,5 +7,6 @@ trait PensumRepository {
   def programaRepository: ProgramaRepository
   def planDeEstudioRepository: PlanDeEstudioRepository
   def asignaturaRepository: AsignaturaRepository
+  def componenteDeFormacionRepository: ComponenteDeFormacionRepository
   def planDeEstudioAsignaturaRepository: PlanDeEstudioAsignaturaRepository
 }

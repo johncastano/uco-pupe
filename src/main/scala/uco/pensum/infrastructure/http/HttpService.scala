@@ -12,6 +12,7 @@ trait HttpService
     with PlanEstudioRoutes
     with AsignaturaRoutes
     with UsuarioRoutes
+    with ComponenteDeFormacionRoutes
     with LazyLogging {
 
   protected def routes: Route = {
@@ -29,7 +30,7 @@ trait HttpService
       cors(corsSettings) {
         rejectionHandler {
           pathPrefix("pensum")(
-            programRoutes ~ curriculumRoutes ~ asignaturaRoutes ~ usuarioRoutes
+            programRoutes ~ curriculumRoutes ~ asignaturaRoutes ~ usuarioRoutes ~ componentesRoutes
           )
         }
       }

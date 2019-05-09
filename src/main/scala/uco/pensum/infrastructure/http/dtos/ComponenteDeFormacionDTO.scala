@@ -1,7 +1,7 @@
 package uco.pensum.infrastructure.http.dtos
 
-case class ComponenteDeFormacioAsignacion(
-                                         nombre: String,
-                                         abreviatura: String,
-                                         color: String
-                                         )
+case class ComponenteDeFormacionAsignacion(
+    nombre: String,
+    abreviatura: String,
+    color: String
+)

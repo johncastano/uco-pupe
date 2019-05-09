@@ -4,25 +4,38 @@ import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 // TODO: Complete DAO
 class ComponentesDeFormacion(tag: Tag)
-  extends Table[ComponenteDeFormacionRecord](tag, "componentes_de_formacion"){
+    extends Table[ComponenteDeFormacionRecord](tag, "componentes_de_formacion") {
 
   def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
   def nombre = column[String]("nombre")
   def abreviatura = column[String]("abreviatura")
   def color = column[String]("color")
 
-  def * = (id,nombre,abreviatura,color).mapTo[ComponenteDeFormacionRecord]
-
+  def * = (nombre, abreviatura, color, id).mapTo[ComponenteDeFormacionRecord]
 }
 
 abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
-                                       implicit ec: ExecutionContext
-) extends TableQuery(new ComponentesDeFormacion(_)){
-  def almacenarOActualizar(record: ComponenteDeFormacionRecord) =
+    implicit ec: ExecutionContext
+) extends TableQuery(new ComponentesDeFormacion(_)) {
+  def buscarPorNombre(
+      nombre: String
+  ): Future[Option[ComponenteDeFormacionRecord]] =
+    db.run(
+        this
+          .filter(
+            _.nombre === nombre
+          )
+          .result
+      )
+      .map(_.headOption)
+
+  def almacenarOActualizar(
+      record: ComponenteDeFormacionRecord
+  ): Future[Option[ComponenteDeFormacionRecord]] =
     db.run(
       (this returning this).insertOrUpdate(record)
     )
