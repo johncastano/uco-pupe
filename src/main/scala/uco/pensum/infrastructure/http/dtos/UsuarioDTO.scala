@@ -12,14 +12,14 @@ case class UsuarioRegistro(
 )
 
 case class UsuarioRespuesta(
+    id: Int,
     nombre: String,
     primerApellido: String,
     segundoApellido: String,
     fechaNacimiento: LocalDate,
     correo: String,
-    token: String,
     fechaRegistro: ZonedDateTime,
     fechaModificacion: ZonedDateTime
 )
 
-case class UsuarioLogin(usuario: String, password: String)
+case class Credenciales(correo: String, password: String)

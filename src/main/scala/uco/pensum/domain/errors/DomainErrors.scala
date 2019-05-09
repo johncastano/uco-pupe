@@ -66,6 +66,11 @@ final case class UsuarioExistente(
     mensaje: String = "El correo ya se encuentra registrado"
 ) extends DomainError
 
+final case class CredencialesIncorrectas(
+    codigo: Int = 98001,
+    mensaje: String = "El correo y/o la contraseña son incorrectas"
+) extends DomainError
+
 object CampoVacio {
   def apply(campo: String): CampoVacio =
     new CampoVacio(mensaje = s"El $campo esta vacio")

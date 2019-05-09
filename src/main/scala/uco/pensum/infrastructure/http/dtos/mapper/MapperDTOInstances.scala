@@ -117,12 +117,12 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[Usuario, UsuarioRespuesta] {
       override def to(usuario: Usuario): UsuarioRespuesta =
         UsuarioRespuesta(
+          id = usuario.id.getOrElse(0),
           nombre = usuario.nombre,
           primerApellido = usuario.primerApellido,
           segundoApellido = usuario.segundoApellido,
           fechaNacimiento = usuario.fechaNacimiento,
           correo = usuario.correo,
-          token = usuario.token,
           fechaRegistro = usuario.fechaRegistro,
           fechaModificacion = usuario.fechaModificacion
         )

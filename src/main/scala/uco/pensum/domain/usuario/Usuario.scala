@@ -1,9 +1,11 @@
 package uco.pensum.domain.usuario
 
+import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, ZonedDateTime}
 
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.infrastructure.http.dtos.{UsuarioLogin, UsuarioRegistro}
+import uco.pensum.infrastructure.http.dtos.{Credenciales, UsuarioRegistro}
+import uco.pensum.infrastructure.postgres.{AuthRecord, UsuarioRecord}
 
 case class Usuario(
     id: Option[Int],
@@ -13,7 +15,6 @@ case class Usuario(
     fechaNacimiento: LocalDate,
     correo: String,
     password: String,
-    token: String,
     fechaRegistro: ZonedDateTime,
     fechaModificacion: ZonedDateTime
 )
@@ -45,11 +46,24 @@ object Usuario {
         correo = correo,
         password = password,
         fechaRegistro = fecha,
-        fechaModificacion = fecha,
-        token = generarToken
+        fechaModificacion = fecha
       )
 
-  def generarToken = "123456"
+  def fromRecord(record: UsuarioRecord, authRecord: AuthRecord): Usuario =
+    Usuario(
+      id = Some(record.id),
+      nombre = record.nombre,
+      primerApellido = record.primerApellido,
+      segundoApellido = record.segundoApellido,
+      fechaNacimiento = LocalDate
+        .parse(record.fechaNacimiento, DateTimeFormatter.ISO_LOCAL_DATE),
+      correo = authRecord.correo,
+      password = authRecord.password,
+      fechaRegistro = ZonedDateTime
+        .parse(record.fechaRegistro, DateTimeFormatter.ISO_ZONED_DATE_TIME),
+      fechaModificacion = ZonedDateTime
+        .parse(record.fechaModificacion, DateTimeFormatter.ISO_ZONED_DATE_TIME)
+    )
 
 }
 
@@ -57,9 +71,9 @@ object Login {
 
   import uco.pensum.domain._
 
-  def validate(dto: UsuarioLogin): Either[DomainError, Login] =
+  def validate(dto: Credenciales): Either[DomainError, Login] =
     for {
-      usuario <- validarCampoVacio(dto.usuario, "usuario")
+      usuario <- validarCampoVacio(dto.correo, "usuario")
       password <- validarCampoVacio(dto.password, "password")
     } yield Login(correo = usuario, password = password)
 
