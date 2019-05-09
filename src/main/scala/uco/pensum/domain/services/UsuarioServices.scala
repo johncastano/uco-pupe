@@ -25,7 +25,7 @@ trait UsuarioServices extends LazyLogging {
 
   def registrarUsuario(
       usuario: UsuarioRegistro
-  ): Future[Either[DomainError, (Usuario, String)]] =
+  ): Future[Either[DomainError, Usuario]] =
     (for {
       usu <- EitherT.fromEither[Future](Usuario.validate(usuario))
       _ <- OptionT(repository.authRepository.buscarCorreo(usu.correo))
@@ -35,15 +35,14 @@ trait UsuarioServices extends LazyLogging {
         repository.authRepository.almacenarOActualizarUsuario(usu)
       )
       usuarioConId = usu.copy(id = usuRegistrado.map(_.id))
-      token = jwt.generar(usuarioConId.correo)
       _ <- EitherT.right[DomainError](
-        repository.authRepository.registrarUsuarioAuth(usuarioConId, token)
+        repository.authRepository.registrarUsuarioAuth(usuarioConId)
       )
-    } yield (usuarioConId, token)).value
+    } yield usuarioConId).value
 
-  def login(
+  def login2(
       credenciales: Credenciales
-  ): Future[Either[DomainError, (Usuario, String)]] =
+  ): Future[Either[DomainError, Usuario]] =
     (for {
       cv <- EitherT.fromEither[Future](Login.validate(credenciales))
       usuarioValido <- EitherT(
@@ -59,12 +58,9 @@ trait UsuarioServices extends LazyLogging {
       user <- EitherT.right[DomainError](
         Future.successful(Usuario.fromRecord(usuarioInfo, usuarioValido))
       )
-      _ <- EitherT.right[DomainError](
-        repository.authRepository.almacenarToken(user, token)
-      )
-    } yield (user, token)).value
+    } yield user).value
 
-  def login2(credenciales: Credentials): Future[Option[AuthRecord]] = {
+  def login(credenciales: Credentials): Future[Option[AuthRecord]] = {
 
     credenciales match {
       case cp @ Credentials.Provided(correo) =>

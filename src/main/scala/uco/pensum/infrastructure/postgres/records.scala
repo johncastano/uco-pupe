@@ -70,8 +70,7 @@ final case class UsuarioRecord(
 final case class AuthRecord(
     correo: String,
     password: String,
-    userId: Int,
-    token: String
+    userId: Int
 )
 
 // $COVERAGE-ON$

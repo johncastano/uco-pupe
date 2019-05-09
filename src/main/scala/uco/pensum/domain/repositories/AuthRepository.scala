@@ -19,13 +19,9 @@ class AuthRepository(implicit val provider: PensumDatabase) {
     provider.usuarios.encontrarPorId(id)
 
   def registrarUsuarioAuth(
-      usuario: Usuario,
-      token: String
+      usuario: Usuario
   ): Future[Option[AuthRecord]] =
-    provider.auth.almacenarOActualizar((usuario, token).to[AuthRecord])
-
-  def almacenarToken(usuario: Usuario, token: String): Future[Int] =
-    provider.auth.guardarToken(usuario.correo, token)
+    provider.auth.almacenarOActualizar(usuario.to[AuthRecord])
 
   def buscarCorreo(correo: String): Future[Option[AuthRecord]] =
     provider.auth.encontrarPorCorreo(correo)

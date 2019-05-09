@@ -90,16 +90,13 @@ class MapperRecordsInstances extends MapperSugar {
         )
     }
 
-  implicit def usuarioToAuthRecord: Mapper[(Usuario, String), AuthRecord] =
-    new Mapper[(Usuario, String), AuthRecord] {
-      override def to(usu: (Usuario, String)): AuthRecord = {
-        val (usuario, token) = usu
+  implicit def usuarioToAuthRecord: Mapper[Usuario, AuthRecord] =
+    new Mapper[Usuario, AuthRecord] {
+      override def to(usuario: Usuario): AuthRecord =
         AuthRecord(
           correo = usuario.correo,
           password = usuario.password,
-          userId = usuario.id.getOrElse(0), //TODO: Change getOrElse userId must exist
-          token = token
+          userId = usuario.id.getOrElse(0) //TODO: Change getOrElse userId must exist
         )
-      }
     }
 }

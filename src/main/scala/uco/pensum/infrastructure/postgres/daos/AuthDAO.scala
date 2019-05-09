@@ -10,7 +10,6 @@ class Auth(tag: Tag) extends Table[AuthRecord](tag, "auth") {
 
   def correo = column[String]("CORREO", O.PrimaryKey)
   def password = column[String]("PASSWORD")
-  def token = column[String]("TOKEN")
 
   //Foreign key
   def usuarioId = column[Int]("USUARIO_ID")
@@ -25,8 +24,7 @@ class Auth(tag: Tag) extends Table[AuthRecord](tag, "auth") {
     (
       correo,
       password,
-      usuarioId,
-      token
+      usuarioId
     ).mapTo[AuthRecord]
 
 }
@@ -47,11 +45,5 @@ abstract class AuthDAO(db: PostgresProfile.backend.Database)(
 
   def eliminarPorId(correo: String): Future[Int] =
     db.run(this.filter(_.correo === correo).delete)
-
-  def guardarToken(correo: String, token: String) =
-    db.run(this.filter(_.correo === correo).map(_.token).update(token))
-
-  def eliminarToken(correo: String) =
-    db.run(this.filter(_.correo === correo).map(_.token).update(""))
 
 }

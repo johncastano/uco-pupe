@@ -3,7 +3,6 @@ package uco.pensum.infrastructure.http
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model.headers.{
-  Authorization,
   OAuth2BearerToken,
   RawHeader
 }
@@ -48,22 +47,25 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
                 complete(
                   BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                 ),
-              pr => {
-                val (usuario, token) = pr
-                respondWithHeader(RawHeader("X-Access-Token", token)) {
+              usuario =>
+                respondWithHeader(
+                  RawHeader(
+                    "Access-Token",
+                    OAuth2BearerToken(jwt.generar(usuario.correo)).toString
+                  )
+                ) {
                   complete(Created -> usuario.to[UsuarioRespuesta])
                 }
-              }
             )
         }
       }
     }
   }
 
-  def usuarioLogin: Route = path("usuario" / "login") {
+  def usuarioLogin2: Route = path("usuario" / "login2") {
     post {
       entity(as[Credenciales]) { usuario =>
-        onComplete(login(usuario)) {
+        onComplete(login2(usuario)) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -75,8 +77,8 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
                   BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                 ),
               pr => {
-                val (usuario, token) = pr
-                respondWithHeader(RawHeader("X-Access-Token", token)) {
+                val usuario = pr
+                respondWithHeader(RawHeader("Access-Token", OAuth2BearerToken(jwt.generar(usuario.correo)).toString)) {
                   complete(OK -> usuario.to[UsuarioRespuesta])
                 }
               }
@@ -86,16 +88,11 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
     }
   }
 
-  def usuarioLogin2: Route = path("usuario" / "login2") {
-    authenticateBasicAsync("auth", login2) { auth =>
+  def usuarioLogin: Route = path("usuario" / "login") {
+    authenticateBasicAsync("auth", login) { auth =>
       post {
-        respondWithHeader(
-          Authorization(OAuth2BearerToken(jwt.generar(auth.correo)))
-        ) {
-          println(s"*************************************************************+")
-          println(s"${Authorization(OAuth2BearerToken(jwt.generar(auth.correo))).toString()}")
-          println(s"*************************************************************+")
-          complete(s"${auth.correo}")
+        respondWithHeader(RawHeader("Access-Token", OAuth2BearerToken(jwt.generar(auth.correo)).toString)) {
+          complete(OK)
         }
       }
     }

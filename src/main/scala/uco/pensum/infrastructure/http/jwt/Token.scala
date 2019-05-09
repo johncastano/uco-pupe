@@ -12,7 +12,7 @@ case class Claims(correo: String, issuedAt: Long, expires: Long)
 
 class JWT(secret: String) {
 
-  val duration: Long = FiniteDuration(2, TimeUnit.DAYS).toSeconds
+  val duration: Long = FiniteDuration(2, TimeUnit.MINUTES).toSeconds
   val algo: JwtAlgorithm.HS256.type = JwtAlgorithm.HS256
 
   def generar(correo: String): String = {
