@@ -2,7 +2,11 @@ package uco.pensum.infrastructure.http
 
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.headers.RawHeader
+import akka.http.scaladsl.model.headers.{
+  Authorization,
+  OAuth2BearerToken,
+  RawHeader
+}
 import akka.stream.Materializer
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -82,6 +86,21 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
     }
   }
 
-  val usuarioRoutes: Route = agregarUsuario ~ usuarioLogin
+  def usuarioLogin2: Route = path("usuario" / "login2") {
+    authenticateBasicAsync("auth", login2) { auth =>
+      post {
+        respondWithHeader(
+          Authorization(OAuth2BearerToken(jwt.generar(auth.correo)))
+        ) {
+          println(s"*************************************************************+")
+          println(s"${Authorization(OAuth2BearerToken(jwt.generar(auth.correo))).toString()}")
+          println(s"*************************************************************+")
+          complete(s"${auth.correo}")
+        }
+      }
+    }
+  }
+
+  val usuarioRoutes: Route = agregarUsuario ~ usuarioLogin ~ usuarioLogin2
 
 }

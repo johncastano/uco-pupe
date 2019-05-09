@@ -1,5 +1,6 @@
 package uco.pensum.domain.services
 
+import akka.http.scaladsl.server.directives.Credentials
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
@@ -12,6 +13,7 @@ import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.usuario.{Login, Usuario}
 import uco.pensum.infrastructure.http.dtos.{Credenciales, UsuarioRegistro}
 import uco.pensum.infrastructure.http.jwt.JWT
+import uco.pensum.infrastructure.postgres.AuthRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -61,5 +63,17 @@ trait UsuarioServices extends LazyLogging {
         repository.authRepository.almacenarToken(user, token)
       )
     } yield (user, token)).value
+
+  def login2(credenciales: Credentials): Future[Option[AuthRecord]] = {
+
+    credenciales match {
+      case cp @ Credentials.Provided(correo) =>
+        OptionT(repository.authRepository.buscarCorreo(correo))
+          .filter(record => cp.verify(record.password))
+          .value
+      case _ => Future.successful(None)
+    }
+
+  }
 
 }
