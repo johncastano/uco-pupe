@@ -31,20 +31,22 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def agregarPrograma: Route = path("programa") {
     post {
-      entity(as[ProgramaAsignacion]) { programa =>
-        onComplete(agregarPrograma(programa)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
+      authenticateOAuth2("auth", jwt.autenticar) { _ =>
+        entity(as[ProgramaAsignacion]) { programa =>
+          onComplete(agregarPrograma(programa)) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              response.fold(
+                err =>
+                  complete(
+                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                  ),
+                pr => complete(Created -> pr.to[ProgramaRespuesta])
+              )
           }
-          case Success(response) =>
-            response.fold(
-              err =>
-                complete(
-                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                ),
-              pr => complete(Created -> pr.to[ProgramaRespuesta])
-            )
         }
       }
     }
