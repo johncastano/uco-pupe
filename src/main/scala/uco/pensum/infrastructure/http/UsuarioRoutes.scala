@@ -2,10 +2,7 @@ package uco.pensum.infrastructure.http
 
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.headers.{
-  OAuth2BearerToken,
-  RawHeader
-}
+import akka.http.scaladsl.model.headers.{OAuth2BearerToken, RawHeader}
 import akka.stream.Materializer
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -61,7 +58,7 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
       }
     }
   }
-
+  //TODO: This is a test approach, it should be removed
   def usuarioLogin2: Route = path("usuario" / "login2") {
     post {
       entity(as[Credenciales]) { usuario =>
@@ -78,7 +75,12 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
                 ),
               pr => {
                 val usuario = pr
-                respondWithHeader(RawHeader("Access-Token", OAuth2BearerToken(jwt.generar(usuario.correo)).toString)) {
+                respondWithHeader(
+                  RawHeader(
+                    "Access-Token",
+                    OAuth2BearerToken(jwt.generar(usuario.correo)).toString
+                  )
+                ) {
                   complete(OK -> usuario.to[UsuarioRespuesta])
                 }
               }
@@ -91,7 +93,12 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
   def usuarioLogin: Route = path("usuario" / "login") {
     authenticateBasicAsync("auth", login) { auth =>
       post {
-        respondWithHeader(RawHeader("Access-Token", OAuth2BearerToken(jwt.generar(auth.correo)).toString)) {
+        respondWithHeader(
+          RawHeader(
+            "Access-Token",
+            OAuth2BearerToken(jwt.generar(auth.correo)).toString
+          )
+        ) {
           complete(OK)
         }
       }

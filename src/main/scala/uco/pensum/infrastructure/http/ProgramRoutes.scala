@@ -15,6 +15,7 @@ import uco.pensum.infrastructure.http.dtos.{
   ProgramaAsignacion,
   ProgramaRespuesta
 }
+import uco.pensum.infrastructure.http.jwt.JWT
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -26,6 +27,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
   implicit val materializer: Materializer
+  implicit val jwt: JWT
 
   def agregarPrograma: Route = path("programa") {
     post {
@@ -101,5 +103,6 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     }
   }
 
-  val programRoutes: Route = agregarPrograma ~ porgramaPorId ~ programas
+  val programRoutes
+    : Route = agregarPrograma ~ actualizarPrograma ~ porgramaPorId ~ programas
 }
