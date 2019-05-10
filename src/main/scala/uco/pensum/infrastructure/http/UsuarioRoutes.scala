@@ -91,8 +91,8 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
   }
 
   def usuarioLogin: Route = path("usuario" / "login") {
-    authenticateBasicAsync("auth", login) { auth =>
-      post {
+    post {
+      authenticateBasicAsync("auth", login) { auth =>
         respondWithHeader(
           RawHeader(
             "Access-Token",
