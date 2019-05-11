@@ -1,5 +1,6 @@
 package uco.pensum.infrastructure.http
 
+import akka.http.scaladsl.model.HttpMethods
 import akka.http.scaladsl.model.headers.HttpOrigin
 import akka.http.scaladsl.server._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
@@ -20,6 +21,16 @@ trait HttpService
     val allowedDomain = HttpOrigin(CorsConfig.corsDomain.value)
     val corsSettings: CorsSettings = CorsSettings.defaultSettings
       .withAllowedOrigins(HttpOriginMatcher(allowedDomain))
+      .withAllowedMethods(
+        List(
+          HttpMethods.GET,
+          HttpMethods.POST,
+          HttpMethods.PUT,
+          HttpMethods.DELETE,
+          HttpMethods.HEAD,
+          HttpMethods.OPTIONS
+        )
+      )
 
     val rejectionHandler = handleRejections(
       corsRejectionHandler withFallback RejectionHandler.default
