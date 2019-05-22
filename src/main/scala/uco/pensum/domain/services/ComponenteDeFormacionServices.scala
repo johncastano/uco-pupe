@@ -7,6 +7,7 @@ import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.{ComponenteDeFormacionExistente, DomainError}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.http.dtos.ComponenteDeFormacionAsignacion
+import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,5 +33,8 @@ trait ComponenteDeFormacionServices extends LazyLogging {
           .almacenarOActualizarComponenteDeFormacion(cf)
       )
     } yield cf).value
+
+  def pbtenerComponenetesDeFormacion: Future[Seq[ComponenteDeFormacionRecord]] =
+    repository.componenteDeFormacionRepository.obtenerTodosLosComponentesDeFormacion
 
 }

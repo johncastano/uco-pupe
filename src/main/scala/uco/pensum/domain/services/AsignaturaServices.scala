@@ -70,6 +70,13 @@ trait AsignaturaServices extends LazyLogging {
       )
     } yield (a, cf)).value
 
+  def asignaturasPorInp(
+      programId: String,
+      inp: String
+  ): Future[Seq[AsignaturaConComponenteRecord]] =
+    repository.asignaturaRepository
+      .obtenerAsignaturasPorINPYPrograma(programId, inp)
+
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,
       programId: String,
@@ -174,13 +181,6 @@ trait AsignaturaServices extends LazyLogging {
       Some(asignaturaMock.copy(requisitos = List("ISH0122", "ISH101")))
     )
   }
-
-  def asignaturasPorInp(
-      programId: String,
-      inp: String
-  ): Future[Seq[AsignaturaConComponenteRecord]] =
-    repository.asignaturaRepository
-      .obtenerAsignaturasPorINPYPrograma(programId, inp)
 
   def eliminarAsignatura(
       programId: String,

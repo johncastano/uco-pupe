@@ -50,6 +50,21 @@ trait ComponenteDeFormacionRoutes
       }
     }
 
-  val componentesRoutes: Route = agregarComponenteDeFormacion
+  def listarComponentesDeFormacion =
+    path("componente") {
+      get {
+        onComplete(pbtenerComponenetesDeFormacion) {
+          case Failure(ex) => {
+            logger.error(s"Exception: $ex")
+            complete(InternalServerError -> ErrorInterno())
+          }
+          case Success(response) =>
+            complete(OK -> response.map(_.to[ComponenteDeFormacionRespuesta]))
+        }
+      }
+    }
+
+  val componentesRoutes
+    : Route = agregarComponenteDeFormacion ~ listarComponentesDeFormacion
 
 }

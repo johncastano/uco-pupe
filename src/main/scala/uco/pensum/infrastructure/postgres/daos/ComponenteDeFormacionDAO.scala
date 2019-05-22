@@ -21,6 +21,12 @@ class ComponentesDeFormacion(tag: Tag)
 abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new ComponentesDeFormacion(_)) {
+
+  def obtenerComponenetesDeFormacion: Future[Seq[ComponenteDeFormacionRecord]] =
+    db.run(
+      this.result
+    )
+
   def buscarPorNombre(
       nombre: String
   ): Future[Option[ComponenteDeFormacionRecord]] =

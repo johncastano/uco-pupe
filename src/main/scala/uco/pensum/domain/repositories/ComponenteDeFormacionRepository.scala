@@ -12,6 +12,10 @@ class ComponenteDeFormacionRepository(
 
   import uco.pensum.infrastructure.mapper.MapperRecords._
 
+  def obtenerTodosLosComponentesDeFormacion
+    : Future[Seq[ComponenteDeFormacionRecord]] =
+    provider.componentesDeFormacion.obtenerComponenetesDeFormacion
+
   def buscarPorNombre(
       nombre: String
   ): Future[Option[ComponenteDeFormacionRecord]] =

@@ -188,4 +188,18 @@ class MapperDTOInstances extends MapperSugar {
         )
     }
 
+  implicit def ComponenteDeFormacionRecordToComponenteDeFormacionRespuesta
+    : Mapper[ComponenteDeFormacionRecord, ComponenteDeFormacionRespuesta] =
+    new Mapper[ComponenteDeFormacionRecord, ComponenteDeFormacionRespuesta] {
+      override def to(
+          record: ComponenteDeFormacionRecord
+      ): ComponenteDeFormacionRespuesta =
+        ComponenteDeFormacionRespuesta(
+          id = record.id,
+          abreviatura = record.abreviatura,
+          nombre = record.nombre,
+          color = record.color
+        )
+    }
+
 }
