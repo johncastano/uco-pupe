@@ -32,18 +32,24 @@ final case class PlanDeEstudioAsignaturaRecord(
 
 final case class AsignaturaRecord(
     codigo: String,
-    componenteDeFormacionNombre: String,
-    componenteDeFormacionCodigo: String,
     nombre: String,
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
-    semestre: Int,
+    nivel: Int,
+    componenteDeFormacionId: Int,
     direccionPlanDeEstudios: String,
     fechaDeCreacion: String,
     fechaDeModificacion: String
+) extends Record
+
+final case class ComponenteDeFormacionRecord(
+    nombre: String,
+    abreviatura: String,
+    color: String,
+    id: Int
 ) extends Record
 
 final case class PrerequisitoRecord(id: Int, codigoAsignatura: String)
@@ -57,6 +63,23 @@ final case class ProgramaConPlanesDeEstudioRecord(
     creditos: Option[Int]
 )
 
+final case class AsignaturaConComponenteRecord(
+    codigoAsignatura: String,
+    nombreAsignatura: String,
+    creditos: Int,
+    horasTeoricas: Int,
+    horasLaboratorio: Int,
+    horasPracticas: Int,
+    trabajoDelEstudiante: Int,
+    nivel: Int,
+    componenteDeFormacionId: Int,
+    nombreComponente: String,
+    abreviaturaComponente: String,
+    colorComponente: String,
+    direccionPlanDeEstudios: String,
+    fechaDeCreacion: String,
+    fechaDeModificacion: String
+)
 final case class UsuarioRecord(
     id: Int,
     nombre: String,

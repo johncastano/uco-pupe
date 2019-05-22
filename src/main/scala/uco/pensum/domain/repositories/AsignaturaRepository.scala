@@ -2,7 +2,10 @@ package uco.pensum.domain.repositories
 
 import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
-import uco.pensum.infrastructure.postgres.AsignaturaRecord
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaConComponenteRecord,
+  AsignaturaRecord
+}
 
 import scala.concurrent.Future
 
@@ -20,6 +23,6 @@ class AsignaturaRepository(implicit val provider: PensumDatabase) {
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,
       inp: String
-  ): Future[Seq[AsignaturaRecord]] =
+  ): Future[Seq[AsignaturaConComponenteRecord]] =
     provider.asignaturas.obtenerAsignaturasPorINPYPrograma(programaId, inp)
 }

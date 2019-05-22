@@ -9,46 +9,6 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaAsignacion
 }
 
-sealed trait ComponenteDeFormacion {
-  def codigo: String
-}
-
-case object CienciaBasicaIngenieria extends ComponenteDeFormacion {
-  override def toString: String = "Ciencia basica de Ingenieria"
-  override def codigo: String = "CBI"
-}
-case object CienciaBasica extends ComponenteDeFormacion {
-  override def toString: String = "Ciencia basica"
-  override def codigo: String = "CB"
-}
-case object FormacionComplementaria extends ComponenteDeFormacion {
-  override def toString: String = "Formacion complementaria"
-  override def codigo: String = "FC"
-}
-case object IngenieriaAplicada extends ComponenteDeFormacion {
-  override def toString: String = "Ingenieria aplicada"
-  override def codigo: String = "IA"
-}
-case object Optativa extends ComponenteDeFormacion {
-  override def toString: String = "Optativa interdisciplinaria"
-  override def codigo: String = "O"
-}
-case object ComponenteDesconocido extends ComponenteDeFormacion {
-  override def codigo: String = "Desconocido"
-}
-
-object ComponenteDeFormacion {
-  def apply(valor: String): ComponenteDeFormacion =
-    valor.filterNot(_.isWhitespace).toLowerCase match {
-      case "cienciabasicadeingenieria"  => CienciaBasicaIngenieria
-      case "cienciabasica"              => CienciaBasica
-      case "formacioncomplementaria"    => FormacionComplementaria
-      case "ingenieriaaplicada"         => IngenieriaAplicada
-      case "optativainterdisciplinaria" => Optativa
-      case _                            => ComponenteDesconocido
-    }
-}
-
 case class Horas(
     teoricas: Int,
     laboratorio: Int,
@@ -59,11 +19,11 @@ case class Horas(
 case class Asignatura(
     codigo: Codigo,
     inp: String,
-    componenteDeFormacion: ComponenteDeFormacion,
+    componenteDeFormacionId: Int,
     nombre: String,
     creditos: Int,
     horas: Horas,
-    semestre: Int,
+    nivel: Int,
     requisitos: List[Codigo],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
@@ -77,28 +37,28 @@ object Asignatura {
 
   def validar(
       dto: AsignaturaAsignacion,
-      inp: String
+      inp: String,
+      componenteDeFormacionId: Int
   ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
-      cf <- validarComponenteDeFormacion(dto.componenteDeFormacion)
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-      semestre <- validarValorEntero(dto.semestre, "semestre")
+      nivel <- validarValorEntero(dto.nivel, "nivel")
     } yield
       Asignatura(
         codigo = codigo,
         inp = inp,
-        componenteDeFormacion = cf,
+        componenteDeFormacionId = componenteDeFormacionId,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
           dto.horasTeoricas,
           dto.horasLaboratorio,
-          dto.horasPracticas,
+          dto.horasPracticas.getOrElse(0),
           dto.trabajoIndependienteEstudiante
         ),
-        semestre = semestre,
+        nivel = nivel,
         requisitos = dto.requisitos.filterNot(v => v.isEmpty),
         fechaDeRegistro = hora,
         fechaDeModificacion = hora
@@ -110,24 +70,23 @@ object Asignatura {
       original: Asignatura
   ): Either[DomainError, Asignatura] = {
     for {
-      cf <- validarComponenteDeFormacion(dto.componenteDeFormacion)
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-      semestre <- validarValorEntero(dto.semestre, "semestre")
+      nivel <- validarValorEntero(dto.nivel, "nivel")
     } yield
       Asignatura(
         codigo = original.codigo,
         inp = original.inp,
-        componenteDeFormacion = cf,
+        componenteDeFormacionId = original.componenteDeFormacionId,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
           dto.horasTeoricas,
           dto.horasLaboratorio,
-          dto.productArity,
+          dto.horasPracticas.getOrElse(0),
           dto.trabajoIndependienteEstudiante
         ),
-        semestre = semestre,
+        nivel = nivel,
         requisitos = original.requisitos,
         fechaDeRegistro = original.fechaDeRegistro,
         fechaDeModificacion = hora

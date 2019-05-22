@@ -43,6 +43,16 @@ final case class CurriculumNotFound(
     mensaje: String = "El INP especificado no existe para el programa dado"
 ) extends DomainError
 
+final case class ComponenteDeFormacionNoExiste(
+    codigo: Int = 100004,
+    mensaje: String = "El componente de formacion especificado no se encontró"
+) extends DomainError
+
+final case class ComponenteDeFormacionExistente(
+    codigo: Int = 100005,
+    mensaje: String = "El componente de formacion ya existe"
+) extends DomainError
+
 final case class AsignaturaExistente(
     codigo: Int = 100004,
     mensaje: String = "La asignatura ya existe"
@@ -55,11 +65,6 @@ final case class CannotUpdatePlanDeEstudio(
 ) extends DomainError
 
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError
-
-final case class ComponenteDeFormacionDesconocido(
-    codigo: Int = 1234,
-    mensaje: String = "componente de formacion desconocido"
-) extends DomainError
 
 final case class UsuarioExistente(
     codigo: Int = 9898,

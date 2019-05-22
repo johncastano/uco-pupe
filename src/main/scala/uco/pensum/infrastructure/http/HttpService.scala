@@ -1,5 +1,6 @@
 package uco.pensum.infrastructure.http
 
+import akka.http.scaladsl.model.HttpMethods
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.model.headers.HttpOrigin
 import akka.http.scaladsl.server._
@@ -15,6 +16,7 @@ trait HttpService
     with PlanEstudioRoutes
     with AsignaturaRoutes
     with UsuarioRoutes
+    with ComponenteDeFormacionRoutes
     with LazyLogging {
 
   protected def routes: Route = {
@@ -23,6 +25,16 @@ trait HttpService
     val allowedDomain = HttpOrigin(CorsConfig.corsDomain.value)
     val corsSettings: CorsSettings = CorsSettings.defaultSettings
       .withAllowedOrigins(HttpOriginMatcher(allowedDomain))
+      .withAllowedMethods(
+        List(
+          HttpMethods.GET,
+          HttpMethods.POST,
+          HttpMethods.PUT,
+          HttpMethods.DELETE,
+          HttpMethods.HEAD,
+          HttpMethods.OPTIONS
+        )
+      )
 
     val defaultRejectionHandler: RejectionHandler =
       RejectionHandler.default.mapRejectionResponse {
@@ -47,7 +59,7 @@ trait HttpService
       cors(corsSettings) {
         rejectionHandler {
           pathPrefix("pensum")(
-            programRoutes ~ curriculumRoutes ~ asignaturaRoutes ~ usuarioRoutes
+            programRoutes ~ curriculumRoutes ~ asignaturaRoutes ~ usuarioRoutes ~ componentesRoutes
           )
         }
       }

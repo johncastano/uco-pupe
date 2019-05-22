@@ -2,16 +2,7 @@ package uco.pensum
 
 import java.time.ZonedDateTime
 
-import uco.pensum.domain.asignatura.{
-  ComponenteDeFormacion,
-  ComponenteDesconocido
-}
-import uco.pensum.domain.errors.{
-  CampoVacio,
-  ComponenteDeFormacionDesconocido,
-  DomainError,
-  NumeroInvalido
-}
+import uco.pensum.domain.errors.{CampoVacio, DomainError, NumeroInvalido}
 
 package object domain {
 
@@ -44,16 +35,4 @@ package object domain {
     else
       Right(valor)
   }
-
-  def validarComponenteDeFormacion(
-      valor: String
-  ): Either[DomainError, ComponenteDeFormacion] =
-    if (valor.isEmpty)
-      Left(CampoVacio("componente de formacion"))
-    else
-      ComponenteDeFormacion(valor) match {
-        case ComponenteDesconocido => Left(ComponenteDeFormacionDesconocido())
-        case componenteValido @ _  => Right(componenteValido)
-      }
-
 }

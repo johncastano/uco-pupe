@@ -14,7 +14,10 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaAsignacion,
   RequisitosActualizacion
 }
-import uco.pensum.infrastructure.postgres.AsignaturaRecord
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaConComponenteRecord,
+  ComponenteDeFormacionRecord
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,7 +31,7 @@ trait AsignaturaServices extends LazyLogging {
       asignatura: AsignaturaAsignacion,
       programId: String,
       inp: String
-  ): Future[Either[DomainError, Asignatura]] =
+  ): Future[Either[DomainError, (Asignatura, ComponenteDeFormacionRecord)]] =
     (for {
       _ <- EitherT.fromOptionF(
         repository.programaRepository.buscarProgramaPorId(programId),
@@ -39,12 +42,17 @@ trait AsignaturaServices extends LazyLogging {
           .buscarPlanDeEstudioPorINPYProgramaId(inp, programId),
         CurriculumNotFound()
       )
+      cf <- EitherT.fromOptionF(
+        repository.componenteDeFormacionRepository
+          .buscarPorNombre(asignatura.componenteDeFormacionNombre),
+        ComponenteDeFormacionNoExiste()
+      )
       _ <- OptionT(
         repository.asignaturaRepository
           .buscarAsignaturaPorCodigo(asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
       a <- EitherT.fromEither[Future](
-        Asignatura.validar(asignatura, inp)
+        Asignatura.validar(asignatura, inp, cf.id)
       )
       upd <- EitherT.fromEither[Future](
         PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
@@ -60,7 +68,14 @@ trait AsignaturaServices extends LazyLogging {
         repository.planDeEstudioAsignaturaRepository
           .almacenarOActualizarPlaDeEstudioAsignatura(pe.id, a.codigo)
       )
-    } yield a).value
+    } yield (a, cf)).value
+
+  def asignaturasPorInp(
+      programId: String,
+      inp: String
+  ): Future[Seq[AsignaturaConComponenteRecord]] =
+    repository.asignaturaRepository
+      .obtenerAsignaturasPorINPYPrograma(programId, inp)
 
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,
@@ -76,7 +91,7 @@ trait AsignaturaServices extends LazyLogging {
           original = Asignatura(
             codigo,
             "12",
-            CienciaBasicaIngenieria,
+            1,
             "Test",
             3,
             Horas(3, 3, 0, 6),
@@ -115,7 +130,7 @@ trait AsignaturaServices extends LazyLogging {
       mockOriginal = Asignatura(
         codigo,
         inp,
-        CienciaBasicaIngenieria,
+        1,
         "Calculo",
         5,
         Horas(6, 4, 0, 5),
@@ -150,7 +165,7 @@ trait AsignaturaServices extends LazyLogging {
     val asignaturaMock = Asignatura(
       codigo,
       "123",
-      CienciaBasicaIngenieria,
+      1,
       "Calculo",
       5,
       Horas(6, 4, 0, 6),
@@ -167,13 +182,6 @@ trait AsignaturaServices extends LazyLogging {
     )
   }
 
-  def asignaturasPorInp(
-      programId: String,
-      inp: String
-  ): Future[Seq[AsignaturaRecord]] =
-    repository.asignaturaRepository
-      .obtenerAsignaturasPorINPYPrograma(programId, inp)
-
   def eliminarAsignatura(
       programId: String,
       inp: String,
@@ -182,7 +190,7 @@ trait AsignaturaServices extends LazyLogging {
     val asignaturaMock = Asignatura(
       codigo,
       inp,
-      CienciaBasicaIngenieria,
+      1,
       "Calculo",
       5,
       Horas(6, 4, 0, 5),

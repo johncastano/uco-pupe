@@ -44,6 +44,9 @@ object Main extends App with HttpService {
     override def asignaturaRepository: AsignaturaRepository =
       new AsignaturaRepository
 
+    override def componenteDeFormacionRepository
+      : ComponenteDeFormacionRepository = new ComponenteDeFormacionRepository
+
     override def planDeEstudioAsignaturaRepository
       : PlanDeEstudioAsignaturaRepository =
       new PlanDeEstudioAsignaturaRepository

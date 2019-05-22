@@ -1,15 +1,7 @@
 package uco.pensum.infrastructure.postgres
 
 import slick.jdbc.PostgresProfile
-import uco.pensum.infrastructure.postgres.daos.{
-  Asignaturas,
-  Auth,
-  PlanDeEstudioAsignaturas,
-  PlanesDeEstudio,
-  Prerequisitos,
-  Programas,
-  Usuario
-}
+import uco.pensum.infrastructure.postgres.daos._
 import slick.jdbc.meta.MTable
 import slick.jdbc.PostgresProfile.api._
 
@@ -20,13 +12,16 @@ object tables {
   val programas = TableQuery[Programas]
   val planesDeEstudio = TableQuery[PlanesDeEstudio]
   val asignaturas = TableQuery[Asignaturas]
+  val componentesDeFormacion = TableQuery[ComponentesDeFormacion]
   val planDeEstudioAsignaturas = TableQuery[PlanDeEstudioAsignaturas]
   val prerequisitos = TableQuery[Prerequisitos]
   val usuarios = TableQuery[Usuario]
   val auth = TableQuery[Auth]
+  //Tables have to be listed depending on the relations that has each other
   val tables = List(
     programas,
     planesDeEstudio,
+    componentesDeFormacion,
     asignaturas,
     planDeEstudioAsignaturas,
     prerequisitos,
