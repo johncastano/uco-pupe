@@ -50,7 +50,7 @@ trait ProgramServices extends LazyLogging {
         Programa.validate(programa, Programa.fromRecord(original))
       )
       _ <- EitherT.right[DomainError](
-        repository.programaRepository.almacenarPrograma(pd)
+        repository.programaRepository.actualizarPrograma(pd)
       )
     } yield pd).value
 
@@ -65,5 +65,17 @@ trait ProgramServices extends LazyLogging {
 
   def devolverProgramas: Future[Seq[ProgramaRecord]] =
     repository.programaRepository.obtenerTodosLosProgramas
+
+  def borrarPrograma(
+      programaId: String
+  ): Future[Either[DomainError, ProgramaRecord]] =
+    (for {
+      programa <- OptionT(
+        repository.programaRepository.buscarProgramaPorId(programaId)
+      ).toRight(ProgramNotFound())
+      _ <- EitherT.right[DomainError](
+        repository.programaRepository.borrarPrograma(programaId)
+      )
+    } yield programa).value
 
 }

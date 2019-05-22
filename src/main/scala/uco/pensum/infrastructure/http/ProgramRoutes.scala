@@ -101,6 +101,25 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     }
   }
 
+  def borrarPrograma: Route = path("programa" / Segment) { id =>
+    delete {
+      onComplete(borrarPrograma(id)) {
+        case Failure(ex) => {
+          logger.error(s"Exception: $ex")
+          complete(InternalServerError -> ErrorInterno())
+        }
+        case Success(response) =>
+          response.fold(
+            err =>
+              complete(
+                BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+              ),
+            pr => complete(OK -> pr.to[ProgramaRespuesta])
+          )
+      }
+    }
+  }
+
   val programRoutes
-    : Route = agregarPrograma ~ actualizarPrograma ~ porgramaPorId ~ programas
+    : Route = agregarPrograma ~ actualizarPrograma ~ porgramaPorId ~ programas ~ borrarPrograma
 }

@@ -52,6 +52,10 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
         .map(_.id) into ((acc, id) => acc.copy(id = id)) += programa
     )
 
+  def actualizar(programa: ProgramaRecord): Future[ProgramaRecord] =
+    db.run(this.filter(_.id === programa.id).update(programa))
+      .map(_ => programa)
+
   def eliminarPorId(id: String): Future[Int] =
     db.run(this.filter(_.id === id).delete)
 }

@@ -18,6 +18,9 @@ class ProgramaRepository(
   def almacenarPrograma(programa: Programa): Future[ProgramaRecord] =
     provider.programas.almacenar(programa.to[ProgramaRecord])
 
+  def actualizarPrograma(programa: Programa): Future[ProgramaRecord] =
+    provider.programas.actualizar(programa.to[ProgramaRecord])
+
   def buscarProgramaPorId(id: String): Future[Option[ProgramaRecord]] =
     provider.programas.buscarPorId(id)
 
@@ -28,4 +31,7 @@ class ProgramaRepository(
 
   def obtenerTodosLosProgramas: Future[Seq[ProgramaRecord]] =
     provider.programas.obtenerTodosLosProgramas
+
+  def borrarPrograma(programaId: String): Future[Int] =
+    provider.programas.eliminarPorId(programaId)
 }

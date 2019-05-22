@@ -2,7 +2,9 @@ package uco.pensum.domain.services
 
 import uco.pensum.domain.errors.{
   CurriculumAlreadyExists,
+  CurriculumNotFound,
   DomainError,
+  PlanDeEstudioIdInvalido,
   ProgramNotFound
 }
 import cats.data.{EitherT, OptionT}
@@ -14,6 +16,7 @@ import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 trait PlanEstudioServices extends LazyLogging {
 
@@ -55,5 +58,28 @@ trait PlanEstudioServices extends LazyLogging {
     repository.planDeEstudioRepository
       .obtenerTodosLosPlanesDeEstudioPorPrograma(programId)
   }
+
+  def eliminarPlanDeEstudio(
+      id: String,
+      programaId: String
+  ): Future[Either[DomainError, PlanDeEstudioRecord]] =
+    (for {
+      correctId <- EitherT(
+        Future.successful(
+          Try(id.toInt).toEither.leftMap(_ => PlanDeEstudioIdInvalido())
+        )
+      )
+      _ = println(
+        s"************************************************* CORRECT ID: $correctId"
+      )
+      pe <- OptionT(
+        repository.planDeEstudioRepository
+          .buscarPlanDeEstudioPorIdYProgramaId(correctId, programaId)
+      ).toRight(CurriculumNotFound())
+      _ <- EitherT.right[DomainError](
+        repository.planDeEstudioRepository
+          .eliminarPlanDeEstudio(correctId, programaId)
+      )
+    } yield pe).value
 
 }

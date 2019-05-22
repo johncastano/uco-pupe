@@ -79,7 +79,25 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
       }
   }
 
+  def eliminarPlanDeEstudio: Route =
+    path("programa" / Segment / "planEstudio" / Segment) { (programaId, id) =>
+      delete {
+        onComplete(eliminarPlanDeEstudio(id = id, programaId = programaId)) {
+          case Failure(ex) => {
+            logger.error(s"Exception: $ex")
+            complete(InternalServerError -> ErrorInterno())
+          }
+          case Success(response) =>
+            response.fold(
+              err =>
+                complete(BadRequest -> ErrorGenerico(err.codigo, err.mensaje)),
+              r => complete(OK -> r.to[PlanDeEstudioRespuesta])
+            )
+        }
+      }
+    }
+
   val curriculumRoutes
-    : Route = agregarPlanDeEstudio ~ planDeEstudioPorId ~ planesDeEstudio
+    : Route = agregarPlanDeEstudio ~ planDeEstudioPorId ~ planesDeEstudio ~ eliminarPlanDeEstudio
 
 }
