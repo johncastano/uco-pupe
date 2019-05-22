@@ -8,19 +8,9 @@ import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.domain.usuario.Usuario
-import uco.pensum.infrastructure.http.dtos.{
-  AsignaturaRespuesta,
-  ComponenteDeFormacionRespuesta,
-  PlanDeEstudioRespuesta,
-  ProgramaRespuesta,
-  UsuarioRespuesta
-}
+import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
-import uco.pensum.infrastructure.postgres.{
-  AsignaturaRecord,
-  PlanDeEstudioRecord,
-  ProgramaRecord
-}
+import uco.pensum.infrastructure.postgres._
 
 class MapperDTOInstances extends MapperSugar {
 
@@ -84,38 +74,67 @@ class MapperDTOInstances extends MapperSugar {
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horas.teoricas,
           horasLaboratorio = asignatura.horas.laboratorio,
-          semestre = asignatura.nivel,
+          nivel = asignatura.nivel,
           requisitos = asignatura.requisitos,
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
         )
     }
 
-  implicit def AsignaturaRecordToRespuesta
-    : Mapper[(String, AsignaturaRecord), AsignaturaRespuesta] =
-    new Mapper[(String, AsignaturaRecord), AsignaturaRespuesta] {
-      override def to(in: (String, AsignaturaRecord)): AsignaturaRespuesta = {
+  implicit def AsignaturaConComponenteToRespuesta
+    : Mapper[(String, AsignaturaConComponenteRecord), AsignaturaRespuesta] =
+    new Mapper[(String, AsignaturaConComponenteRecord), AsignaturaRespuesta] {
+      override def to(
+          in: (String, AsignaturaConComponenteRecord)
+      ): AsignaturaRespuesta = {
         val (inp, record) = in
         AsignaturaRespuesta(
-          codigo = record.codigo,
+          codigo = record.codigoAsignatura,
           inp = inp,
           componenteDeFormacion = ComponenteDeFormacionRespuesta(
-            id = 0,
-            abreviatura = "",
-            nombre = "",
-            color = ""
+            id = record.componenteDeFormacionId,
+            abreviatura = record.abreviaturaComponente,
+            nombre = record.nombreComponente,
+            color = record.colorComponente
           ),
-          nombre = record.nombre,
+          nombre = record.nombreAsignatura,
           creditos = record.creditos,
           horasTeoricas = record.horasTeoricas,
           horasLaboratorio = record.horasLaboratorio,
-          semestre = record.nivel,
-          requisitos = Nil, // TODO: Change
+          nivel = record.nivel,
+          requisitos = Nil,
           fechaDeRegistro = ZonedDateTime.parse(record.fechaDeCreacion),
           fechaDeModificacion = ZonedDateTime.parse(record.fechaDeModificacion)
         )
       }
+    }
 
+  implicit def AsignaturaAndComponenteToRespuesta
+    : Mapper[(Asignatura, ComponenteDeFormacionRecord), AsignaturaRespuesta] =
+    new Mapper[(Asignatura, ComponenteDeFormacionRecord), AsignaturaRespuesta] {
+      override def to(
+          in: (Asignatura, ComponenteDeFormacionRecord)
+      ): AsignaturaRespuesta = {
+        val (a, cfr) = in
+        AsignaturaRespuesta(
+          codigo = a.codigo,
+          inp = a.inp,
+          componenteDeFormacion = ComponenteDeFormacionRespuesta(
+            id = cfr.id,
+            abreviatura = cfr.abreviatura,
+            nombre = cfr.nombre,
+            color = cfr.color
+          ),
+          nombre = a.nombre,
+          creditos = a.creditos,
+          horasTeoricas = a.horas.teoricas,
+          horasLaboratorio = a.horas.laboratorio,
+          nivel = a.nivel,
+          requisitos = a.requisitos,
+          fechaDeRegistro = a.fechaDeRegistro,
+          fechaDeModificacion = a.fechaDeModificacion
+        )
+      }
     }
 
   implicit def UsuarioToRespuesta: Mapper[Usuario, UsuarioRespuesta] =

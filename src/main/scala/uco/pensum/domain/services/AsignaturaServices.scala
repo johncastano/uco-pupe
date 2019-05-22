@@ -14,7 +14,10 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaAsignacion,
   RequisitosActualizacion
 }
-import uco.pensum.infrastructure.postgres.AsignaturaRecord
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaConComponenteRecord,
+  ComponenteDeFormacionRecord
+}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,7 +31,7 @@ trait AsignaturaServices extends LazyLogging {
       asignatura: AsignaturaAsignacion,
       programId: String,
       inp: String
-  ): Future[Either[DomainError, Asignatura]] =
+  ): Future[Either[DomainError, (Asignatura, ComponenteDeFormacionRecord)]] =
     (for {
       _ <- EitherT.fromOptionF(
         repository.programaRepository.buscarProgramaPorId(programId),
@@ -65,7 +68,7 @@ trait AsignaturaServices extends LazyLogging {
         repository.planDeEstudioAsignaturaRepository
           .almacenarOActualizarPlaDeEstudioAsignatura(pe.id, a.codigo)
       )
-    } yield a).value
+    } yield (a, cf)).value
 
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,
@@ -175,7 +178,7 @@ trait AsignaturaServices extends LazyLogging {
   def asignaturasPorInp(
       programId: String,
       inp: String
-  ): Future[Seq[AsignaturaRecord]] =
+  ): Future[Seq[AsignaturaConComponenteRecord]] =
     repository.asignaturaRepository
       .obtenerAsignaturasPorINPYPrograma(programId, inp)
 

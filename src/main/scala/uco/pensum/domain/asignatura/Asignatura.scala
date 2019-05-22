@@ -44,7 +44,7 @@ object Asignatura {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-      nivel <- validarValorEntero(dto.semestre, "nivel")
+      nivel <- validarValorEntero(dto.nivel, "nivel")
     } yield
       Asignatura(
         codigo = codigo,
@@ -55,7 +55,7 @@ object Asignatura {
         horas = Horas(
           dto.horasTeoricas,
           dto.horasLaboratorio,
-          dto.horasPracticas,
+          dto.horasPracticas.getOrElse(0),
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,
@@ -72,7 +72,7 @@ object Asignatura {
     for {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
-      nivel <- validarValorEntero(dto.semestre, "nivel")
+      nivel <- validarValorEntero(dto.nivel, "nivel")
     } yield
       Asignatura(
         codigo = original.codigo,
@@ -83,7 +83,7 @@ object Asignatura {
         horas = Horas(
           dto.horasTeoricas,
           dto.horasLaboratorio,
-          dto.productArity,
+          dto.horasPracticas.getOrElse(0),
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,

@@ -63,4 +63,21 @@ final case class ProgramaConPlanesDeEstudioRecord(
     creditos: Option[Int]
 )
 
+final case class AsignaturaConComponenteRecord(
+    codigoAsignatura: String,
+    nombreAsignatura: String,
+    creditos: Int,
+    horasTeoricas: Int,
+    horasLaboratorio: Int,
+    horasPracticas: Int,
+    trabajoDelEstudiante: Int,
+    nivel: Int,
+    componenteDeFormacionId: Int,
+    nombreComponente: String,
+    abreviaturaComponente: String,
+    colorComponente: String,
+    direccionPlanDeEstudios: String,
+    fechaDeCreacion: String,
+    fechaDeModificacion: String
+)
 // $COVERAGE-ON$

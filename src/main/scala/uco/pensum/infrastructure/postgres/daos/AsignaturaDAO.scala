@@ -1,9 +1,12 @@
 package uco.pensum.infrastructure.postgres.daos
 
-import uco.pensum.infrastructure.postgres.{AsignaturaRecord, tables}
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaRecord,
+  AsignaturaConComponenteRecord,
+  tables
+}
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
-import uco.pensum.infrastructure.postgres.tables
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -64,13 +67,13 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,
       inp: String
-  ): Future[Seq[AsignaturaRecord]] =
+  ): Future[Seq[AsignaturaConComponenteRecord]] =
     db.run(
       (for {
         pe <- tables.planesDeEstudio.filter(
           pe => pe.inp === inp && pe.programaId === programaId
         )
-        (a, pea) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura)
+        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
         if (pea.planDeEstudioID === pe.id)
       } yield
         (
@@ -83,10 +86,13 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           a.trabajoDelEstudiante,
           a.nivel,
           a.componenteDeFormacionId,
+          cdf.nombre,
+          cdf.abreviatura,
+          cdf.color,
           a.direccionPlanDeEstudios,
           a.fechaDeCreacion,
           a.fechaDeModificacion
-        ).mapTo[AsignaturaRecord]).result
+        ).mapTo[AsignaturaConComponenteRecord]).result
     )
 
   def eliminarPorCodigo(codigo: String): Future[Int] =
