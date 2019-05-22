@@ -6,13 +6,9 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
+import uco.pensum.domain.requisito.Requisito
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
-import uco.pensum.infrastructure.postgres.{
-  AsignaturaRecord,
-  ComponenteDeFormacionRecord,
-  PlanDeEstudioRecord,
-  ProgramaRecord
-}
+import uco.pensum.infrastructure.postgres._
 
 class MapperRecordsInstances extends MapperSugar {
 
@@ -81,6 +77,21 @@ class MapperRecordsInstances extends MapperSugar {
         color = componente.color,
         id = componente.id.getOrElse(0)
       )
+    }
+
+  implicit def RequisitoToRequisitoRecord
+    : Mapper[(String, Requisito), RequisitoRecord] =
+    new Mapper[(String, Requisito), RequisitoRecord] {
+      override def to(
+          in: (String, Requisito)
+      ): RequisitoRecord = {
+        val (ca, requisito) = in
+        RequisitoRecord(
+          codigoAsignaturaRequisito = requisito.codigoAsignatura,
+          codigoAsignatura = ca,
+          tipoRequisito = requisito.tipoRequisito.toString
+        )
+      }
     }
 
 }

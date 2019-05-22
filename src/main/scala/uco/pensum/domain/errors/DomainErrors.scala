@@ -53,6 +53,16 @@ final case class ComponenteDeFormacionExistente(
     mensaje: String = "El componente de formacion ya existe"
 ) extends DomainError
 
+final case class AsignaturaInexistente(
+    codigo: Int = 100004,
+    mensaje: String = "La asignatura no existe"
+) extends DomainError
+
+final case class AsignaturaRequisitoInexistente(
+    codigo: Int = 100004,
+    mensaje: String = "La asignatura requisito no existe"
+) extends DomainError
+
 final case class AsignaturaExistente(
     codigo: Int = 100004,
     mensaje: String = "La asignatura ya existe"
@@ -62,6 +72,11 @@ final case class CannotUpdatePlanDeEstudio(
     codigo: Int = 10005,
     mensaje: String =
       "No se pudo actualizar el plan de estudio con los créditos de la nueva asignatura"
+) extends DomainError
+
+final case class RequisitoNoAceptado(
+    codigo: Int = 100006,
+    mensaje: String = "El requisito ingresado no es aceptado"
 ) extends DomainError
 
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError

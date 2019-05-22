@@ -3,16 +3,15 @@ package uco.pensum.domain.services
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.asignatura._
 import uco.pensum.domain.errors._
 import uco.pensum.domain.hora
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.repositories.PensumRepository
+import uco.pensum.domain.requisito.{CoRequisito, PreRequisito, Requisito}
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
-  AsignaturaAsignacion,
-  RequisitosActualizacion
+  AsignaturaAsignacion
 }
 import uco.pensum.infrastructure.postgres.{
   AsignaturaConComponenteRecord,
@@ -49,7 +48,7 @@ trait AsignaturaServices extends LazyLogging {
       )
       _ <- OptionT(
         repository.asignaturaRepository
-          .buscarAsignaturaPorCodigo(asignatura.codigo)
+          .buscarAsignaturaPorCodigo(programId,inp, asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
       a <- EitherT.fromEither[Future](
         Asignatura.validar(asignatura, inp, cf.id)
@@ -111,7 +110,70 @@ trait AsignaturaServices extends LazyLogging {
       } //TODO: Add repository insert
     } yield spd).value
 
-  def actualizarRequisitos(
+  def asignaturaPorCodigo(
+      programId: String,
+      codigo: String
+  ): Future[Option[Asignatura]] = {
+    val asignaturaMock = Asignatura(
+      codigo,
+      "123",
+      1,
+      "Calculo",
+      5,
+      Horas(6, 4, 0, 6),
+      3,
+      Nil,
+      hora,
+      hora
+    )
+    println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
+    //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
+    //repository.getAsignaturaPorCodigo(programId, inp)
+    Future.successful(
+      Some(
+        asignaturaMock
+          .copy(requisitos = List(Requisito("ISH001", PreRequisito)))
+      )
+    )
+  }
+
+  def eliminarAsignatura(
+      programId: String,
+      inp: String,
+      codigo: String
+  ): Future[Either[DomainError, Asignatura]] = {
+    val asignaturaMock = Asignatura(
+      codigo,
+      inp,
+      1,
+      "Calculo",
+      5,
+      Horas(6, 4, 0, 5),
+      3,
+      Nil,
+      hora,
+      hora
+    )
+    println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
+    (for {
+      //asignatura <- repository.GetAsignaturaPorProgramIdAndInpAndCodigo(programId, inp, codigo) //TODO: validate if requested entity exist
+      //repository.EliminarAsignaturaPorProgramIdAndInpAndCodigo(programId, inp, codigo)
+      res <- EitherT(
+        Future.successful(
+          Either.right[DomainError, Asignatura](
+            asignaturaMock.copy(
+              requisitos = List(
+                Requisito("ISH0122", PreRequisito),
+                Requisito("ISH101", CoRequisito)
+              )
+            )
+          )
+        )
+      )
+
+    } yield res).value
+  }
+  /*def actualizarRequisitos(
       requisitos: RequisitosActualizacion,
       programId: String,
       inp: String,
@@ -156,62 +218,5 @@ trait AsignaturaServices extends LazyLogging {
           )
         )
       } //TODO: Add repository insert
-    } yield spd).value
-
-  def asignaturaPorCodigo(
-      programId: String,
-      codigo: String
-  ): Future[Option[Asignatura]] = {
-    val asignaturaMock = Asignatura(
-      codigo,
-      "123",
-      1,
-      "Calculo",
-      5,
-      Horas(6, 4, 0, 6),
-      3,
-      Nil,
-      hora,
-      hora
-    )
-    println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-    //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
-    //repository.getAsignaturaPorCodigo(programId, inp)
-    Future.successful(
-      Some(asignaturaMock.copy(requisitos = List("ISH0122", "ISH101")))
-    )
-  }
-
-  def eliminarAsignatura(
-      programId: String,
-      inp: String,
-      codigo: String
-  ): Future[Either[DomainError, Asignatura]] = {
-    val asignaturaMock = Asignatura(
-      codigo,
-      inp,
-      1,
-      "Calculo",
-      5,
-      Horas(6, 4, 0, 5),
-      3,
-      Nil,
-      hora,
-      hora
-    )
-    println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-    (for {
-      //asignatura <- repository.GetAsignaturaPorProgramIdAndInpAndCodigo(programId, inp, codigo) //TODO: validate if requested entity exist
-      //repository.EliminarAsignaturaPorProgramIdAndInpAndCodigo(programId, inp, codigo)
-      res <- EitherT(
-        Future.successful(
-          Either.right[DomainError, Asignatura](
-            asignaturaMock.copy(requisitos = List("ISH0122", "ISH101"))
-          )
-        )
-      )
-
-    } yield res).value
-  }
-
+    } yield spd).value*/
 }

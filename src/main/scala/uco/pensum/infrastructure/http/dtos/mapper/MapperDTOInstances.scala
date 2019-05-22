@@ -7,6 +7,7 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
+import uco.pensum.domain.requisito.Requisito
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
@@ -75,7 +76,7 @@ class MapperDTOInstances extends MapperSugar {
           horasTeoricas = asignatura.horas.teoricas,
           horasLaboratorio = asignatura.horas.laboratorio,
           nivel = asignatura.nivel,
-          requisitos = asignatura.requisitos,
+          requisitos = Nil, //TODO: Modify
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
         )
@@ -130,9 +131,37 @@ class MapperDTOInstances extends MapperSugar {
           horasTeoricas = a.horas.teoricas,
           horasLaboratorio = a.horas.laboratorio,
           nivel = a.nivel,
-          requisitos = a.requisitos,
+          requisitos = Nil, //TODO: Modify
           fechaDeRegistro = a.fechaDeRegistro,
           fechaDeModificacion = a.fechaDeModificacion
+        )
+      }
+    }
+
+  implicit def AsignaturaConRequisitoToRespuesta
+  : Mapper[(AsignaturaRecord, Requisito), AsignaturaRespuesta] =
+    new Mapper[(AsignaturaRecord, Requisito), AsignaturaRespuesta] {
+      override def to(
+                       in: (AsignaturaRecord, Requisito)
+                     ): AsignaturaRespuesta = {
+        val (asignatura, requisito) = in
+        AsignaturaRespuesta(
+          codigo = asignatura.codigo,
+          inp = asignatura.inp,
+          componenteDeFormacion = ComponenteDeFormacionRespuesta(
+            id = cfr.id,
+            abreviatura = cfr.abreviatura,
+            nombre = cfr.nombre,
+            color = cfr.color
+          ),
+          nombre = asignatura.nombre,
+          creditos = asignatura.creditos,
+          horasTeoricas = asignatura.horasTeoricas,
+          horasLaboratorio = asignatura.horasLaboratorio,
+          nivel = asignatura.nivel,
+          requisitos = List(RequisitoRespuesta(requisito.codigoAsignatura,requisito.tipoRequisito.toString)), //TODO: Change
+          fechaDeRegistro = ZonedDateTime.parse(asignatura.fechaDeCreacion),
+          fechaDeModificacion = ZonedDateTime.parse(asignatura.fechaDeModificacion)
         )
       }
     }

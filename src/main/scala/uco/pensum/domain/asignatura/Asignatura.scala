@@ -8,6 +8,10 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion
 }
+import cats.instances.list._
+import cats.instances.either._
+import cats.syntax.traverse._
+import uco.pensum.domain.requisito.Requisito
 
 case class Horas(
     teoricas: Int,
@@ -24,11 +28,10 @@ case class Asignatura(
     creditos: Int,
     horas: Horas,
     nivel: Int,
-    requisitos: List[Codigo],
+    requisitos: List[Requisito],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )
-
 object Asignatura {
 
   import uco.pensum.domain._
@@ -45,6 +48,9 @@ object Asignatura {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
       nivel <- validarValorEntero(dto.nivel, "nivel")
+      requisitos <- dto.requisitos
+        .map(Requisito.validar(_))
+        .sequence // TODO: As soon as it obtains the first Left,it stops getting lefts
     } yield
       Asignatura(
         codigo = codigo,
@@ -59,7 +65,7 @@ object Asignatura {
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,
-        requisitos = dto.requisitos.filterNot(v => v.isEmpty),
+        requisitos = requisitos,
         fechaDeRegistro = hora,
         fechaDeModificacion = hora
       )

@@ -12,7 +12,7 @@ case class AsignaturaAsignacion(
     horasPracticas: Option[Int],
     trabajoIndependienteEstudiante: Int,
     nivel: Int,
-    requisitos: List[String]
+    requisitos: List[RequisitoAsignacion]
 )
 
 case class AsignaturaActualizacion(
@@ -30,6 +30,11 @@ case class RequisitosActualizacion(
     requisito: String
 )
 
+case class RequisitoAsignacion(
+    codigoAsignatura: String,
+    tipoDeRequisito: String
+)
+
 case class AsignaturaRespuesta(
     codigo: String,
     inp: String,
@@ -39,10 +44,15 @@ case class AsignaturaRespuesta(
     horasTeoricas: Int,
     horasLaboratorio: Int,
     nivel: Int,
-    requisitos: List[String],
+    requisitos: List[RequisitoRespuesta],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )
+
+case class RequisitoRespuesta(
+                             codigoAsignatura: String,
+                             tipoRequisito: String
+                             )
 
 case class ComponenteDeFormacionRespuesta(
     id: Int,

@@ -55,8 +55,12 @@ class Asignaturas(tag: Tag)
 abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Asignaturas(_)) {
-  def encontrarPorCodigo(codigo: String): Future[Option[AsignaturaRecord]] =
-    db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
+  def encontrarPorCodigo(programaId: String,inp: String, codigo: String): Future[Option[AsignaturaRecord]] =
+    db.run(
+      (for{
+        ((a,pea),cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+      }yield a)
+    )
 
   def almacenar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
     db.run(
@@ -73,7 +77,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
         pe <- tables.planesDeEstudio.filter(
           pe => pe.inp === inp && pe.programaId === programaId
         )
-        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+        (((a, pea), cdf),r) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id) join tables.requisitos on (_._1._1.codigo === _.codigoAsignaturaRequisito)
         if (pea.planDeEstudioID === pe.id)
       } yield
         (
@@ -89,6 +93,8 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           cdf.nombre,
           cdf.abreviatura,
           cdf.color,
+          r.codigoAsignaturaRequisito,
+          r.tipoRequisito,
           a.direccionPlanDeEstudios,
           a.fechaDeCreacion,
           a.fechaDeModificacion

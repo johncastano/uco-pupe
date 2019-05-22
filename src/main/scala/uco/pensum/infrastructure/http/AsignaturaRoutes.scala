@@ -11,18 +11,16 @@ import uco.pensum.domain.errors.{
   ErrorInterno
 }
 import io.circe.java8.time._
-import uco.pensum.domain.services.AsignaturaServices
-import uco.pensum.infrastructure.http.dtos.{
-  AsignaturaActualizacion,
-  AsignaturaAsignacion,
-  AsignaturaRespuesta,
-  RequisitosActualizacion
-}
+import uco.pensum.domain.services.{AsignaturaServices, RequisitoServices}
+import uco.pensum.infrastructure.http.dtos._
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-trait AsignaturaRoutes extends Directives with AsignaturaServices {
+trait AsignaturaRoutes
+    extends Directives
+    with AsignaturaServices
+    with RequisitoServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
@@ -53,6 +51,35 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
         }
     }
 
+  def asignarRequisito: Route =
+    path(
+      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "requisito"
+    ) { (programId, inp, codigo) =>
+      post {
+        entity(as[RequisitoAsignacion]) { requisito =>
+          onComplete(
+            asignarRequisitoAAsignatura(
+              codigo,
+              requisito
+            )
+          ) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              response.fold(
+                err =>
+                  complete(
+                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                  ),
+                r => complete(OK -> (r._1, r._2).to[AsignaturaRespuesta])
+              )
+          }
+        }
+      }
+    }
+
   def actualizarAsignatura: Route =
     path("programa" / Segment / "codigo" / Segment / "asignatura") {
       (programId, codigo) =>
@@ -77,39 +104,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
         }
     }
 
-  def agregarRequisito: Route =
-    path(
-      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "requisito"
-    ) { (programId, inp, codigo) =>
-      post {
-        entity(as[RequisitosActualizacion]) { requisitos =>
-          onComplete(
-            actualizarRequisitos(
-              requisitos,
-              programId,
-              inp,
-              codigo,
-              isRemove = false
-            )
-          ) {
-            case Failure(ex) => {
-              logger.error(s"Exception: $ex")
-              complete(InternalServerError -> ErrorInterno())
-            }
-            case Success(response) =>
-              response.fold(
-                err =>
-                  complete(
-                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                  ),
-                asignatura => complete(OK -> asignatura.to[AsignaturaRespuesta])
-              )
-          }
-        }
-      }
-    }
-
-  def eliminarRequisito: Route =
+  /*  def eliminarRequisito: Route =
     path(
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "requisito"
     ) { (programId, inp, codigo) =>
@@ -139,7 +134,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
           }
         }
       }
-    }
+    }*/
 
   def asignaturaPorCodigo: Route =
     path("programa" / Segment / "asignatura" / Segment) { (programId, codigo) =>
