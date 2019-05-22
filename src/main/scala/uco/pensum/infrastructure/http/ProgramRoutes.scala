@@ -101,5 +101,6 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     }
   }
 
-  val programRoutes: Route = agregarPrograma ~ porgramaPorId ~ programas
+  val programRoutes
+    : Route = agregarPrograma ~ actualizarPrograma ~ porgramaPorId ~ programas
 }
