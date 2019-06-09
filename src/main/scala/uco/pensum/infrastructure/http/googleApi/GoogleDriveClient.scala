@@ -12,7 +12,7 @@ class GoogleDriveClient {
   val CLIENT_ID = "************.apps.googleusercontent.com"
   val CLIENT_SECRET = "****************"
   val httpTransport = new NetHttpTransport
-  val jsonFactory = new JacksonFactory
+  val jsonFactory = JacksonFactory.getDefaultInstance
 
   /**
     * Set Up Google App Credentials
@@ -39,18 +39,23 @@ class GoogleDriveClient {
       accessToken: String,
       fileToUpload: java.io.File,
       fileName: String,
-      contentType: String
+      fileId: String,
+      contentType: String,
+      folderId: String
   ): String = {
+
+    import scala.collection.JavaConverters._
 
     val service: Drive = prepareGoogleDrive(accessToken)
     //Insert a file
     val body = new File
     body.setName(fileName)
+    body.setId(fileId)
     body.setDescription(fileName)
     body.setMimeType(contentType)
+    body.setParents(List(folderId).asJava)
 
-    val fileContent: java.io.File = fileToUpload
-    val mediaContent = new FileContent(contentType, fileContent)
+    val mediaContent = new FileContent(contentType, fileToUpload)
     //Inserting the files
     val file = service.files.create(body, mediaContent).execute() //Wrap it into a Scala.Try() to handle exceptions
 
