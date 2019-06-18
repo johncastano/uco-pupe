@@ -4,6 +4,7 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.server.directives.Credentials
+import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtCirce, JwtClaim}
@@ -12,6 +13,11 @@ import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
 
 case class Claims(correo: String, issuedAt: Long, expires: Long)
+case class ClaimsWithGInfo(
+    gCredentials: GUserCredentials,
+    issuedAt: Long,
+    expires: Long
+)
 
 class JWT(secret: String) {
 
@@ -37,6 +43,23 @@ class JWT(secret: String) {
     Jwt.encode(claim, secret, algo)
   }
 
+  def validarGT(token: String): Option[ClaimsWithGInfo] = {
+    import io.circe.Decoder
+
+    implicit val decodeUser: Decoder[GUserCredentials] =
+      Decoder.forProduct4("email", "name", "tokenId", "accessToken")(
+        GUserCredentials.apply
+      )
+
+    JwtCirce.decode(token, secret, Seq(algo)).toOption.flatMap { c =>
+      for {
+        expiration <- c.expiration.filter(_ > Instant.now.getEpochSecond)
+        issuedAt <- c.issuedAt.filter(_ <= System.currentTimeMillis())
+        gCred <- Json.fromString(c.content).as[GUserCredentials].toOption
+      } yield ClaimsWithGInfo(gCred, issuedAt, expiration)
+    }
+  }
+
   def validar(token: String): Option[Claims] =
     JwtCirce.decode(token, secret, Seq(algo)).toOption.flatMap { c =>
       for {
@@ -49,6 +72,14 @@ class JWT(secret: String) {
   def autenticar(credenciales: Credentials): Option[Claims] =
     credenciales match {
       case cp @ Credentials.Provided(_) => validar(cp.identifier)
+      case _                            => None
+    }
+
+  def autenticarWithGClaims(
+      credenciales: Credentials
+  ): Option[ClaimsWithGInfo] =
+    credenciales match {
+      case cp @ Credentials.Provided(_) => validarGT(cp.identifier)
       case _                            => None
     }
 

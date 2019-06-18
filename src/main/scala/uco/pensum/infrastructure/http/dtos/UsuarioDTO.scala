@@ -24,4 +24,4 @@ case class UsuarioRespuesta(
 
 case class UsuarioGoogle(nombre: String)
 
-case class Credenciales(googleAccessToken: String)
+case class Credenciales(gTokenId: String, gAccessToken: String)

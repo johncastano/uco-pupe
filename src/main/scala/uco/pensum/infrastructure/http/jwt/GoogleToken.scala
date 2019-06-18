@@ -38,16 +38,20 @@ class GoogleToken(
     clientId: String
 ) extends LazyLogging {
 
-  val verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
-  // Specify the CLIENT_ID of the app that accesses the backend:
-    .setAudience(List(clientId).asJava)
-    // Or, if multiple clients access the backend:
-    //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
-    .build()
+  val verifier: GoogleIdTokenVerifier =
+    new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+    // Specify the CLIENT_ID of the app that accesses the backend:
+      .setAudience(List(clientId).asJava)
+      // Or, if multiple clients access the backend:
+      //.setAudience(Arrays.asList(CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3))
+      .build()
 
   // (Receive idTokenString by HTTPS POST)
 
-  def verifyToken(googleIdToken: String): Option[GUserCredentials] = {
+  def verifyToken(
+      googleIdToken: String,
+      googleAccessToken: String
+  ): Option[GUserCredentials] = {
 
     // TODO: should we verify the payload.getHostedDomain ??
     println(s"*********************************************")
@@ -73,7 +77,7 @@ class GoogleToken(
           email = Option(payload.getEmail),
           name = Option(payload.get("name").toString),
           tokenId = Some(googleIdToken),
-          accesToken = Option(payload.getAccessTokenHash)
+          accesToken = Some(googleAccessToken)
         )
       }
       case Failure(e) => {

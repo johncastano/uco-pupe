@@ -19,7 +19,7 @@ case class Usuario(
     fechaModificacion: ZonedDateTime
 )
 
-case class GToken(googleToken: String)
+case class GToken(tokenId: String, accesToken: String)
 
 object Usuario {
 
@@ -73,7 +73,8 @@ object GToken {
 
   def validate(dto: Credenciales): Either[DomainError, GToken] =
     for {
-      token <- validarCampoVacio(dto.googleAccessToken, "token")
-    } yield GToken(token)
+      token <- validarCampoVacio(dto.gTokenId, "token")
+      accesToken <- validarCampoVacio(dto.gAccessToken, "access token")
+    } yield GToken(token, accesToken)
 
 }

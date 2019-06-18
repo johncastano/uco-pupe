@@ -9,6 +9,8 @@ import com.google.api.services.drive.model.File
 
 class GoogleDriveClient {
 
+  import scala.collection.JavaConverters._
+
   val CLIENT_ID = "************.apps.googleusercontent.com"
   val CLIENT_SECRET = "****************"
   val httpTransport: NetHttpTransport = new NetHttpTransport
@@ -32,6 +34,24 @@ class GoogleDriveClient {
     new Drive.Builder(httpTransport, jsonFactory, credential).build()
   }
 
+  def createFolder(
+      accessToken: String,
+      folderName: String,
+      folderId: String,
+      parentFolderId: String
+  ): File = {
+
+    val service: Drive = prepareGoogleDrive(accessToken)
+
+    val fileMetadata = new File()
+    fileMetadata.setName(folderName)
+    fileMetadata.setId(folderId)
+    fileMetadata.setParents(List(parentFolderId).asJava)
+    fileMetadata.setMimeType("application/vnd.google-apps.folder")
+
+    service.files().create(fileMetadata).setFields("id, parents").execute()
+  }
+
   /**
     * Upload To Google Drive
     */
@@ -43,8 +63,6 @@ class GoogleDriveClient {
       contentType: String,
       folderId: String
   ): String = {
-
-    import scala.collection.JavaConverters._
 
     val service: Drive = prepareGoogleDrive(accessToken)
     //Insert a file

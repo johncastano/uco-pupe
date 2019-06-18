@@ -44,7 +44,7 @@ trait UsuarioServices extends LazyLogging {
       gToken <- EitherT.fromEither[Future](GToken.validate(credenciales))
       validUser <- EitherT.fromEither[Future] {
         googleToken
-          .verifyToken(gToken.googleToken)
+          .verifyToken(gToken.tokenId, gToken.accesToken)
           .toRight[DomainError](TokenIncorrecto())
       }
       /* usuarioValido <- EitherT(
