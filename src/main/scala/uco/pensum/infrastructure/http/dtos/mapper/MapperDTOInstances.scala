@@ -9,6 +9,7 @@ import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.http.dtos._
+import uco.pensum.infrastructure.http.jwt.GUserCredentials
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 import uco.pensum.infrastructure.postgres._
 
@@ -141,18 +142,21 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[Usuario, UsuarioRespuesta] {
       override def to(usuario: Usuario): UsuarioRespuesta =
         UsuarioRespuesta(
+          id = usuario.id.getOrElse(0),
           nombre = usuario.nombre,
           primerApellido = usuario.primerApellido,
           segundoApellido = usuario.segundoApellido,
           fechaNacimiento = usuario.fechaNacimiento,
           correo = usuario.correo,
-          password = usuario.password,
-          usuario = usuario.usuario,
-          direccion = usuario.direccion,
-          celular = usuario.celular,
           fechaRegistro = usuario.fechaRegistro,
           fechaModificacion = usuario.fechaModificacion
         )
+    }
+
+  implicit def GUsuarioToRespuesta: Mapper[GUserCredentials, UsuarioGoogle] =
+    new Mapper[GUserCredentials, UsuarioGoogle] {
+      override def to(usuario: GUserCredentials): UsuarioGoogle =
+        UsuarioGoogle(nombre = usuario.name)
     }
 
   implicit def ProgramaRecordToProgramaRespuesta

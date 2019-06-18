@@ -11,8 +11,8 @@ class GoogleDriveClient {
 
   val CLIENT_ID = "************.apps.googleusercontent.com"
   val CLIENT_SECRET = "****************"
-  val httpTransport = new NetHttpTransport
-  val jsonFactory = JacksonFactory.getDefaultInstance
+  val httpTransport: NetHttpTransport = new NetHttpTransport
+  val jsonFactory: JacksonFactory = JacksonFactory.getDefaultInstance
 
   /**
     * Set Up Google App Credentials

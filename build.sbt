@@ -30,6 +30,7 @@ lazy val pupe = (project in file(".")).
         logBack,
         scalaLogging,
         httpCors,
+        jwtCirce,
         googleApiClient,
         googleApiServices,
         googleOAuthClient

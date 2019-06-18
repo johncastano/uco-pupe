@@ -80,4 +80,20 @@ final case class AsignaturaConComponenteRecord(
     fechaDeCreacion: String,
     fechaDeModificacion: String
 )
+final case class UsuarioRecord(
+    id: Int,
+    nombre: String,
+    primerApellido: String,
+    segundoApellido: String,
+    fechaNacimiento: String,
+    fechaRegistro: String,
+    fechaModificacion: String
+)
+
+final case class AuthRecord(
+    correo: String,
+    password: String,
+    userId: Int
+)
+
 // $COVERAGE-ON$

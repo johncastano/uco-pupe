@@ -23,6 +23,7 @@ object Dependencies {
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser ="io.circe" %% "circe-parser" % circeVersion
   lazy val circeJava ="io.circe" %% "circe-java8" % circeVersion
+  lazy val jwtCirce = "com.pauldijou" %% "jwt-circe" % "2.1.0"
 
   lazy val googleApiClient = "com.google.api-client" % "google-api-client" % "1.28.0"
   lazy val googleApiServices = "com.google.apis" % "google-api-services-drive" % "v3-rev20190501-1.28.0"

@@ -1,11 +1,14 @@
 package uco.pensum.infrastructure.http
 
 import akka.http.scaladsl.model.HttpMethods
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.model.headers.HttpOrigin
 import akka.http.scaladsl.server._
 import ch.megard.akka.http.cors.scaladsl.settings.CorsSettings
 import ch.megard.akka.http.cors.scaladsl.model.HttpOriginMatcher
 import com.typesafe.scalalogging.LazyLogging
+import io.circe.generic.auto._
+import uco.pensum.domain.errors.ErrorGenerico
 import uco.pensum.infrastructure.http.conf.CorsConfig
 
 trait HttpService
@@ -33,8 +36,23 @@ trait HttpService
         )
       )
 
+    val defaultRejectionHandler: RejectionHandler =
+      RejectionHandler.default.mapRejectionResponse {
+        case res @ HttpResponse(code, _, ent: HttpEntity.Strict, _) => {
+          import io.circe.syntax._
+          val mensaje = ent.data.utf8String
+          res.copy(
+            entity = HttpEntity(
+              ContentTypes.`application/json`,
+              ErrorGenerico(code.intValue, mensaje).asJson.toString
+            )
+          )
+        }
+        case x => x
+      }
+
     val rejectionHandler = handleRejections(
-      corsRejectionHandler withFallback RejectionHandler.default
+      corsRejectionHandler withFallback defaultRejectionHandler
     )
 
     rejectionHandler {
