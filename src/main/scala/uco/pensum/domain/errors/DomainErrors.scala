@@ -38,6 +38,11 @@ final case class ProgramNotFound(
     mensaje: String = "El programa especificado no existe"
 ) extends DomainError
 
+final case class PlanDeEstudioIdInvalido(
+    codigo: Int = 100033,
+    mensaje: String = "El id del plan de estudio debe ser un valor numerico"
+) extends DomainError
+
 final case class CurriculumNotFound(
     codigo: Int = 100003,
     mensaje: String = "El INP especificado no existe para el programa dado"

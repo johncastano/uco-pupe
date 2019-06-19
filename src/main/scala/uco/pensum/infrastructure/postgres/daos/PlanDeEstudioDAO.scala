@@ -66,6 +66,17 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
         .map(_.headOption)
     )
 
+  def buscarPorIdAndProgramaId(
+      id: Int,
+      programId: String
+  ): Future[Option[PlanDeEstudioRecord]] =
+    db.run(
+      this
+        .filter(pe => pe.id === id && pe.programaId === programId)
+        .result
+        .map(_.headOption)
+    )
+
   def almacenarOActualizar(
       record: PlanDeEstudioRecord
   ): Future[Option[PlanDeEstudioRecord]] = {
@@ -75,7 +86,10 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
     )
 
   }
-  def eliminarPorINP(inp: String): Future[Int] =
-    db.run(this.filter(_.inp === inp).delete)
+
+  def eliminarPorId(id: Int, programaId: String): Future[Int] =
+    db.run(
+      this.filter(pe => pe.id === id && pe.programaId === programaId).delete
+    )
 
 }
