@@ -4,10 +4,11 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 
 import akka.http.scaladsl.server.directives.Credentials
-import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import pdi.jwt.{Jwt, JwtAlgorithm, JwtCirce, JwtClaim}
+
+import io.circe.parser._
 
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
@@ -21,7 +22,7 @@ case class ClaimsWithGInfo(
 
 class JWT(secret: String) {
 
-  val duration: Long = FiniteDuration(2, TimeUnit.MINUTES).toSeconds
+  val duration: Long = FiniteDuration(2, TimeUnit.DAYS).toSeconds
   val algo: JwtAlgorithm.HS256.type = JwtAlgorithm.HS256
 
   def generar(correo: String): String = {
@@ -37,28 +38,24 @@ class JWT(secret: String) {
     val claim = JwtClaim()
       .about(gCredentials.email)
       .withContent(gCredentials.asJson.toString)
-      .issuedNow
-      .expiresIn(duration)
+      .issuedAt(gCredentials.issueTimeSeconds)
+      .expiresIn(gCredentials.expirationTimeSeconds)
 
     Jwt.encode(claim, secret, algo)
   }
 
-  def validarGT(token: String): Option[ClaimsWithGInfo] = {
-    import io.circe.Decoder
-
-    implicit val decodeUser: Decoder[GUserCredentials] =
-      Decoder.forProduct4("email", "name", "tokenId", "accessToken")(
-        GUserCredentials.apply
-      )
-
+  def validarGT(token: String): Option[ClaimsWithGInfo] =
     JwtCirce.decode(token, secret, Seq(algo)).toOption.flatMap { c =>
       for {
         expiration <- c.expiration.filter(_ > Instant.now.getEpochSecond)
         issuedAt <- c.issuedAt.filter(_ <= System.currentTimeMillis())
-        gCred <- Json.fromString(c.content).as[GUserCredentials].toOption
+        content <- parse(c.content).toOption
+        gCred <- content.as[GUserCredentials] match {
+          case Right(user) => Some(user)
+          case Left(_)     => None
+        }
       } yield ClaimsWithGInfo(gCred, issuedAt, expiration)
     }
-  }
 
   def validar(token: String): Option[Claims] =
     JwtCirce.decode(token, secret, Seq(algo)).toOption.flatMap { c =>

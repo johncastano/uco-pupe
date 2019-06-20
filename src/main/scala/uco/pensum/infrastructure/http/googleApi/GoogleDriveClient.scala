@@ -6,15 +6,18 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
+import uco.pensum.infrastructure.config.GCredentials
 
-class GoogleDriveClient {
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+
+class GoogleDriveClient(
+    httpTransport: NetHttpTransport,
+    jsonFactory: JacksonFactory,
+    gCredentials: GCredentials
+) {
 
   import scala.collection.JavaConverters._
-
-  val CLIENT_ID = "************.apps.googleusercontent.com"
-  val CLIENT_SECRET = "****************"
-  val httpTransport: NetHttpTransport = new NetHttpTransport
-  val jsonFactory: JacksonFactory = JacksonFactory.getDefaultInstance
 
   /**
     * Set Up Google App Credentials
@@ -25,7 +28,7 @@ class GoogleDriveClient {
     val credential = new GoogleCredential.Builder()
       .setJsonFactory(jsonFactory)
       .setTransport(httpTransport)
-      .setClientSecrets(CLIENT_ID, CLIENT_SECRET)
+      .setClientSecrets(gCredentials.clientId, gCredentials.clientSecret)
       .build()
 
     credential.setAccessToken(accessToken)
@@ -37,19 +40,44 @@ class GoogleDriveClient {
   def createFolder(
       accessToken: String,
       folderName: String,
-      folderId: String,
-      parentFolderId: String
-  ): File = {
+      parentFolderId: Option[String] = None
+  )(
+      implicit executionContext: ExecutionContext
+  ): Future[Either[Throwable, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)
 
     val fileMetadata = new File()
     fileMetadata.setName(folderName)
-    fileMetadata.setId(folderId)
-    fileMetadata.setParents(List(parentFolderId).asJava)
+    fileMetadata.setParents(parentFolderId.toList.asJava)
     fileMetadata.setMimeType("application/vnd.google-apps.folder")
 
-    service.files().create(fileMetadata).setFields("id, parents").execute()
+    Future(
+      Try(
+        service.files().create(fileMetadata).setFields("id, parents").execute()
+      ).toEither
+    )
+  }
+
+  def updateFolderName(
+      accessToken: String,
+      folderName: String,
+      folderId: String
+  )(
+      implicit executionContext: ExecutionContext
+  ): Future[Either[Throwable, File]] = {
+
+    val service: Drive = prepareGoogleDrive(accessToken)
+
+    val fileMetadata = new File()
+    fileMetadata.setName(folderName)
+    fileMetadata.setMimeType("application/vnd.google-apps.folder")
+
+    Future(
+      Try(
+        service.files().update(folderId, fileMetadata).setFields("id").execute()
+      ).toEither
+    )
   }
 
   /**
@@ -88,7 +116,7 @@ class GoogleDriveClient {
     val credentialBuilder = new GoogleCredential.Builder()
       .setTransport(httpTransport)
       .setJsonFactory(jsonFactory)
-      .setClientSecrets(CLIENT_ID, CLIENT_SECRET);
+      .setClientSecrets(gCredentials.clientId, gCredentials.clientSecret)
 
     val credential = credentialBuilder.build()
     credential.setRefreshToken(refreshToken)

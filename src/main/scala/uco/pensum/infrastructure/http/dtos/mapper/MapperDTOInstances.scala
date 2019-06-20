@@ -19,7 +19,7 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[Programa, ProgramaRespuesta] {
       override def to(programa: Programa): ProgramaRespuesta =
         ProgramaRespuesta(
-          id = programa.id,
+          id = programa.id.getOrElse(""),
           nombre = programa.nombre,
           codigoSnies = programa.snies,
           fechaDeRegistro = programa.fechaDeRegistro,

@@ -10,6 +10,8 @@ import com.typesafe.config.ConfigFactory
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.domain.repositories._
+import uco.pensum.infrastructure.config.GConf
+import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
 import uco.pensum.infrastructure.http.jwt.{GoogleToken, JWT}
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.tables
@@ -25,18 +27,19 @@ object Main extends App with HttpService {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   private val config = ConfigFactory.load()
+  private val gConfig = GConf
   private val host = config.getString("pupe.http.host")
   private val port = config.getString("pupe.http.port").toInt
 
   //TODO: Wrap it into a object
-  val clientId: String =
-    "522970314042-7e8o5tkbepbksj91knjdm7ailjosg3l3.apps.googleusercontent.com"
   val httpTransport: NetHttpTransport = new NetHttpTransport
   val jsonFactory: JacksonFactory = JacksonFactory.getDefaultInstance
 
-  implicit val jwt = new JWT("partial_secret")
-  implicit val googleToken =
-    new GoogleToken(httpTransport, jsonFactory, clientId)
+  implicit val jwt: JWT = new JWT("partial_secret")
+  implicit val googleToken: GoogleToken =
+    new GoogleToken(httpTransport, jsonFactory, gConfig.gCredentials.clientId)
+  implicit val googleDriveClient: GoogleDriveClient =
+    new GoogleDriveClient(httpTransport, jsonFactory, gConfig.gCredentials)
 
   val db: PostgresProfile.backend.Database = Database.forConfig("postgres")
 

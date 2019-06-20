@@ -23,7 +23,7 @@ class MapperRecordsInstances extends MapperSugar {
   implicit def ProgramaToProgramaRecord: Mapper[Programa, ProgramaRecord] =
     new Mapper[Programa, ProgramaRecord] {
       override def to(programa: Programa): ProgramaRecord = ProgramaRecord(
-        programa.id,
+        programa.id.getOrElse(""),
         programa.nombre,
         programa.snies,
         DateTimeFormatter.ISO_ZONED_DATE_TIME.format(programa.fechaDeRegistro),

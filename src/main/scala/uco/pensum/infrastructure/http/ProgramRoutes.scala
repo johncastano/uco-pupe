@@ -31,20 +31,22 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def agregarPrograma: Route = path("programa") {
     post {
-      entity(as[ProgramaAsignacion]) { programa =>
-        onComplete(agregarPrograma(programa)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
+      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+        entity(as[ProgramaAsignacion]) { programa =>
+          onComplete(agregarPrograma(programa)(user.gCredentials)) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              response.fold(
+                err =>
+                  complete(
+                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                  ),
+                pr => complete(Created -> pr.to[ProgramaRespuesta])
+              )
           }
-          case Success(response) =>
-            response.fold(
-              err =>
-                complete(
-                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                ),
-              pr => complete(Created -> pr.to[ProgramaRespuesta])
-            )
         }
       }
     }
@@ -52,20 +54,22 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def actualizarPrograma: Route = path("programa" / Segment) { id =>
     put {
-      entity(as[ProgramaActualizacion]) { programa =>
-        onComplete(actualizarPrograma(id, programa)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
+      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+        entity(as[ProgramaActualizacion]) { programa =>
+          onComplete(actualizarPrograma(id, programa)(user.gCredentials)) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              response.fold(
+                err =>
+                  complete(
+                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                  ),
+                pr => complete(Created -> pr.to[ProgramaRespuesta])
+              )
           }
-          case Success(response) =>
-            response.fold(
-              err =>
-                complete(
-                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                ),
-              pr => complete(Created -> pr.to[ProgramaRespuesta])
-            )
         }
       }
     }
@@ -105,19 +109,21 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def borrarPrograma: Route = path("programa" / Segment) { id =>
     delete {
-      onComplete(borrarPrograma(id)) {
-        case Failure(ex) => {
-          logger.error(s"Exception: $ex")
-          complete(InternalServerError -> ErrorInterno())
+      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+        onComplete(borrarPrograma(id)) {
+          case Failure(ex) => {
+            logger.error(s"Exception: $ex")
+            complete(InternalServerError -> ErrorInterno())
+          }
+          case Success(response) =>
+            response.fold(
+              err =>
+                complete(
+                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                ),
+              pr => complete(OK -> pr.to[ProgramaRespuesta])
+            )
         }
-        case Success(response) =>
-          response.fold(
-            err =>
-              complete(
-                BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-              ),
-            pr => complete(OK -> pr.to[ProgramaRespuesta])
-          )
       }
     }
   }

@@ -13,7 +13,9 @@ case class GUserCredentials(
     email: String,
     name: String,
     tokenId: String,
-    accesToken: String
+    accessToken: String,
+    issueTimeSeconds: Long,
+    expirationTimeSeconds: Long
 )
 
 object GUserCredentials {
@@ -21,14 +23,26 @@ object GUserCredentials {
       email: Option[String],
       name: Option[String],
       tokenId: Option[String],
-      accesToken: Option[String]
+      accessToken: Option[String],
+      issueTimeSeconds: Option[Long],
+      expirationTimeSeconds: Option[Long]
   ): Option[GUserCredentials] = {
     for {
       email <- email
       name <- name
       tokenId <- tokenId
-      accesToken <- accesToken
-    } yield GUserCredentials(email, name, tokenId, accesToken)
+      accessToken <- accessToken
+      issueTime <- issueTimeSeconds
+      expirationTime <- expirationTimeSeconds
+    } yield
+      GUserCredentials(
+        email,
+        name,
+        tokenId,
+        accessToken,
+        issueTime,
+        expirationTime
+      )
   }
 }
 
@@ -52,41 +66,18 @@ class GoogleToken(
       googleIdToken: String,
       googleAccessToken: String
   ): Option[GUserCredentials] = {
-
-    // TODO: should we verify the payload.getHostedDomain ??
-    println(s"*********************************************")
-    println(s"GOOGLE TOKEN: $googleIdToken")
-    println(s"*********************************************")
     Try(verifier.verify(googleIdToken)) match {
-      case Success(token) => {
-        println(s"*********************************************")
-        println(s"GOOGLE RETURNED TOKEN: $token")
-        println(s"*********************************************")
-
-        println(s"*********************************************")
-        println(s"GOOGLE RETURNED PAYLOAD: ${token.getPayload}")
-        println(s"*********************************************")
-
-        println(s"*********************************************")
-        println(s"email: ${Option(token.getPayload.getEmail)}")
-        println(s"accesToken: ${Option(token.getPayload.getAccessTokenHash)}")
-        println(s"name: ${Option(token.getPayload.get("name").toString)}")
-        println(s"*********************************************")
+      case Success(token) =>
         val payload: Payload = token.getPayload
         GUserCredentials.fromPayload(
           email = Option(payload.getEmail),
           name = Option(payload.get("name").toString),
           tokenId = Some(googleIdToken),
-          accesToken = Some(googleAccessToken)
+          accessToken = Some(googleAccessToken),
+          issueTimeSeconds = Some(payload.getIssuedAtTimeSeconds),
+          expirationTimeSeconds = Some(payload.getExpirationTimeSeconds)
         )
-      }
-      case Failure(e) => {
-        logger.error(
-          "Ha ocurrido un error tratando de verificar el token de google",
-          e
-        )
-        None
-      }
+      case Failure(_) => None
     }
   }
 

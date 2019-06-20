@@ -24,6 +24,9 @@ class ProgramaRepository(
   def buscarProgramaPorId(id: String): Future[Option[ProgramaRecord]] =
     provider.programas.buscarPorId(id)
 
+  def buscarProgramaPorNombre(nombre: String): Future[Option[ProgramaRecord]] =
+    provider.programas.buscarPorNombre(nombre)
+
   def buscarProgramaConPlanesDeEstudioPorId(
       id: String
   ): Future[Seq[ProgramaConPlanesDeEstudioRecord]] =
