@@ -8,7 +8,7 @@ class PlanDeEstudioAsignaturaRepository(
 ) {
 
   def almacenarOActualizarPlaDeEstudioAsignatura(
-      planDeEstudioId: Int,
+      planDeEstudioId: String,
       codigoAsignatura: String
   ) =
     provider.planesDeEstudioAsignatura.almacenar(

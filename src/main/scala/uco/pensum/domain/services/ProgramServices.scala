@@ -2,7 +2,6 @@ package uco.pensum.domain.services
 
 import uco.pensum.domain.errors.{
   DomainError,
-  ErrorGenerico,
   ProgramNotFound,
   ProgramaExistente
 }
@@ -13,7 +12,6 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
-import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
@@ -34,15 +32,10 @@ trait ProgramServices extends LazyLogging {
     (for {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
       _ <- OptionT(
-        repository.programaRepository.buscarProgramaPorNombre(programa.nombre)
+        repository.programaRepository
+          .buscarProgramaPorNombre(programa.nombre) //TODO: MEJORAR BUSQUEDA PARA IGNORAR MAYUS/MINUS y ASI EVITAR CREAR 2 PROGRAMAS COMO (ING Sistemas e Ing sistemas)
       ).map(_ => ProgramaExistente()).toLeft(())
-      gf <- EitherT(
-        googleDriveClient.createFolder(gUser.accessToken, pd.nombre)
-      ).leftMap {
-        case e: GoogleJsonResponseException =>
-          ErrorGenerico(e.getStatusCode, e.getMessage)
-        case ex => ErrorGenerico(500, ex.getMessage)
-      }
+      gf <- EitherT(GDriveService.createFolder(gUser.accessToken, pd.nombre))
       vp = pd.copy(Option(gf.getId))
       _ <- EitherT.right[DomainError](
         repository.programaRepository
@@ -64,7 +57,7 @@ trait ProgramServices extends LazyLogging {
         Programa.validate(programa, Programa.fromRecord(original))
       )
       _ <- EitherT(
-        actualizarDriveFolderName(
+        GDriveService.actualizarDriveFolderName(
           pd.id.getOrElse(""),
           pd.nombre,
           gUser.accessToken,
@@ -75,22 +68,6 @@ trait ProgramServices extends LazyLogging {
         repository.programaRepository.actualizarPrograma(pd)
       )
     } yield pd).value
-
-  private def actualizarDriveFolderName(
-      id: String,
-      nombre: String,
-      accessToken: String,
-      actualizar: Boolean
-  ): Future[Either[ErrorGenerico, Unit]] = {
-    if (actualizar)
-      googleDriveClient.updateFolderName(accessToken, nombre, id).map {
-        case Right(_) => Right(())
-        case Left(e: GoogleJsonResponseException) =>
-          Left(ErrorGenerico(e.getStatusCode, e.getMessage))
-        case Left(ex) => Left(ErrorGenerico(500, ex.getMessage))
-
-      } else Future.successful(Right(()))
-  }
 
   def devolverProgramaPorId(
       programId: String

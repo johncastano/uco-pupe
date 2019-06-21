@@ -38,6 +38,7 @@ class MapperRecordsInstances extends MapperSugar {
     new Mapper[PlanDeEstudio, PlanDeEstudioRecord] {
       override def to(planDeEstudio: PlanDeEstudio): PlanDeEstudioRecord =
         PlanDeEstudioRecord(
+          planDeEstudio.id.getOrElse(""),
           planDeEstudio.inp,
           planDeEstudio.creditos,
           planDeEstudio.horasTeoricas,
@@ -48,8 +49,7 @@ class MapperRecordsInstances extends MapperSugar {
             .format(planDeEstudio.fechaDeRegistro),
           DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
             planDeEstudio.fechaDeModificacion
-          ),
-          planDeEstudio.id.getOrElse(0)
+          )
         )
     }
 

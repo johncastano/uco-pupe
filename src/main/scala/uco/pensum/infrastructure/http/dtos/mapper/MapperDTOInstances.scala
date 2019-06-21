@@ -32,6 +32,7 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[PlanDeEstudio, PlanDeEstudioRespuesta] {
       override def to(plan: PlanDeEstudio): PlanDeEstudioRespuesta =
         PlanDeEstudioRespuesta(
+          id = plan.id.getOrElse(""),
           inp = plan.inp,
           creditos = plan.creditos,
           horasTeoricas = plan.horasTeoricas,
@@ -48,6 +49,7 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[PlanDeEstudioRecord, PlanDeEstudioRespuesta] {
       override def to(record: PlanDeEstudioRecord): PlanDeEstudioRespuesta =
         PlanDeEstudioRespuesta(
+          record.id,
           record.inp,
           record.creditos,
           record.horasTeoricas,

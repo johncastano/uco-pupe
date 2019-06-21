@@ -1,12 +1,20 @@
 package uco.pensum.infrastructure.http.googleApi
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
+import com.google.api.client.googleapis.json.GoogleJsonResponseException
 import com.google.api.client.http.FileContent
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.drive.model.File
+import uco.pensum.domain.errors.{
+  DomainError,
+  ErrorGenerico,
+  GParentFolderNotFound
+}
 import uco.pensum.infrastructure.config.GCredentials
+import cats.implicits._
+import akka.http.scaladsl.model.StatusCodes._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -40,10 +48,11 @@ class GoogleDriveClient(
   def createFolder(
       accessToken: String,
       folderName: String,
-      parentFolderId: Option[String] = None
+      parentFolderId: Option[String],
+      parentFolderName: Option[String]
   )(
       implicit executionContext: ExecutionContext
-  ): Future[Either[Throwable, File]] = {
+  ): Future[Either[DomainError, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)
 
@@ -55,7 +64,14 @@ class GoogleDriveClient(
     Future(
       Try(
         service.files().create(fileMetadata).setFields("id, parents").execute()
-      ).toEither
+      ).toEither.leftMap {
+        case e: GoogleJsonResponseException
+            if parentFolderId.isDefined && parentFolderName.isDefined && e.getStatusCode == NotFound.intValue =>
+          GParentFolderNotFound(e.getStatusCode, parentFolderName.getOrElse(""))
+        case e: GoogleJsonResponseException =>
+          ErrorGenerico(e.getStatusCode, e.getMessage)
+        case ex => ErrorGenerico(500, ex.getMessage)
+      }
     )
   }
 
@@ -65,7 +81,7 @@ class GoogleDriveClient(
       folderId: String
   )(
       implicit executionContext: ExecutionContext
-  ): Future[Either[Throwable, File]] = {
+  ): Future[Either[DomainError, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)
 
@@ -76,7 +92,11 @@ class GoogleDriveClient(
     Future(
       Try(
         service.files().update(folderId, fileMetadata).setFields("id").execute()
-      ).toEither
+      ).toEither.leftMap {
+        case e: GoogleJsonResponseException =>
+          ErrorGenerico(e.getStatusCode, e.getMessage)
+        case ex => ErrorGenerico(500, ex.getMessage)
+      }
     )
   }
 

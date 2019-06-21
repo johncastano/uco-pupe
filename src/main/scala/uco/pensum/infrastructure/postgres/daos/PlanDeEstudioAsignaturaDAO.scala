@@ -15,7 +15,7 @@ class PlanDeEstudioAsignaturas(tag: Tag)
       "plan_de_estudio_asignatura"
     ) {
   def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
-  def planDeEstudioID = column[Int]("plan_de_estudio_id")
+  def planDeEstudioID = column[String]("plan_de_estudio_id")
   def codigoAsignatura = column[String]("codigo_asignatura")
   def planesDeEstudio =
     foreignKey("plan_de_estudio_id", planDeEstudioID, tables.planesDeEstudio)(

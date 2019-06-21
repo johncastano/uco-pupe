@@ -69,6 +69,16 @@ final case class CannotUpdatePlanDeEstudio(
       "No se pudo actualizar el plan de estudio con los créditos de la nueva asignatura"
 ) extends DomainError
 
+final case class GParentFolderNotFound(codigo: Int, mensaje: String)
+object GParentFolderNotFound {
+  def apply(codigo: Int, campo: String): NumeroInvalido =
+    new NumeroInvalido(
+      codigo = codigo,
+      mensaje = s"El directorio padre $campo del recurso que esta tratando de crear no existe porque es probable " +
+        s"que se haya eliminado manualmente desde Google Drive"
+    )
+}
+
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError
 
 final case class UsuarioExistente(

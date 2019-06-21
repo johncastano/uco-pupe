@@ -9,6 +9,7 @@ import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 case class PlanDeEstudio(
+    id: Option[String],
     inp: String,
     creditos: Int,
     horasTeoricas: Int,
@@ -16,8 +17,7 @@ case class PlanDeEstudio(
     horasPracticas: Int,
     programId: String,
     fechaDeRegistro: ZonedDateTime,
-    fechaDeModificacion: ZonedDateTime,
-    id: Option[Int] = Some(0)
+    fechaDeModificacion: ZonedDateTime
 )
 
 object PlanDeEstudio {
@@ -32,7 +32,7 @@ object PlanDeEstudio {
       inp <- validarCampoVacio(dto.inp, "inp")
       programId <- validarCampoVacio(programId, "programId")
       fechaHoy = hora
-    } yield PlanDeEstudio(inp, 0, 0, 0, 0, programId, fechaHoy, fechaHoy)
+    } yield PlanDeEstudio(None, inp, 0, 0, 0, 0, programId, fechaHoy, fechaHoy)
 
   def validar(
       dtos: List[PlanDeEstudioAsignacion],
@@ -44,12 +44,13 @@ object PlanDeEstudio {
     dtos.map { planEstudio =>
       for {
         inp <- validarCampoVacio(planEstudio.inp, "inp")
-      } yield PlanDeEstudio(inp, 0, 0, 0, 0, programId, hora, hora)
+      } yield PlanDeEstudio(None, inp, 0, 0, 0, 0, programId, hora, hora)
     }.sequence
   }
 
   def fromRecord(record: PlanDeEstudioRecord): PlanDeEstudio =
     PlanDeEstudio(
+      id = Some(record.id),
       inp = record.inp,
       creditos = record.creditos,
       horasTeoricas = record.horasTeoricas,
@@ -69,6 +70,7 @@ object PlanDeEstudio {
       asignatura: Asignatura
   ): PlanDeEstudio =
     PlanDeEstudio(
+      id = Some(record.id),
       inp = record.inp,
       creditos = record.creditos + asignatura.creditos,
       horasTeoricas = record.horasTeoricas + asignatura.horas.teoricas,
@@ -77,8 +79,9 @@ object PlanDeEstudio {
       programId = record.programaId,
       fechaDeRegistro = ZonedDateTime
         .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
-      fechaDeModificacion = hora,
-      id = Some(record.id)
+      fechaDeModificacion = hora
     )
+
+  def addINPprefix(inp: String) = s"INP $inp"
 
 }

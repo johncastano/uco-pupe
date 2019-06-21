@@ -30,7 +30,7 @@ class PlanDeEstudioRepository(
     provider.planesDeEstudio.buscarPorProgramIdAndINP(inp, programaId)
 
   def buscarPlanDeEstudioPorIdYProgramaId(
-      id: Int,
+      id: String,
       programaId: String
   ): Future[Option[PlanDeEstudioRecord]] =
     provider.planesDeEstudio.buscarPorIdAndProgramaId(id, programaId)
@@ -40,6 +40,6 @@ class PlanDeEstudioRepository(
   ): Future[Seq[PlanDeEstudioRecord]] =
     provider.planesDeEstudio.buscarPlanesDeEstudioPorProgramaId(programaId)
 
-  def eliminarPlanDeEstudio(id: Int, programaId: String): Future[Int] =
+  def eliminarPlanDeEstudio(id: String, programaId: String): Future[Int] =
     provider.planesDeEstudio.eliminarPorId(id, programaId)
 }
