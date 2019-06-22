@@ -78,7 +78,7 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
                 val usuario = pr
                 respondWithHeader(
                   RawHeader(
-                    "Access-Token",
+                    "AccessToken",
                     OAuth2BearerToken(jwt.generar(usuario)).toString
                   )
                 ) {

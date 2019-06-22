@@ -59,6 +59,7 @@ final case class ComponenteDeFormacionRecord(
 
 final case class PrerequisitoRecord(
     id: Int,
+    tipo: String,
     codigoAsignatura: String,
     codigoAsignaturaPR: String
 ) extends Record
@@ -75,6 +76,7 @@ final case class AsignaturaConComponenteRecord(
     codigoAsignatura: String,
     nombreAsignatura: String,
     creditos: Int,
+    inp: String,
     horasTeoricas: Int,
     horasLaboratorio: Int,
     horasPracticas: Int,

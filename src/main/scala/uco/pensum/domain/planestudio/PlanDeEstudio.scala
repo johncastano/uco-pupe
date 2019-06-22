@@ -6,7 +6,10 @@ import java.time.format.DateTimeFormatter
 import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
-import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaConComponenteRecord,
+  PlanDeEstudioRecord
+}
 
 case class PlanDeEstudio(
     id: Option[String],
@@ -81,6 +84,46 @@ object PlanDeEstudio {
         .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
       fechaDeModificacion = hora
     )
+
+  def recalcularCampos(
+      record: PlanDeEstudioRecord,
+      asignaturaOriginal: AsignaturaConComponenteRecord,
+      asignaturaActualizada: Asignatura
+  ): PlanDeEstudio = {
+
+    def recalcular(actual: Int, previo: Int, actualizado: Int): Int =
+      (actual - previo) + actualizado
+
+    PlanDeEstudio(
+      id = Some(record.id),
+      inp = record.inp,
+      creditos = recalcular(
+        record.creditos,
+        asignaturaOriginal.creditos,
+        asignaturaActualizada.creditos
+      ),
+      horasTeoricas = recalcular(
+        record.horasTeoricas,
+        asignaturaOriginal.horasTeoricas,
+        asignaturaActualizada.horas.teoricas
+      ),
+      horasLaboratorio = recalcular(
+        record.horasLaboratorio,
+        asignaturaOriginal.horasLaboratorio,
+        asignaturaActualizada.horas.laboratorio
+      ),
+      horasPracticas = recalcular(
+        record.horasPracticas,
+        asignaturaOriginal.horasPracticas,
+        asignaturaActualizada.horas.practicas
+      ),
+      programId = record.programaId,
+      fechaDeRegistro = ZonedDateTime
+        .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
+      fechaDeModificacion = hora
+    )
+
+  }
 
   def addINPprefix(inp: String) = s"INP $inp"
 

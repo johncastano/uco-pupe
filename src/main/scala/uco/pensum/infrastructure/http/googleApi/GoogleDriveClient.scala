@@ -42,7 +42,9 @@ class GoogleDriveClient(
     credential.setAccessToken(accessToken)
 
     //Create a new authorized API client
-    new Drive.Builder(httpTransport, jsonFactory, credential).build()
+    new Drive.Builder(httpTransport, jsonFactory, credential)
+      .setApplicationName("UCO-PUPE")
+      .build()
   }
 
   def createFolder(

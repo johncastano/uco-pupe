@@ -63,6 +63,11 @@ final case class AsignaturaExistente(
     mensaje: String = "La asignatura ya existe"
 ) extends DomainError
 
+final case class AsignaturaNotFound(
+    codigo: Int = 100003,
+    mensaje: String = "La asignatura especificada no existe"
+) extends DomainError
+
 final case class CannotUpdatePlanDeEstudio(
     codigo: Int = 10005,
     mensaje: String =

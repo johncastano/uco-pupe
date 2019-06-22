@@ -89,12 +89,12 @@ class MapperDTOInstances extends MapperSugar {
     }
 
   implicit def AsignaturaPEAToRespuesta
-    : Mapper[(Asignatura, PlanDeEstudioAsignaturaRecord), AsignaturaRespuesta] =
-    new Mapper[(Asignatura, PlanDeEstudioAsignaturaRecord), AsignaturaRespuesta] {
+    : Mapper[(Asignatura, String), AsignaturaRespuesta] =
+    new Mapper[(Asignatura, String), AsignaturaRespuesta] {
       override def to(
-          asignatura: (Asignatura, PlanDeEstudioAsignaturaRecord)
+          asignatura: (Asignatura, String)
       ): AsignaturaRespuesta = {
-        val (asgn, pear) = asignatura
+        val (asgn, gDriveFid) = asignatura
         AsignaturaRespuesta(
           codigo = asgn.codigo,
           inp = asgn.inp,
@@ -109,7 +109,7 @@ class MapperDTOInstances extends MapperSugar {
             asgn.horas.independietesDelEstudiante,
           nivel = asgn.nivel,
           requisitos = asgn.requisitos.map(_.to[RequisitoDTO]),
-          gDriveFolderId = pear.id,
+          gDriveFolderId = gDriveFid,
           fechaDeRegistro = asgn.fechaDeRegistro,
           fechaDeModificacion = asgn.fechaDeModificacion
         )

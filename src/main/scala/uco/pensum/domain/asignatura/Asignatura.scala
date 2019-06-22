@@ -1,6 +1,7 @@
 package uco.pensum.domain.asignatura
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
@@ -9,6 +10,7 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion
 }
+import uco.pensum.infrastructure.postgres.AsignaturaConComponenteRecord
 
 sealed trait TipoDeRequisito {
   final case object RequisitoDeNivel {
@@ -82,7 +84,8 @@ object Asignatura {
 
   def validar(
       dto: AsignaturaActualizacion,
-      original: Asignatura
+      original: AsignaturaConComponenteRecord,
+      componenteDeFormacion: ComponenteDeFormacion
   ): Either[DomainError, Asignatura] = {
     for {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
@@ -90,9 +93,9 @@ object Asignatura {
       nivel <- validarValorEntero(dto.nivel, "nivel")
     } yield
       Asignatura(
-        codigo = original.codigo,
+        codigo = original.codigoAsignatura,
         inp = original.inp,
-        componenteDeFormacion = original.componenteDeFormacion,
+        componenteDeFormacion = componenteDeFormacion,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
@@ -102,8 +105,12 @@ object Asignatura {
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,
-        requisitos = original.requisitos,
-        fechaDeRegistro = original.fechaDeRegistro,
+        requisitos = Nil,
+        fechaDeRegistro = ZonedDateTime
+          .parse(
+            original.fechaDeCreacion,
+            DateTimeFormatter.ISO_ZONED_DATE_TIME
+          ),
         fechaDeModificacion = hora
       )
   }

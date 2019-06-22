@@ -53,6 +53,7 @@ class Asignaturas(tag: Tag)
 abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Asignaturas(_)) {
+
   def encontrarPorCodigo(codigo: String): Future[Option[AsignaturaRecord]] =
     db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
 
@@ -60,6 +61,45 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     db.run(
       this returning this
         .map(_.codigo) into ((acc, id) => acc.copy(codigo = id)) += asignatura
+    )
+
+  def actualizar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
+    db.run(
+        this.filter(_.codigo === asignatura.codigo).update(asignatura)
+      )
+      .map(_ => asignatura)
+
+  def encontrarPorInpYCodigo(
+      programaId: String,
+      inp: String,
+      codigo: String
+  ): Future[Option[AsignaturaConComponenteRecord]] =
+    db.run(
+      (for {
+        pe <- tables.planesDeEstudio.filter(
+          pe => pe.inp === inp && pe.programaId === programaId
+        )
+        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+        if a.codigo === codigo && pea.planDeEstudioID === pe.id
+      } yield
+        (
+          a.codigo,
+          a.nombre,
+          a.creditos,
+          pe.inp,
+          a.horasTeoricas,
+          a.horasLaboratorio,
+          a.horasPracticas,
+          a.trabajoDelEstudiante,
+          a.nivel,
+          a.componenteDeFormacionId,
+          cdf.nombre,
+          cdf.abreviatura,
+          cdf.color,
+          pea.id,
+          a.fechaDeCreacion,
+          a.fechaDeModificacion
+        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
     )
 
   def obtenerAsignaturasPorINPYPrograma(
@@ -78,6 +118,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           a.codigo,
           a.nombre,
           a.creditos,
+          pe.inp,
           a.horasTeoricas,
           a.horasLaboratorio,
           a.horasPracticas,

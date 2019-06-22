@@ -25,6 +25,7 @@ trait HttpService
     val allowedDomain = HttpOrigin(CorsConfig.corsDomain.value)
     val corsSettings: CorsSettings = CorsSettings.defaultSettings
       .withAllowedOrigins(HttpOriginMatcher(allowedDomain))
+      .withExposedHeaders(List("AccessToken"))
       .withAllowedMethods(
         List(
           HttpMethods.GET,

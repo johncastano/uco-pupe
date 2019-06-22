@@ -15,10 +15,20 @@ class AsignaturaRepository(implicit val provider: PensumDatabase) {
   def almacenarAsignatura(asignatura: Asignatura): Future[AsignaturaRecord] =
     provider.asignaturas.almacenar(asignatura.to[AsignaturaRecord])
 
+  def actualizarAsignatura(asignatura: Asignatura): Future[AsignaturaRecord] =
+    provider.asignaturas.actualizar(asignatura.to[AsignaturaRecord])
+
   def buscarAsignaturaPorCodigo(
       codigo: String
   ): Future[Option[AsignaturaRecord]] =
     provider.asignaturas.encontrarPorCodigo(codigo)
+
+  def buscarAsignaturaPorInpYCodigo(
+      programaId: String,
+      inp: String,
+      codigo: String
+  ): Future[Option[AsignaturaConComponenteRecord]] =
+    provider.asignaturas.encontrarPorInpYCodigo(programaId, inp, codigo)
 
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,

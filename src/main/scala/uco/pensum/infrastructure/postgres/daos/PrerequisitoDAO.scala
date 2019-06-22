@@ -7,8 +7,9 @@ import uco.pensum.infrastructure.postgres.{PrerequisitoRecord, tables}
 import scala.concurrent.{ExecutionContext, Future}
 
 class Prerequisitos(tag: Tag)
-    extends Table[PrerequisitoRecord](tag, "prerequisitos") {
+    extends Table[PrerequisitoRecord](tag, "requisitos") {
   def id = column[Int]("id")
+  def tipo = column[String]("tipo")
   def codigoAsignatura = column[String]("codigo_asignatura")
   foreignKey(
     "codigo_asignatura",
@@ -19,19 +20,18 @@ class Prerequisitos(tag: Tag)
     onUpdate = ForeignKeyAction.Restrict,
     onDelete = ForeignKeyAction.Cascade
   )
-  def codigoAsignaturaPR = column[String]("codigo_asignatura_prerequisito")
-  def codigosAsignaturaPR =
-    foreignKey(
-      "codigo_asignatura_prerequisito",
-      codigoAsignatura,
-      tables.asignaturas
-    )(
-      _.codigo,
-      onUpdate = ForeignKeyAction.Restrict,
-      onDelete = ForeignKeyAction.Cascade
-    )
+  def codigoAsignaturaPR = column[String]("codigo_asignatura_requisito")
+  foreignKey(
+    "codigo_asignatura_requisito",
+    codigoAsignatura,
+    tables.asignaturas
+  )(
+    _.codigo,
+    onUpdate = ForeignKeyAction.Restrict,
+    onDelete = ForeignKeyAction.Cascade
+  )
   def * =
-    (id, codigoAsignatura, codigoAsignaturaPR).mapTo[PrerequisitoRecord]
+    (id, tipo, codigoAsignatura, codigoAsignaturaPR).mapTo[PrerequisitoRecord]
 }
 
 abstract class PrerequisitosDAO(db: PostgresProfile.backend.Database)(

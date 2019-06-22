@@ -63,11 +63,17 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     }
 
   def actualizarAsignatura: Route =
-    path("programa" / Segment / "codigo" / Segment / "asignatura") {
-      (programId, codigo) =>
-        put {
+    path(
+      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment
+    ) { (programId, inp, codigo) =>
+      put {
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
           entity(as[AsignaturaActualizacion]) { asignatura =>
-            onComplete(actualizarAsignatura(asignatura, programId, codigo)) {
+            onComplete(
+              actualizarAsignatura(asignatura, programId, inp, codigo)(
+                user.gCredentials
+              )
+            ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
                 complete(InternalServerError -> ErrorInterno())
@@ -84,6 +90,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             }
           }
         }
+      }
     }
 
   def agregarRequisito: Route =

@@ -16,10 +16,7 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
 import uco.pensum.infrastructure.http.jwt.GUserCredentials
-import uco.pensum.infrastructure.postgres.{
-  AsignaturaConComponenteRecord,
-  PlanDeEstudioAsignaturaRecord
-}
+import uco.pensum.infrastructure.postgres.AsignaturaConComponenteRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -29,7 +26,6 @@ trait AsignaturaServices extends LazyLogging {
   implicit val repository: PensumRepository
   implicit val googleDriveClient: GoogleDriveClient
 
-  import uco.pensum.infrastructure.mapper.MapperRecords._
   //TODO: Have in mind prerequisitos when they come ...
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
@@ -37,7 +33,7 @@ trait AsignaturaServices extends LazyLogging {
       inp: String
   )(
       implicit gUser: GUserCredentials
-  ): Future[Either[DomainError, (Asignatura, PlanDeEstudioAsignaturaRecord)]] =
+  ): Future[Either[DomainError, (Asignatura, String)]] =
     (for {
       _ <- EitherT.fromOptionF(
         repository.programaRepository.buscarProgramaPorId(programId),
@@ -58,7 +54,8 @@ trait AsignaturaServices extends LazyLogging {
           .buscarAsignaturaPorCodigo(asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
       a <- EitherT.fromEither[Future](
-        Asignatura.validar(asignatura, inp, cf.to[ComponenteDeFormacion])
+        Asignatura
+          .validar(asignatura, inp, ComponenteDeFormacion.fromRecord(cf))
       )
 
       gf <- EitherT(
@@ -82,7 +79,7 @@ trait AsignaturaServices extends LazyLogging {
             gDriveFolderId = Option(gf.getId).getOrElse("")
           )
       )
-    } yield (a, pear)).value
+    } yield (a, pear.id)).value
 
   def asignaturasPorInp(
       programId: String,
@@ -94,41 +91,57 @@ trait AsignaturaServices extends LazyLogging {
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,
       programId: String,
+      inp: String,
       codigo: String
-  ): Future[Either[DomainError, Asignatura]] =
+  )(
+      implicit gUser: GUserCredentials
+  ): Future[Either[DomainError, (Asignatura, String)]] =
     (for {
-      //program <- repository.getPorgramaById(programId) //TODO: Validate if programExists
-      // original <- repository.getAsignaturaByCodigoAndProgramId //TODO: validate if the entity with given ids exist
-      cu <- EitherT.fromEither[Future](
+      prd <- EitherT.fromOptionF(
+        repository.programaRepository.buscarProgramaPorId(programId),
+        ProgramNotFound()
+      )
+      pe <- EitherT.fromOptionF(
+        repository.planDeEstudioRepository
+          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId),
+        CurriculumNotFound()
+      )
+      cf <- EitherT.fromOptionF(
+        repository.componenteDeFormacionRepository
+          .buscarPorNombre(asignatura.componenteDeFormacion),
+        ComponenteDeFormacionNoExiste()
+      )
+      oas <- EitherT.fromOptionF(
+        repository.asignaturaRepository
+          .buscarAsignaturaPorInpYCodigo(prd.id, inp, codigo),
+        AsignaturaNotFound()
+      )
+      av <- EitherT.fromEither[Future](
         Asignatura.validar(
           asignatura,
-          original = Asignatura(
-            codigo,
-            "12",
-            ComponenteDeFormacion(
-              nombre = "PE",
-              abreviatura = "PE",
-              color = "PE",
-              id = Some(1)
-            ),
-            "Test",
-            3,
-            Horas(3, 3, 0, 6),
-            2,
-            Nil,
-            hora,
-            hora
-          )
+          original = oas,
+          componenteDeFormacion = ComponenteDeFormacion.fromRecord(cf)
         )
       )
-      _ = println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-      spd <- EitherT {
-        /*repository
-          .saveOrAsignatura(pd)
-          .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
-        Future.successful(Either.right[DomainError, Asignatura](cu))
-      } //TODO: Add repository insert
-    } yield spd).value
+      upd <- EitherT.fromEither[Future](
+        PlanDeEstudio.recalcularCampos(pe, oas, av).asRight[DomainError]
+      )
+      _ <- OptionT(
+        repository.planDeEstudioRepository
+          .almacenarOActualizarPlanDeEstudios(upd)
+      ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
+      _ <- EitherT.right[DomainError](
+        repository.asignaturaRepository.actualizarAsignatura(av)
+      )
+      _ <- EitherT(
+        GDriveService.actualizarDriveFolderName(
+          oas.gdriveFolderId,
+          av.nombre,
+          gUser.accessToken,
+          !av.nombre.equalsIgnoreCase(oas.nombreAsignatura)
+        )
+      )
+    } yield (av, oas.gdriveFolderId)).value
 
   def actualizarRequisitos(
       requisitos: RequisitosActualizacion,
