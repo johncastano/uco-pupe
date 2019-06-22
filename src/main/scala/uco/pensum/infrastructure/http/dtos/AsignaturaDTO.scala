@@ -11,8 +11,7 @@ case class AsignaturaAsignacion(
     horasLaboratorio: Int,
     horasPracticas: Option[Int],
     trabajoIndependienteEstudiante: Int,
-    nivel: Int,
-    requisitos: List[String]
+    nivel: Int
 )
 
 case class AsignaturaActualizacion(
@@ -30,6 +29,8 @@ case class RequisitosActualizacion(
     requisito: String
 )
 
+case class RequisitoDTO(codigo: String, tipo: String)
+
 case class AsignaturaRespuesta(
     codigo: String,
     inp: String,
@@ -38,8 +39,11 @@ case class AsignaturaRespuesta(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    horasPracticas: Int,
+    horasIndependientesDelEstudiante: Int,
     nivel: Int,
-    requisitos: List[String],
+    requisitos: List[RequisitoDTO],
+    gDriveFolderId: String,
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )

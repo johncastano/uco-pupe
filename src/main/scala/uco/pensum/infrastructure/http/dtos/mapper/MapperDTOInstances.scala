@@ -3,7 +3,7 @@ package uco.pensum.infrastructure.http.dtos.mapper
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.asignatura.{Asignatura, Requisito}
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
@@ -77,11 +77,43 @@ class MapperDTOInstances extends MapperSugar {
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horas.teoricas,
           horasLaboratorio = asignatura.horas.laboratorio,
+          horasPracticas = asignatura.horas.practicas,
+          horasIndependientesDelEstudiante =
+            asignatura.horas.independietesDelEstudiante,
           nivel = asignatura.nivel,
-          requisitos = asignatura.requisitos,
+          requisitos = asignatura.requisitos.map(_.to[RequisitoDTO]),
+          gDriveFolderId = "",
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
         )
+    }
+
+  implicit def AsignaturaPEAToRespuesta
+    : Mapper[(Asignatura, PlanDeEstudioAsignaturaRecord), AsignaturaRespuesta] =
+    new Mapper[(Asignatura, PlanDeEstudioAsignaturaRecord), AsignaturaRespuesta] {
+      override def to(
+          asignatura: (Asignatura, PlanDeEstudioAsignaturaRecord)
+      ): AsignaturaRespuesta = {
+        val (asgn, pear) = asignatura
+        AsignaturaRespuesta(
+          codigo = asgn.codigo,
+          inp = asgn.inp,
+          componenteDeFormacion =
+            asgn.componenteDeFormacion.to[ComponenteDeFormacionRespuesta],
+          nombre = asgn.nombre,
+          creditos = asgn.creditos,
+          horasTeoricas = asgn.horas.teoricas,
+          horasLaboratorio = asgn.horas.laboratorio,
+          horasPracticas = asgn.horas.practicas,
+          horasIndependientesDelEstudiante =
+            asgn.horas.independietesDelEstudiante,
+          nivel = asgn.nivel,
+          requisitos = asgn.requisitos.map(_.to[RequisitoDTO]),
+          gDriveFolderId = pear.id,
+          fechaDeRegistro = asgn.fechaDeRegistro,
+          fechaDeModificacion = asgn.fechaDeModificacion
+        )
+      }
     }
 
   implicit def AsignaturaConComponenteToRespuesta
@@ -104,21 +136,33 @@ class MapperDTOInstances extends MapperSugar {
           creditos = record.creditos,
           horasTeoricas = record.horasTeoricas,
           horasLaboratorio = record.horasLaboratorio,
+          horasPracticas = record.horasPracticas,
+          horasIndependientesDelEstudiante = record.trabajoDelEstudiante,
           nivel = record.nivel,
           requisitos = Nil,
+          gDriveFolderId = "",
           fechaDeRegistro = ZonedDateTime.parse(record.fechaDeCreacion),
           fechaDeModificacion = ZonedDateTime.parse(record.fechaDeModificacion)
         )
       }
     }
 
-  implicit def AsignaturaAndComponenteToRespuesta
-    : Mapper[(Asignatura, ComponenteDeFormacionRecord), AsignaturaRespuesta] =
-    new Mapper[(Asignatura, ComponenteDeFormacionRecord), AsignaturaRespuesta] {
+  implicit def AsignaturaAndComponenteToRespuesta: Mapper[
+    (Asignatura, PlanDeEstudioAsignaturaRecord, ComponenteDeFormacionRecord),
+    AsignaturaRespuesta
+  ] =
+    new Mapper[
+      (Asignatura, PlanDeEstudioAsignaturaRecord, ComponenteDeFormacionRecord),
+      AsignaturaRespuesta
+    ] {
       override def to(
-          in: (Asignatura, ComponenteDeFormacionRecord)
+          in: (
+              Asignatura,
+              PlanDeEstudioAsignaturaRecord,
+              ComponenteDeFormacionRecord
+          )
       ): AsignaturaRespuesta = {
-        val (a, cfr) = in
+        val (a, pear, cfr) = in
         AsignaturaRespuesta(
           codigo = a.codigo,
           inp = a.inp,
@@ -132,13 +176,26 @@ class MapperDTOInstances extends MapperSugar {
           creditos = a.creditos,
           horasTeoricas = a.horas.teoricas,
           horasLaboratorio = a.horas.laboratorio,
+          horasPracticas = a.horas.practicas,
+          horasIndependientesDelEstudiante = a.horas.independietesDelEstudiante,
           nivel = a.nivel,
-          requisitos = a.requisitos,
+          requisitos = a.requisitos.map(_.to[RequisitoDTO]),
+          gDriveFolderId = pear.id,
           fechaDeRegistro = a.fechaDeRegistro,
           fechaDeModificacion = a.fechaDeModificacion
         )
       }
     }
+
+  implicit def requisitoToRequisitoDTO: Mapper[Requisito, RequisitoDTO] = {
+    new Mapper[Requisito, RequisitoDTO] {
+      override def to(requisito: Requisito): RequisitoDTO =
+        RequisitoDTO(
+          codigo = requisito.codigo,
+          tipo = requisito.tipo.toString
+        )
+    }
+  }
 
   implicit def UsuarioToRespuesta: Mapper[Usuario, UsuarioRespuesta] =
     new Mapper[Usuario, UsuarioRespuesta] {

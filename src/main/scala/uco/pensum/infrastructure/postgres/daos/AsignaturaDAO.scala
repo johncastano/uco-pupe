@@ -1,12 +1,13 @@
 package uco.pensum.infrastructure.postgres.daos
 
 import uco.pensum.infrastructure.postgres.{
-  AsignaturaRecord,
   AsignaturaConComponenteRecord,
+  AsignaturaRecord,
   tables
 }
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.ProvenShape
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -21,8 +22,6 @@ class Asignaturas(tag: Tag)
   def trabajoDelEstudiante = column[Int]("TIE")
   def nivel = column[Int]("nivel")
   def componenteDeFormacionId = column[Int]("componente_de_formacion_id")
-  def direccionPlanDeEstudios =
-    column[String]("direccion_plan_de_estudio_url")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
   def componenteDeFormacion =
@@ -35,7 +34,7 @@ class Asignaturas(tag: Tag)
       onUpdate = ForeignKeyAction.Restrict,
       onDelete = ForeignKeyAction.Cascade
     )
-  def * =
+  def * : ProvenShape[AsignaturaRecord] =
     (
       codigo,
       nombre,
@@ -46,7 +45,6 @@ class Asignaturas(tag: Tag)
       trabajoDelEstudiante,
       nivel,
       componenteDeFormacionId,
-      direccionPlanDeEstudios,
       fechaDeCreacion,
       fechaDeModificacion
     ).mapTo[AsignaturaRecord]
@@ -89,7 +87,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           cdf.nombre,
           cdf.abreviatura,
           cdf.color,
-          a.direccionPlanDeEstudios,
+          pea.id,
           a.fechaDeCreacion,
           a.fechaDeModificacion
         ).mapTo[AsignaturaConComponenteRecord]).result

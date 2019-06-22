@@ -21,6 +21,7 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaRespuesta,
   RequisitosActualizacion
 }
+import uco.pensum.infrastructure.http.jwt.JWT
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
@@ -31,26 +32,31 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
 
   implicit val executionContext: ExecutionContext
   implicit val materializer: Materializer
+  implicit val jwt: JWT
 
   def agregarAsignatura: Route =
     path("programa" / Segment / "planEstudio" / Segment / "asignatura") {
       (programId, inp) =>
         post {
-          entity(as[AsignaturaAsignacion]) { asignatura =>
-            onComplete(agregarAsignatura(asignatura, programId, inp)) {
-              case Failure(ex) => {
-                logger.error(s"Exception: $ex")
-                complete(InternalServerError -> ErrorInterno())
+          authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+            entity(as[AsignaturaAsignacion]) { asignatura =>
+              onComplete(
+                agregarAsignatura(asignatura, programId, inp)(user.gCredentials)
+              ) {
+                case Failure(ex) => {
+                  logger.error(s"Exception: $ex")
+                  complete(InternalServerError -> ErrorInterno())
+                }
+                case Success(response) =>
+                  response.fold(
+                    err =>
+                      complete(
+                        BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                      ),
+                    asignatura =>
+                      complete(Created -> asignatura.to[AsignaturaRespuesta])
+                  )
               }
-              case Success(response) =>
-                response.fold(
-                  err =>
-                    complete(
-                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                    ),
-                  asignatura =>
-                    complete(Created -> asignatura.to[AsignaturaRespuesta])
-                )
             }
           }
         }

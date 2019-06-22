@@ -12,6 +12,7 @@ import uco.pensum.infrastructure.http.dtos.{
   ComponenteDeFormacionAsignacion,
   ComponenteDeFormacionRespuesta
 }
+import uco.pensum.infrastructure.http.jwt.JWT
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -24,27 +25,30 @@ trait ComponenteDeFormacionRoutes
 
   implicit val executionContext: ExecutionContext
   implicit val materializer: Materializer
+  implicit val jwt: JWT
 
   def agregarComponenteDeFormacion: Route =
     path("componente") {
       post {
-        entity(as[ComponenteDeFormacionAsignacion]) { componente =>
-          onComplete(agregarComponenteDeFormacion(componente)) {
-            case Failure(ex) => {
-              logger.error(s"Exception: $ex")
-              complete(InternalServerError -> ErrorInterno())
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+          entity(as[ComponenteDeFormacionAsignacion]) { componente =>
+            onComplete(agregarComponenteDeFormacion(componente)) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  componente =>
+                    complete(
+                      Created -> componente.to[ComponenteDeFormacionRespuesta]
+                    )
+                )
             }
-            case Success(response) =>
-              response.fold(
-                err =>
-                  complete(
-                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                  ),
-                componente =>
-                  complete(
-                    Created -> componente.to[ComponenteDeFormacionRespuesta]
-                  )
-              )
           }
         }
       }
@@ -53,7 +57,7 @@ trait ComponenteDeFormacionRoutes
   def listarComponentesDeFormacion =
     path("componente") {
       get {
-        onComplete(pbtenerComponenetesDeFormacion) {
+        onComplete(obtenerComponenetesDeFormacion) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())

@@ -3,8 +3,8 @@ package uco.pensum.domain.services
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
-import uco.pensum.domain.asignatura.Asignatura.Codigo
 import uco.pensum.domain.asignatura._
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors._
 import uco.pensum.domain.hora
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -14,9 +14,11 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaAsignacion,
   RequisitosActualizacion
 }
+import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
+import uco.pensum.infrastructure.http.jwt.GUserCredentials
 import uco.pensum.infrastructure.postgres.{
   AsignaturaConComponenteRecord,
-  ComponenteDeFormacionRecord
+  PlanDeEstudioAsignaturaRecord
 }
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -25,13 +27,17 @@ trait AsignaturaServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
+  implicit val googleDriveClient: GoogleDriveClient
 
+  import uco.pensum.infrastructure.mapper.MapperRecords._
   //TODO: Have in mind prerequisitos when they come ...
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
       programId: String,
       inp: String
-  ): Future[Either[DomainError, (Asignatura, ComponenteDeFormacionRecord)]] =
+  )(
+      implicit gUser: GUserCredentials
+  ): Future[Either[DomainError, (Asignatura, PlanDeEstudioAsignaturaRecord)]] =
     (for {
       _ <- EitherT.fromOptionF(
         repository.programaRepository.buscarProgramaPorId(programId),
@@ -52,7 +58,11 @@ trait AsignaturaServices extends LazyLogging {
           .buscarAsignaturaPorCodigo(asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
       a <- EitherT.fromEither[Future](
-        Asignatura.validar(asignatura, inp, cf.id)
+        Asignatura.validar(asignatura, inp, cf.to[ComponenteDeFormacion])
+      )
+
+      gf <- EitherT(
+        GDriveService.createFolder(gUser.accessToken, a.nombre, Some(pe.id))
       )
       upd <- EitherT.fromEither[Future](
         PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
@@ -61,14 +71,18 @@ trait AsignaturaServices extends LazyLogging {
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(upd)
       ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
-      _ <- EitherT.right[DomainError](
+      asr <- EitherT.right[DomainError](
         repository.asignaturaRepository.almacenarAsignatura(a)
       )
-      _ <- EitherT.right[DomainError](
+      pear <- EitherT.right[DomainError](
         repository.planDeEstudioAsignaturaRepository
-          .almacenarOActualizarPlaDeEstudioAsignatura(pe.id, a.codigo)
+          .almacenarOActualizarPlaDeEstudioAsignatura(
+            planDeEstudioId = pe.id,
+            codigoAsignatura = asr.codigo,
+            gDriveFolderId = Option(gf.getId).getOrElse("")
+          )
       )
-    } yield (a, cf)).value
+    } yield (a, pear)).value
 
   def asignaturasPorInp(
       programId: String,
@@ -91,7 +105,12 @@ trait AsignaturaServices extends LazyLogging {
           original = Asignatura(
             codigo,
             "12",
-            1,
+            ComponenteDeFormacion(
+              nombre = "PE",
+              abreviatura = "PE",
+              color = "PE",
+              id = Some(1)
+            ),
             "Test",
             3,
             Horas(3, 3, 0, 6),
@@ -130,29 +149,28 @@ trait AsignaturaServices extends LazyLogging {
       mockOriginal = Asignatura(
         codigo,
         inp,
-        1,
+        ComponenteDeFormacion(
+          nombre = "PE",
+          abreviatura = "PE",
+          color = "PE",
+          id = Some(1)
+        ),
         "Calculo",
         5,
         Horas(6, 4, 0, 5),
         3,
-        List(requisito),
+        Nil,
         hora,
         hora
       )
-      _ = println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-      nuevosRequisitos: List[Codigo] = {
-        if (isRemove)
-          mockOriginal.requisitos.filterNot(_ == requisito)
-        else
-          mockOriginal.requisitos :+ requisito
-      }
+      _ = println(s"ProgramID: $programId isRemove: $isRemove") //To avoid compiling errors beacause the variable is never used
       spd <- EitherT {
         /*repository
           .updateAsignatura(original.copy(requisitos = nuevosRequisitos))
           .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
         Future.successful(
           Either.right[DomainError, Asignatura](
-            mockOriginal.copy(requisitos = nuevosRequisitos)
+            mockOriginal.copy(requisitos = Nil)
           )
         )
       } //TODO: Add repository insert
@@ -165,7 +183,12 @@ trait AsignaturaServices extends LazyLogging {
     val asignaturaMock = Asignatura(
       codigo,
       "123",
-      1,
+      ComponenteDeFormacion(
+        nombre = "PE",
+        abreviatura = "PE",
+        color = "PE",
+        id = Some(1)
+      ),
       "Calculo",
       5,
       Horas(6, 4, 0, 6),
@@ -178,7 +201,7 @@ trait AsignaturaServices extends LazyLogging {
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
     //repository.getAsignaturaPorCodigo(programId, inp)
     Future.successful(
-      Some(asignaturaMock.copy(requisitos = List("ISH0122", "ISH101")))
+      Some(asignaturaMock.copy(requisitos = Nil))
     )
   }
 
@@ -190,7 +213,12 @@ trait AsignaturaServices extends LazyLogging {
     val asignaturaMock = Asignatura(
       codigo,
       inp,
-      1,
+      ComponenteDeFormacion(
+        nombre = "PE",
+        abreviatura = "PE",
+        color = "PE",
+        id = Some(1)
+      ),
       "Calculo",
       5,
       Horas(6, 4, 0, 5),
@@ -206,7 +234,7 @@ trait AsignaturaServices extends LazyLogging {
       res <- EitherT(
         Future.successful(
           Either.right[DomainError, Asignatura](
-            asignaturaMock.copy(requisitos = List("ISH0122", "ISH101"))
+            asignaturaMock.copy(requisitos = Nil)
           )
         )
       )

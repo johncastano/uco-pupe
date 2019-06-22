@@ -9,7 +9,17 @@ import scala.concurrent.{ExecutionContext, Future}
 class Prerequisitos(tag: Tag)
     extends Table[PrerequisitoRecord](tag, "prerequisitos") {
   def id = column[Int]("id")
-  def codigoAsignatura = column[String]("codigo_asignatura_prerequisito")
+  def codigoAsignatura = column[String]("codigo_asignatura")
+  foreignKey(
+    "codigo_asignatura",
+    codigoAsignatura,
+    tables.asignaturas
+  )(
+    _.codigo,
+    onUpdate = ForeignKeyAction.Restrict,
+    onDelete = ForeignKeyAction.Cascade
+  )
+  def codigoAsignaturaPR = column[String]("codigo_asignatura_prerequisito")
   def codigosAsignaturaPR =
     foreignKey(
       "codigo_asignatura_prerequisito",
@@ -21,7 +31,7 @@ class Prerequisitos(tag: Tag)
       onDelete = ForeignKeyAction.Cascade
     )
   def * =
-    (id, codigoAsignatura).mapTo[PrerequisitoRecord]
+    (id, codigoAsignatura, codigoAsignaturaPR).mapTo[PrerequisitoRecord]
 }
 
 abstract class PrerequisitosDAO(db: PostgresProfile.backend.Database)(

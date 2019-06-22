@@ -3,11 +3,26 @@ package uco.pensum.domain.asignatura
 import java.time.ZonedDateTime
 
 import uco.pensum.domain.asignatura.Asignatura.Codigo
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion
 }
+
+sealed trait TipoDeRequisito {
+  final case object RequisitoDeNivel {
+    override def toString: Codigo = "Requisito de nivel"
+  }
+  final case object PreRequisito {
+    override def toString: Codigo = "Prerequisito"
+  }
+  final case object CoRequisito {
+    override def toString: Codigo = "Corequisito"
+  }
+}
+
+case class Requisito(codigo: Codigo, tipo: TipoDeRequisito)
 
 case class Horas(
     teoricas: Int,
@@ -19,12 +34,12 @@ case class Horas(
 case class Asignatura(
     codigo: Codigo,
     inp: String,
-    componenteDeFormacionId: Int,
+    componenteDeFormacion: ComponenteDeFormacion,
     nombre: String,
     creditos: Int,
     horas: Horas,
     nivel: Int,
-    requisitos: List[Codigo],
+    requisitos: List[Requisito],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )
@@ -38,7 +53,7 @@ object Asignatura {
   def validar(
       dto: AsignaturaAsignacion,
       inp: String,
-      componenteDeFormacionId: Int
+      componenteDeFormacion: ComponenteDeFormacion
   ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
@@ -49,7 +64,7 @@ object Asignatura {
       Asignatura(
         codigo = codigo,
         inp = inp,
-        componenteDeFormacionId = componenteDeFormacionId,
+        componenteDeFormacion = componenteDeFormacion,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
@@ -59,7 +74,7 @@ object Asignatura {
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,
-        requisitos = dto.requisitos.filterNot(v => v.isEmpty),
+        requisitos = List.empty,
         fechaDeRegistro = hora,
         fechaDeModificacion = hora
       )
@@ -77,7 +92,7 @@ object Asignatura {
       Asignatura(
         codigo = original.codigo,
         inp = original.inp,
-        componenteDeFormacionId = original.componenteDeFormacionId,
+        componenteDeFormacion = original.componenteDeFormacion,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(

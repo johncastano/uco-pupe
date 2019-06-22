@@ -66,8 +66,7 @@ class MapperRecordsInstances extends MapperSugar {
           asignatura.horas.practicas,
           asignatura.horas.independietesDelEstudiante,
           asignatura.nivel,
-          asignatura.componenteDeFormacionId,
-          "", //TODO : Address of Google docs
+          asignatura.componenteDeFormacion.id.getOrElse(0),
           asignatura.fechaDeRegistro.toString,
           asignatura.fechaDeModificacion.toString
         )
@@ -83,6 +82,19 @@ class MapperRecordsInstances extends MapperSugar {
         abreviatura = componente.abreviatura,
         color = componente.color,
         id = componente.id.getOrElse(0)
+      )
+    }
+
+  implicit def componenteDeFormacionRecordToComponenteDeFormacion
+    : Mapper[ComponenteDeFormacionRecord, ComponenteDeFormacion] =
+    new Mapper[ComponenteDeFormacionRecord, ComponenteDeFormacion] {
+      override def to(
+          componente: ComponenteDeFormacionRecord
+      ): ComponenteDeFormacion = ComponenteDeFormacion(
+        id = Some(componente.id),
+        nombre = componente.nombre,
+        abreviatura = componente.abreviatura,
+        color = componente.color
       )
     }
 

@@ -19,5 +19,5 @@ object ComponenteDeFormacion {
       n <- validarCampoVacio(dto.nombre, "nombre")
       abv <- validarCampoVacio(dto.abreviatura, "abreviatura")
       c <- validarCampoVacio(dto.color, "color")
-    } yield new ComponenteDeFormacion(n, abv, c)
+    } yield ComponenteDeFormacion(n, abv, c)
 }
