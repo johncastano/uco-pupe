@@ -25,7 +25,6 @@ trait AsignaturaServices extends LazyLogging {
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
 
-  //TODO: Have in mind prerequisitos when they come ...
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
       programId: String,
@@ -48,7 +47,7 @@ trait AsignaturaServices extends LazyLogging {
       )
       _ <- OptionT(
         repository.asignaturaRepository
-          .buscarAsignaturaPorCodigo(programId,inp, asignatura.codigo)
+          .buscarAsignaturaPorCodigo(asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
       a <- EitherT.fromEither[Future](
         Asignatura.validar(asignatura, inp, cf.id)

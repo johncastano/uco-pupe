@@ -139,29 +139,35 @@ class MapperDTOInstances extends MapperSugar {
     }
 
   implicit def AsignaturaConRequisitoToRespuesta
-  : Mapper[(AsignaturaRecord, Requisito), AsignaturaRespuesta] =
+    : Mapper[(AsignaturaRecord, Requisito), AsignaturaRespuesta] =
     new Mapper[(AsignaturaRecord, Requisito), AsignaturaRespuesta] {
       override def to(
-                       in: (AsignaturaRecord, Requisito)
-                     ): AsignaturaRespuesta = {
+          in: (AsignaturaRecord, Requisito)
+      ): AsignaturaRespuesta = {
         val (asignatura, requisito) = in
         AsignaturaRespuesta(
           codigo = asignatura.codigo,
-          inp = asignatura.inp,
+          inp = "",
           componenteDeFormacion = ComponenteDeFormacionRespuesta(
-            id = cfr.id,
-            abreviatura = cfr.abreviatura,
-            nombre = cfr.nombre,
-            color = cfr.color
+            id = 1,
+            abreviatura = "",
+            nombre = "",
+            color = ""
           ),
           nombre = asignatura.nombre,
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horasTeoricas,
           horasLaboratorio = asignatura.horasLaboratorio,
           nivel = asignatura.nivel,
-          requisitos = List(RequisitoRespuesta(requisito.codigoAsignatura,requisito.tipoRequisito.toString)), //TODO: Change
+          requisitos = List(
+            RequisitoRespuesta(
+              requisito.codigoAsignatura,
+              requisito.tipoRequisito.toString
+            )
+          ), //TODO: Change
           fechaDeRegistro = ZonedDateTime.parse(asignatura.fechaDeCreacion),
-          fechaDeModificacion = ZonedDateTime.parse(asignatura.fechaDeModificacion)
+          fechaDeModificacion =
+            ZonedDateTime.parse(asignatura.fechaDeModificacion)
         )
       }
     }

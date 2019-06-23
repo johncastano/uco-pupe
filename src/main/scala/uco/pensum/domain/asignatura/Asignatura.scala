@@ -8,9 +8,6 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion
 }
-import cats.instances.list._
-import cats.instances.either._
-import cats.syntax.traverse._
 import uco.pensum.domain.requisito.Requisito
 
 case class Horas(
@@ -48,9 +45,6 @@ object Asignatura {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       creditos <- validarValorEntero(dto.creditos, "creditos")
       nivel <- validarValorEntero(dto.nivel, "nivel")
-      requisitos <- dto.requisitos
-        .map(Requisito.validar(_))
-        .sequence // TODO: As soon as it obtains the first Left,it stops getting lefts
     } yield
       Asignatura(
         codigo = codigo,
@@ -65,7 +59,7 @@ object Asignatura {
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,
-        requisitos = requisitos,
+        requisitos = Nil,
         fechaDeRegistro = hora,
         fechaDeModificacion = hora
       )

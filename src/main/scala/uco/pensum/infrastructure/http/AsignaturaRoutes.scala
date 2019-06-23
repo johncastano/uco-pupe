@@ -54,12 +54,13 @@ trait AsignaturaRoutes
   def asignarRequisito: Route =
     path(
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "requisito"
-    ) { (programId, inp, codigo) =>
+    ) { (programId, inp, codigoAsignatura) =>
       post {
+        println(s"Programa id: $programId, $inp")
         entity(as[RequisitoAsignacion]) { requisito =>
           onComplete(
             asignarRequisitoAAsignatura(
-              codigo,
+              codigoAsignatura,
               requisito
             )
           ) {
@@ -192,6 +193,6 @@ trait AsignaturaRoutes
     }
 
   val asignaturaRoutes
-    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ agregarRequisito ~ eliminarRequisito
+    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ asignarRequisito /*~ agregarRequisito ~ eliminarRequisito*/
 
 }

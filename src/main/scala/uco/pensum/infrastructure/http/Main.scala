@@ -22,7 +22,7 @@ object Main extends App with HttpService {
 
   private val config = ConfigFactory.load()
   private val host = config.getString("pupe.http.host")
-  private val port = config.getString("pupe.http.port").toInt
+  private val port = config.getInt("pupe.http.port")
 
   val db: PostgresProfile.backend.Database = Database.forConfig("postgres")
 
@@ -46,6 +46,9 @@ object Main extends App with HttpService {
     override def planDeEstudioAsignaturaRepository
       : PlanDeEstudioAsignaturaRepository =
       new PlanDeEstudioAsignaturaRepository
+
+    override def requisitoRepository: RequisitoRepository =
+      new RequisitoRepository
   }
 
   logger.info(s"Starting http service ....")

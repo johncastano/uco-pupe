@@ -1,8 +1,8 @@
 package uco.pensum.infrastructure.postgres.daos
 
 import uco.pensum.infrastructure.postgres.{
-  AsignaturaRecord,
   AsignaturaConComponenteRecord,
+  AsignaturaRecord,
   tables
 }
 import slick.jdbc.PostgresProfile
@@ -55,12 +55,8 @@ class Asignaturas(tag: Tag)
 abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Asignaturas(_)) {
-  def encontrarPorCodigo(programaId: String,inp: String, codigo: String): Future[Option[AsignaturaRecord]] =
-    db.run(
-      (for{
-        ((a,pea),cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
-      }yield a)
-    )
+  def encontrarPorCodigo(codigo: String): Future[Option[AsignaturaRecord]] =
+    db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
 
   def almacenar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
     db.run(
@@ -77,8 +73,10 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
         pe <- tables.planesDeEstudio.filter(
           pe => pe.inp === inp && pe.programaId === programaId
         )
-        (((a, pea), cdf),r) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id) join tables.requisitos on (_._1._1.codigo === _.codigoAsignaturaRequisito)
-        if (pea.planDeEstudioID === pe.id)
+        (((a, pea), cdf), r) <- (tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join
+          tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+          joinLeft tables.requisitos on (_._1._1.codigo === _.codigoAsignatura))
+        if pea.planDeEstudioID === pe.id
       } yield
         (
           a.codigo,
@@ -93,8 +91,8 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           cdf.nombre,
           cdf.abreviatura,
           cdf.color,
-          r.codigoAsignaturaRequisito,
-          r.tipoRequisito,
+          r.map(_.codigoAsignaturaRequisito).getOrElse(""),
+          r.map(_.tipoRequisito).getOrElse(""),
           a.direccionPlanDeEstudios,
           a.fechaDeCreacion,
           a.fechaDeModificacion
