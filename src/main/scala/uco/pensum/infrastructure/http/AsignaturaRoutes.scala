@@ -1,8 +1,11 @@
 package uco.pensum.infrastructure.http
 
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.server.directives.FileInfo
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
+import akka.stream.scaladsl.{Framing, Source}
+import akka.util.ByteString
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import uco.pensum.domain.errors.{
@@ -13,8 +16,16 @@ import uco.pensum.domain.errors.{
 import io.circe.java8.time._
 import uco.pensum.domain.services.{AsignaturaServices, RequisitoServices}
 import uco.pensum.infrastructure.http.dtos._
+import uco.pensum.domain.services.AsignaturaServices
+import uco.pensum.infrastructure.http.dtos.{
+  AsignaturaActualizacion,
+  AsignaturaAsignacion,
+  AsignaturaRespuesta,
+  RequisitosActualizacion
+}
+import uco.pensum.infrastructure.http.jwt.JWT
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 trait AsignaturaRoutes
@@ -26,26 +37,31 @@ trait AsignaturaRoutes
 
   implicit val executionContext: ExecutionContext
   implicit val materializer: Materializer
+  implicit val jwt: JWT
 
   def agregarAsignatura: Route =
     path("programa" / Segment / "planEstudio" / Segment / "asignatura") {
       (programId, inp) =>
         post {
-          entity(as[AsignaturaAsignacion]) { asignatura =>
-            onComplete(agregarAsignatura(asignatura, programId, inp)) {
-              case Failure(ex) => {
-                logger.error(s"Exception: $ex")
-                complete(InternalServerError -> ErrorInterno())
+          authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+            entity(as[AsignaturaAsignacion]) { asignatura =>
+              onComplete(
+                agregarAsignatura(asignatura, programId, inp)(user.gCredentials)
+              ) {
+                case Failure(ex) => {
+                  logger.error(s"Exception: $ex")
+                  complete(InternalServerError -> ErrorInterno())
+                }
+                case Success(response) =>
+                  response.fold(
+                    err =>
+                      complete(
+                        BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                      ),
+                    asignatura =>
+                      complete(Created -> asignatura.to[AsignaturaRespuesta])
+                  )
               }
-              case Success(response) =>
-                response.fold(
-                  err =>
-                    complete(
-                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                    ),
-                  asignatura =>
-                    complete(Created -> asignatura.to[AsignaturaRespuesta])
-                )
             }
           }
         }
@@ -76,6 +92,35 @@ trait AsignaturaRoutes
                   ),
                 r => complete(OK -> (r._1, r._2).to[AsignaturaRespuesta])
               )
+          }
+        }
+      }
+  def actualizarAsignatura: Route =
+    path(
+      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment
+    ) { (programId, inp, codigo) =>
+      put {
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+          entity(as[AsignaturaActualizacion]) { asignatura =>
+            onComplete(
+              actualizarAsignatura(asignatura, programId, inp, codigo)(
+                user.gCredentials
+              )
+            ) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  asignatura =>
+                    complete(OK -> asignatura.to[AsignaturaRespuesta])
+                )
+            }
           }
         }
       }
@@ -192,7 +237,39 @@ trait AsignaturaRoutes
       }
     }
 
+  def subirArchivo: Route =
+    path(
+      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "archivo"
+    ) { (programa, planEstudio, asignatura) =>
+      post {
+        extractRequestContext { ctx =>
+          implicit val materializer = ctx.materializer
+
+          fileUpload("csv") {
+            case (metadata: FileInfo, byteSource: Source[ByteString, Any]) =>
+              val sumF: Future[Int] =
+                // sum the numbers as they arrive so that we can
+                // accept any size of file
+                byteSource
+                  .via(Framing.delimiter(ByteString("\n"), 1024))
+                  .mapConcat(_.utf8String.split(",").toVector)
+                  .map(_.toInt)
+                  .runFold(0) { (acc, n) =>
+                    acc + n
+                  }
+
+              onSuccess(sumF) { sum =>
+                complete(
+                  s"$programa/$planEstudio/$asignatura Sum: $sum METADATA: $metadata"
+                )
+              }
+          }
+        }
+      }
+    }
+
   val asignaturaRoutes
     : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ asignarRequisito /*~ agregarRequisito ~ eliminarRequisito*/
+    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ agregarRequisito ~ eliminarRequisito ~ subirArchivo
 
 }

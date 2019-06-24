@@ -16,6 +16,7 @@ import uco.pensum.infrastructure.http.dtos.{
   PlanDeEstudioAsignacion,
   PlanDeEstudioRespuesta
 }
+import uco.pensum.infrastructure.http.jwt.JWT
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
@@ -26,33 +27,38 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
 
   implicit val executionContext: ExecutionContext
   implicit val materializer: Materializer
+  implicit val jwt: JWT
 
   def agregarPlanDeEstudio: Route = path("programa" / Segment / "planEstudio") {
     programId =>
       post {
-        entity(as[PlanDeEstudioAsignacion]) { planDeEstudio =>
-          onComplete(agregarPlanDeEstudio(planDeEstudio, programId)) {
-            case Failure(ex) => {
-              logger.error(s"Exception: $ex")
-              complete(InternalServerError -> ErrorInterno())
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+          entity(as[PlanDeEstudioAsignacion]) { planDeEstudio =>
+            onComplete(
+              agregarPlanDeEstudio(planDeEstudio, programId)(user.gCredentials)
+            ) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  pr => complete(Created -> pr.to[PlanDeEstudioRespuesta])
+                )
             }
-            case Success(response) =>
-              response.fold(
-                err =>
-                  complete(
-                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                  ),
-                pr => complete(Created -> pr.to[PlanDeEstudioRespuesta])
-              )
           }
         }
       }
   }
 
-  def planDeEstudioPorId: Route =
+  def planDeEstudioPorInp: Route =
     path("programa" / Segment / "planEstudio" / Segment) { (programId, inp) =>
       get {
-        onComplete(planDeEstudioPorId(programId, inp)) {
+        onComplete(planDeEstudioPorInp(programId, inp)) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -82,22 +88,26 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
   def eliminarPlanDeEstudio: Route =
     path("programa" / Segment / "planEstudio" / Segment) { (programaId, id) =>
       delete {
-        onComplete(eliminarPlanDeEstudio(id = id, programaId = programaId)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+          onComplete(eliminarPlanDeEstudio(id = id, programaId = programaId)) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              response.fold(
+                err =>
+                  complete(
+                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                  ),
+                r => complete(OK -> r.to[PlanDeEstudioRespuesta])
+              )
           }
-          case Success(response) =>
-            response.fold(
-              err =>
-                complete(BadRequest -> ErrorGenerico(err.codigo, err.mensaje)),
-              r => complete(OK -> r.to[PlanDeEstudioRespuesta])
-            )
         }
       }
     }
 
   val curriculumRoutes
-    : Route = agregarPlanDeEstudio ~ planDeEstudioPorId ~ planesDeEstudio ~ eliminarPlanDeEstudio
+    : Route = agregarPlanDeEstudio ~ planDeEstudioPorInp ~ planesDeEstudio ~ eliminarPlanDeEstudio
 
 }

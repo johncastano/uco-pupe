@@ -4,6 +4,12 @@ sealed trait Record
 
 // $COVERAGE-OFF$
 //TODO: Modify dataTypes of 'fehaDeCreacion y Modificacion'
+
+//Se usan los IDS generados por Google Drive en el id de las entidades para tener el ID del folder creado para el
+// recurso especifico sin necesidad de acoplar el codigo a la libreria de DRIVE creando otra propiedad adicional
+// en las entidades.
+//De esta manera si en el futuro se llegara a eliminar la dependencia de DRIVE eso seria transparente en el modelo de datos.
+
 final case class ProgramaRecord(
     id: String,
     nombre: String,
@@ -40,7 +46,6 @@ final case class AsignaturaRecord(
     trabajoDelEstudiante: Int,
     nivel: Int,
     componenteDeFormacionId: Int,
-    direccionPlanDeEstudios: String,
     fechaDeCreacion: String,
     fechaDeModificacion: String
 ) extends Record
@@ -70,6 +75,7 @@ final case class AsignaturaConComponenteRecord(
     codigoAsignatura: String,
     nombreAsignatura: String,
     creditos: Int,
+    inp: String,
     horasTeoricas: Int,
     horasLaboratorio: Int,
     horasPracticas: Int,
@@ -82,7 +88,24 @@ final case class AsignaturaConComponenteRecord(
     requisitoCodigo: String,
     tipoDeRequisito: String,
     direccionPlanDeEstudios: String,
+    gdriveFolderId: String,
     fechaDeCreacion: String,
     fechaDeModificacion: String
 )
+final case class UsuarioRecord(
+    id: Int,
+    nombre: String,
+    primerApellido: String,
+    segundoApellido: String,
+    fechaNacimiento: String,
+    fechaRegistro: String,
+    fechaModificacion: String
+)
+
+final case class AuthRecord(
+    correo: String,
+    password: String,
+    userId: Int
+)
+
 // $COVERAGE-ON$

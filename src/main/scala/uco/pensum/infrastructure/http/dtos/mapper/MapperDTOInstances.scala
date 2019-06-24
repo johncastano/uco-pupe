@@ -3,13 +3,13 @@ package uco.pensum.infrastructure.http.dtos.mapper
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.asignatura.{Asignatura, Requisito}
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
-import uco.pensum.domain.requisito.Requisito
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.http.dtos._
+import uco.pensum.infrastructure.http.jwt.GUserCredentials
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 import uco.pensum.infrastructure.postgres._
 
@@ -19,7 +19,7 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[Programa, ProgramaRespuesta] {
       override def to(programa: Programa): ProgramaRespuesta =
         ProgramaRespuesta(
-          id = programa.id,
+          id = programa.id.getOrElse(""),
           nombre = programa.nombre,
           codigoSnies = programa.snies,
           fechaDeRegistro = programa.fechaDeRegistro,
@@ -32,6 +32,7 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[PlanDeEstudio, PlanDeEstudioRespuesta] {
       override def to(plan: PlanDeEstudio): PlanDeEstudioRespuesta =
         PlanDeEstudioRespuesta(
+          id = plan.id.getOrElse(""),
           inp = plan.inp,
           creditos = plan.creditos,
           horasTeoricas = plan.horasTeoricas,
@@ -48,6 +49,7 @@ class MapperDTOInstances extends MapperSugar {
     new Mapper[PlanDeEstudioRecord, PlanDeEstudioRespuesta] {
       override def to(record: PlanDeEstudioRecord): PlanDeEstudioRespuesta =
         PlanDeEstudioRespuesta(
+          record.id,
           record.inp,
           record.creditos,
           record.horasTeoricas,
@@ -75,11 +77,44 @@ class MapperDTOInstances extends MapperSugar {
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horas.teoricas,
           horasLaboratorio = asignatura.horas.laboratorio,
+          horasPracticas = asignatura.horas.practicas,
+          horasIndependientesDelEstudiante =
+            asignatura.horas.independietesDelEstudiante,
           nivel = asignatura.nivel,
+          requisitos = asignatura.requisitos.map(_.to[RequisitoDTO]),
+          gDriveFolderId = "",
           requisitos = Nil, //TODO: Modify
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
         )
+    }
+
+  implicit def AsignaturaPEAToRespuesta
+    : Mapper[(Asignatura, String), AsignaturaRespuesta] =
+    new Mapper[(Asignatura, String), AsignaturaRespuesta] {
+      override def to(
+          asignatura: (Asignatura, String)
+      ): AsignaturaRespuesta = {
+        val (asgn, gDriveFid) = asignatura
+        AsignaturaRespuesta(
+          codigo = asgn.codigo,
+          inp = asgn.inp,
+          componenteDeFormacion =
+            asgn.componenteDeFormacion.to[ComponenteDeFormacionRespuesta],
+          nombre = asgn.nombre,
+          creditos = asgn.creditos,
+          horasTeoricas = asgn.horas.teoricas,
+          horasLaboratorio = asgn.horas.laboratorio,
+          horasPracticas = asgn.horas.practicas,
+          horasIndependientesDelEstudiante =
+            asgn.horas.independietesDelEstudiante,
+          nivel = asgn.nivel,
+          requisitos = asgn.requisitos.map(_.to[RequisitoDTO]),
+          gDriveFolderId = gDriveFid,
+          fechaDeRegistro = asgn.fechaDeRegistro,
+          fechaDeModificacion = asgn.fechaDeModificacion
+        )
+      }
     }
 
   implicit def AsignaturaConComponenteToRespuesta
@@ -102,21 +137,33 @@ class MapperDTOInstances extends MapperSugar {
           creditos = record.creditos,
           horasTeoricas = record.horasTeoricas,
           horasLaboratorio = record.horasLaboratorio,
+          horasPracticas = record.horasPracticas,
+          horasIndependientesDelEstudiante = record.trabajoDelEstudiante,
           nivel = record.nivel,
           requisitos = Nil,
+          gDriveFolderId = "",
           fechaDeRegistro = ZonedDateTime.parse(record.fechaDeCreacion),
           fechaDeModificacion = ZonedDateTime.parse(record.fechaDeModificacion)
         )
       }
     }
 
-  implicit def AsignaturaAndComponenteToRespuesta
-    : Mapper[(Asignatura, ComponenteDeFormacionRecord), AsignaturaRespuesta] =
-    new Mapper[(Asignatura, ComponenteDeFormacionRecord), AsignaturaRespuesta] {
+  implicit def AsignaturaAndComponenteToRespuesta: Mapper[
+    (Asignatura, PlanDeEstudioAsignaturaRecord, ComponenteDeFormacionRecord),
+    AsignaturaRespuesta
+  ] =
+    new Mapper[
+      (Asignatura, PlanDeEstudioAsignaturaRecord, ComponenteDeFormacionRecord),
+      AsignaturaRespuesta
+    ] {
       override def to(
-          in: (Asignatura, ComponenteDeFormacionRecord)
+          in: (
+              Asignatura,
+              PlanDeEstudioAsignaturaRecord,
+              ComponenteDeFormacionRecord
+          )
       ): AsignaturaRespuesta = {
-        val (a, cfr) = in
+        val (a, pear, cfr) = in
         AsignaturaRespuesta(
           codigo = a.codigo,
           inp = a.inp,
@@ -130,7 +177,11 @@ class MapperDTOInstances extends MapperSugar {
           creditos = a.creditos,
           horasTeoricas = a.horas.teoricas,
           horasLaboratorio = a.horas.laboratorio,
+          horasPracticas = a.horas.practicas,
+          horasIndependientesDelEstudiante = a.horas.independietesDelEstudiante,
           nivel = a.nivel,
+          requisitos = a.requisitos.map(_.to[RequisitoDTO]),
+          gDriveFolderId = pear.id,
           requisitos = Nil, //TODO: Modify
           fechaDeRegistro = a.fechaDeRegistro,
           fechaDeModificacion = a.fechaDeModificacion
@@ -172,22 +223,35 @@ class MapperDTOInstances extends MapperSugar {
       }
     }
 
+  implicit def requisitoToRequisitoDTO: Mapper[Requisito, RequisitoDTO] = {
+    new Mapper[Requisito, RequisitoDTO] {
+      override def to(requisito: Requisito): RequisitoDTO =
+        RequisitoDTO(
+          codigo = requisito.codigo,
+          tipo = requisito.tipo.toString
+        )
+    }
+  }
+
   implicit def UsuarioToRespuesta: Mapper[Usuario, UsuarioRespuesta] =
     new Mapper[Usuario, UsuarioRespuesta] {
       override def to(usuario: Usuario): UsuarioRespuesta =
         UsuarioRespuesta(
+          id = usuario.id.getOrElse(0),
           nombre = usuario.nombre,
           primerApellido = usuario.primerApellido,
           segundoApellido = usuario.segundoApellido,
           fechaNacimiento = usuario.fechaNacimiento,
           correo = usuario.correo,
-          password = usuario.password,
-          usuario = usuario.usuario,
-          direccion = usuario.direccion,
-          celular = usuario.celular,
           fechaRegistro = usuario.fechaRegistro,
           fechaModificacion = usuario.fechaModificacion
         )
+    }
+
+  implicit def GUsuarioToRespuesta: Mapper[GUserCredentials, UsuarioGoogle] =
+    new Mapper[GUserCredentials, UsuarioGoogle] {
+      override def to(usuario: GUserCredentials): UsuarioGoogle =
+        UsuarioGoogle(nombre = usuario.name)
     }
 
   implicit def ProgramaRecordToProgramaRespuesta

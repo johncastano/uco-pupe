@@ -29,7 +29,11 @@ lazy val pupe = (project in file(".")).
         postgresql,
         logBack,
         scalaLogging,
-        httpCors
+        httpCors,
+        jwtCirce,
+        googleApiClient,
+        googleApiServices,
+        googleOAuthClient
       ),
       scalacOptions ++= Seq(
         "-deprecation",

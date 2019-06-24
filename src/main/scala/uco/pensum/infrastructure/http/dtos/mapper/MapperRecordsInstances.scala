@@ -6,9 +6,16 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
-import uco.pensum.domain.requisito.Requisito
+import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
-import uco.pensum.infrastructure.postgres._
+import uco.pensum.infrastructure.postgres.{
+  AsignaturaRecord,
+  AuthRecord,
+  ComponenteDeFormacionRecord,
+  PlanDeEstudioRecord,
+  ProgramaRecord,
+  UsuarioRecord
+}
 
 class MapperRecordsInstances extends MapperSugar {
 
@@ -59,8 +66,7 @@ class MapperRecordsInstances extends MapperSugar {
           asignatura.horas.practicas,
           asignatura.horas.independietesDelEstudiante,
           asignatura.nivel,
-          asignatura.componenteDeFormacionId,
-          "", //TODO : Address of Google docs
+          asignatura.componenteDeFormacion.id.getOrElse(0),
           asignatura.fechaDeRegistro.toString,
           asignatura.fechaDeModificacion.toString
         )
@@ -79,6 +85,46 @@ class MapperRecordsInstances extends MapperSugar {
       )
     }
 
+  implicit def componenteDeFormacionRecordToComponenteDeFormacion
+    : Mapper[ComponenteDeFormacionRecord, ComponenteDeFormacion] =
+    new Mapper[ComponenteDeFormacionRecord, ComponenteDeFormacion] {
+      override def to(
+          componente: ComponenteDeFormacionRecord
+      ): ComponenteDeFormacion = ComponenteDeFormacion(
+        id = Some(componente.id),
+        nombre = componente.nombre,
+        abreviatura = componente.abreviatura,
+        color = componente.color
+      )
+    }
+
+  implicit def usuarioToUsuarioRecord: Mapper[Usuario, UsuarioRecord] =
+    new Mapper[Usuario, UsuarioRecord] {
+      override def to(usuario: Usuario): UsuarioRecord =
+        UsuarioRecord(
+          id = usuario.id.getOrElse(0),
+          nombre = usuario.nombre,
+          primerApellido = usuario.primerApellido,
+          segundoApellido = usuario.segundoApellido,
+          fechaNacimiento =
+            DateTimeFormatter.ISO_LOCAL_DATE.format(usuario.fechaNacimiento),
+          fechaRegistro =
+            DateTimeFormatter.ISO_ZONED_DATE_TIME.format(usuario.fechaRegistro),
+          fechaModificacion = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
+            usuario.fechaModificacion
+          )
+        )
+    }
+
+  implicit def usuarioToAuthRecord: Mapper[Usuario, AuthRecord] =
+    new Mapper[Usuario, AuthRecord] {
+      override def to(usuario: Usuario): AuthRecord =
+        AuthRecord(
+          correo = usuario.correo,
+          password = usuario.password,
+          userId = usuario.id.getOrElse(0) //TODO: Change getOrElse userId must exist
+        )
+    }
   implicit def RequisitoToRequisitoRecord
     : Mapper[(String, Requisito), RequisitoRecord] =
     new Mapper[(String, Requisito), RequisitoRecord] {

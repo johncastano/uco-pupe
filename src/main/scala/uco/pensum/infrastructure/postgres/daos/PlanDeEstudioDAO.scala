@@ -3,12 +3,13 @@ package uco.pensum.infrastructure.postgres.daos
 import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, tables}
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
+import slick.lifted.ProvenShape
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class PlanesDeEstudio(tag: Tag)
     extends Table[PlanDeEstudioRecord](tag, "plan_de_estudios") {
-  def id = column[Int]("id", O.AutoInc, O.PrimaryKey)
+  def id = column[String]("id", O.PrimaryKey)
   def inp = column[String]("inp")
   def creditos = column[Int]("creditos")
   def horasTeoricas = column[Int]("horas_teoricas")
@@ -22,8 +23,9 @@ class PlanesDeEstudio(tag: Tag)
     onUpdate = ForeignKeyAction.Restrict,
     onDelete = ForeignKeyAction.Cascade
   )
-  def * =
+  def * : ProvenShape[PlanDeEstudioRecord] =
     (
+      id,
       inp,
       creditos,
       horasTeoricas,
@@ -31,8 +33,7 @@ class PlanesDeEstudio(tag: Tag)
       horasPracticas,
       programaId,
       fechaDeCreacion,
-      fechaDeModificacion,
-      id
+      fechaDeModificacion
     ).mapTo[PlanDeEstudioRecord]
 }
 
@@ -67,7 +68,7 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
     )
 
   def buscarPorIdAndProgramaId(
-      id: Int,
+      id: String,
       programId: String
   ): Future[Option[PlanDeEstudioRecord]] =
     db.run(
@@ -80,14 +81,13 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
   def almacenarOActualizar(
       record: PlanDeEstudioRecord
   ): Future[Option[PlanDeEstudioRecord]] = {
-    println(s"Plan de estudio almacenado => $record")
     db.run(
       (this returning this).insertOrUpdate(record)
     )
 
   }
 
-  def eliminarPorId(id: Int, programaId: String): Future[Int] =
+  def eliminarPorId(id: String, programaId: String): Future[Int] =
     db.run(
       this.filter(pe => pe.id === id && pe.programaId === programaId).delete
     )

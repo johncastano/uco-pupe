@@ -3,6 +3,7 @@ package uco.pensum.infrastructure.http.dtos
 import java.time.ZonedDateTime
 
 case class PlanDeEstudioRespuesta(
+    id: String,
     inp: String,
     creditos: Int,
     horasTeoricas: Int,

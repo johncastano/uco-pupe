@@ -28,13 +28,13 @@ trait ComponenteDeFormacionServices extends LazyLogging {
           componente.nombre
         )
       ).map(_ => ComponenteDeFormacionExistente()).toLeft(())
-      _ <- EitherT.right[DomainError](
+      cfr <- EitherT.right[DomainError](
         repository.componenteDeFormacionRepository
           .almacenarOActualizarComponenteDeFormacion(cf)
       )
-    } yield cf).value
+    } yield cf.copy(id = cfr.map(_.id))).value
 
-  def pbtenerComponenetesDeFormacion: Future[Seq[ComponenteDeFormacionRecord]] =
+  def obtenerComponenetesDeFormacion: Future[Seq[ComponenteDeFormacionRecord]] =
     repository.componenteDeFormacionRepository.obtenerTodosLosComponentesDeFormacion
 
 }

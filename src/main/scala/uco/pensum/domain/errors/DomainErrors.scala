@@ -73,6 +73,11 @@ final case class AsignaturaExistente(
     mensaje: String = "La asignatura ya existe"
 ) extends DomainError
 
+final case class AsignaturaNotFound(
+    codigo: Int = 100003,
+    mensaje: String = "La asignatura especificada no existe"
+) extends DomainError
+
 final case class CannotUpdatePlanDeEstudio(
     codigo: Int = 10005,
     mensaje: String =
@@ -84,7 +89,32 @@ final case class RequisitoNoAceptado(
     mensaje: String = "El requisito ingresado no es aceptado"
 ) extends DomainError
 
+final case class GParentFolderNotFound(codigo: Int, mensaje: String)
+object GParentFolderNotFound {
+  def apply(codigo: Int, campo: String): NumeroInvalido =
+    new NumeroInvalido(
+      codigo = codigo,
+      mensaje = s"El directorio padre $campo del recurso que esta tratando de crear no existe porque es probable " +
+        s"que se haya eliminado manualmente desde Google Drive"
+    )
+}
+
 final case class ErrorGenerico(codigo: Int, mensaje: String) extends DomainError
+
+final case class UsuarioExistente(
+    codigo: Int = 9898,
+    mensaje: String = "El correo ya se encuentra registrado"
+) extends DomainError
+
+final case class CredencialesIncorrectas(
+    codigo: Int = 98001,
+    mensaje: String = "El correo y/o la contraseña son incorrectas"
+) extends DomainError
+
+final case class TokenIncorrecto(
+    codigo: Int = 98001,
+    mensaje: String = "El token de autenticacion proporcionado es incorrecto"
+) extends DomainError
 
 object CampoVacio {
   def apply(campo: String): CampoVacio =

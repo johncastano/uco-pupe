@@ -11,7 +11,7 @@ import uco.pensum.infrastructure.http.dtos.{
 import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 case class Programa(
-    id: String,
+    id: Option[String],
     nombre: String,
     snies: String,
     fechaDeRegistro: ZonedDateTime,
@@ -24,11 +24,10 @@ object Programa {
 
   def validate(dto: ProgramaAsignacion): Either[DomainError, Programa] =
     for {
-      id <- validarCampoVacio(dto.id, "ID")
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       snies <- validarCampoVacio(dto.codigoSnies, "codigo SNIES")
       fechaHoy = hora
-    } yield Programa(id, nombre, snies, fechaHoy, fechaHoy)
+    } yield Programa(None, nombre, snies, fechaHoy, fechaHoy)
 
   def validate(
       dto: ProgramaActualizacion,
@@ -48,7 +47,7 @@ object Programa {
 
   def fromRecord(record: ProgramaRecord): Programa =
     Programa(
-      id = record.id,
+      id = Some(record.id),
       nombre = record.nombre,
       snies = record.codigoSnies,
       fechaDeRegistro = ZonedDateTime

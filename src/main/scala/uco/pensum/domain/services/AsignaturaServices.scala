@@ -4,6 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.asignatura._
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors._
 import uco.pensum.domain.hora
 import uco.pensum.domain.planestudio.PlanDeEstudio
@@ -13,10 +14,9 @@ import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion
 }
-import uco.pensum.infrastructure.postgres.{
-  AsignaturaConComponenteRecord,
-  ComponenteDeFormacionRecord
-}
+import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
+import uco.pensum.infrastructure.http.jwt.GUserCredentials
+import uco.pensum.infrastructure.postgres.AsignaturaConComponenteRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -24,12 +24,15 @@ trait AsignaturaServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
+  implicit val googleDriveClient: GoogleDriveClient
 
   def agregarAsignatura(
       asignatura: AsignaturaAsignacion,
       programId: String,
       inp: String
-  ): Future[Either[DomainError, (Asignatura, ComponenteDeFormacionRecord)]] =
+  )(
+      implicit gUser: GUserCredentials
+  ): Future[Either[DomainError, (Asignatura, String)]] =
     (for {
       _ <- EitherT.fromOptionF(
         repository.programaRepository.buscarProgramaPorId(programId),
@@ -50,7 +53,12 @@ trait AsignaturaServices extends LazyLogging {
           .buscarAsignaturaPorCodigo(asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
       a <- EitherT.fromEither[Future](
-        Asignatura.validar(asignatura, inp, cf.id)
+        Asignatura
+          .validar(asignatura, inp, ComponenteDeFormacion.fromRecord(cf))
+      )
+
+      gf <- EitherT(
+        GDriveService.createFolder(gUser.accessToken, a.nombre, Some(pe.id))
       )
       upd <- EitherT.fromEither[Future](
         PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
@@ -59,14 +67,18 @@ trait AsignaturaServices extends LazyLogging {
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(upd)
       ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
-      _ <- EitherT.right[DomainError](
+      asr <- EitherT.right[DomainError](
         repository.asignaturaRepository.almacenarAsignatura(a)
       )
-      _ <- EitherT.right[DomainError](
+      pear <- EitherT.right[DomainError](
         repository.planDeEstudioAsignaturaRepository
-          .almacenarOActualizarPlaDeEstudioAsignatura(pe.id, a.codigo)
+          .almacenarOActualizarPlaDeEstudioAsignatura(
+            planDeEstudioId = pe.id,
+            codigoAsignatura = asr.codigo,
+            gDriveFolderId = Option(gf.getId).getOrElse("")
+          )
       )
-    } yield (a, cf)).value
+    } yield (a, pear.id)).value
 
   def asignaturasPorInp(
       programId: String,
@@ -78,34 +90,101 @@ trait AsignaturaServices extends LazyLogging {
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,
       programId: String,
+      inp: String,
       codigo: String
-  ): Future[Either[DomainError, Asignatura]] =
+  )(
+      implicit gUser: GUserCredentials
+  ): Future[Either[DomainError, (Asignatura, String)]] =
     (for {
-      //program <- repository.getPorgramaById(programId) //TODO: Validate if programExists
-      // original <- repository.getAsignaturaByCodigoAndProgramId //TODO: validate if the entity with given ids exist
-      cu <- EitherT.fromEither[Future](
+      prd <- EitherT.fromOptionF(
+        repository.programaRepository.buscarProgramaPorId(programId),
+        ProgramNotFound()
+      )
+      pe <- EitherT.fromOptionF(
+        repository.planDeEstudioRepository
+          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId),
+        CurriculumNotFound()
+      )
+      cf <- EitherT.fromOptionF(
+        repository.componenteDeFormacionRepository
+          .buscarPorNombre(asignatura.componenteDeFormacion),
+        ComponenteDeFormacionNoExiste()
+      )
+      oas <- EitherT.fromOptionF(
+        repository.asignaturaRepository
+          .buscarAsignaturaPorInpYCodigo(prd.id, inp, codigo),
+        AsignaturaNotFound()
+      )
+      av <- EitherT.fromEither[Future](
         Asignatura.validar(
           asignatura,
-          original = Asignatura(
-            codigo,
-            "12",
-            1,
-            "Test",
-            3,
-            Horas(3, 3, 0, 6),
-            2,
-            Nil,
-            hora,
-            hora
-          )
+          original = oas,
+          componenteDeFormacion = ComponenteDeFormacion.fromRecord(cf)
         )
       )
-      _ = println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
+      upd <- EitherT.fromEither[Future](
+        PlanDeEstudio.recalcularCampos(pe, oas, av).asRight[DomainError]
+      )
+      _ <- OptionT(
+        repository.planDeEstudioRepository
+          .almacenarOActualizarPlanDeEstudios(upd)
+      ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
+      _ <- EitherT.right[DomainError](
+        repository.asignaturaRepository.actualizarAsignatura(av)
+      )
+      _ <- EitherT(
+        GDriveService.actualizarDriveFolderName(
+          oas.gdriveFolderId,
+          av.nombre,
+          gUser.accessToken,
+          !av.nombre.equalsIgnoreCase(oas.nombreAsignatura)
+        )
+      )
+    } yield (av, oas.gdriveFolderId)).value
+
+  def actualizarRequisitos(
+      requisitos: RequisitosActualizacion,
+      programId: String,
+      inp: String,
+      codigo: String,
+      isRemove: Boolean
+  ): Future[Either[DomainError, Asignatura]] =
+    (for {
+      // original <- repository.getAsignaturaByCodigoAndProgramIdAndInp //TODO: validate if the entity with given ids exist
+      requisito <- EitherT.fromEither[Future](
+        if (requisitos.requisito.isEmpty)
+          Left(CampoVacio("requisito"))
+        else
+          Right(requisitos.requisito)
+      )
+      // _ <- respository.getAsignaturaByCodigo //TODO: Validate if the requisit exist
+      mockOriginal = Asignatura(
+        codigo,
+        inp,
+        ComponenteDeFormacion(
+          nombre = "PE",
+          abreviatura = "PE",
+          color = "PE",
+          id = Some(1)
+        ),
+        "Calculo",
+        5,
+        Horas(6, 4, 0, 5),
+        3,
+        Nil,
+        hora,
+        hora
+      )
+      _ = println(s"ProgramID: $programId isRemove: $isRemove") //To avoid compiling errors beacause the variable is never used
       spd <- EitherT {
         /*repository
-          .saveOrAsignatura(pd)
+          .updateAsignatura(original.copy(requisitos = nuevosRequisitos))
           .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
-        Future.successful(Either.right[DomainError, Asignatura](cu))
+        Future.successful(
+          Either.right[DomainError, Asignatura](
+            mockOriginal.copy(requisitos = Nil)
+          )
+        )
       } //TODO: Add repository insert
     } yield spd).value
 
@@ -116,7 +195,12 @@ trait AsignaturaServices extends LazyLogging {
     val asignaturaMock = Asignatura(
       codigo,
       "123",
-      1,
+      ComponenteDeFormacion(
+        nombre = "PE",
+        abreviatura = "PE",
+        color = "PE",
+        id = Some(1)
+      ),
       "Calculo",
       5,
       Horas(6, 4, 0, 6),
@@ -129,6 +213,7 @@ trait AsignaturaServices extends LazyLogging {
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
     //repository.getAsignaturaPorCodigo(programId, inp)
     Future.successful(
+      Some(asignaturaMock.copy(requisitos = Nil))
       Some(
         asignaturaMock
           .copy(requisitos = List(Requisito("ISH001", PreRequisito)))
@@ -144,7 +229,12 @@ trait AsignaturaServices extends LazyLogging {
     val asignaturaMock = Asignatura(
       codigo,
       inp,
-      1,
+      ComponenteDeFormacion(
+        nombre = "PE",
+        abreviatura = "PE",
+        color = "PE",
+        id = Some(1)
+      ),
       "Calculo",
       5,
       Horas(6, 4, 0, 5),
@@ -166,56 +256,12 @@ trait AsignaturaServices extends LazyLogging {
                 Requisito("ISH101", CoRequisito)
               )
             )
+            asignaturaMock.copy(requisitos = Nil)
           )
         )
       )
 
     } yield res).value
   }
-  /*def actualizarRequisitos(
-      requisitos: RequisitosActualizacion,
-      programId: String,
-      inp: String,
-      codigo: String,
-      isRemove: Boolean
-  ): Future[Either[DomainError, Asignatura]] =
-    (for {
-      // original <- repository.getAsignaturaByCodigoAndProgramIdAndInp //TODO: validate if the entity with given ids exist
-      requisito <- EitherT.fromEither[Future](
-        if (requisitos.requisito.isEmpty)
-          Left(CampoVacio("requisito"))
-        else
-          Right(requisitos.requisito)
-      )
-      // _ <- respository.getAsignaturaByCodigo //TODO: Validate if the requisit exist
-      mockOriginal = Asignatura(
-        codigo,
-        inp,
-        1,
-        "Calculo",
-        5,
-        Horas(6, 4, 0, 5),
-        3,
-        List(requisito),
-        hora,
-        hora
-      )
-      _ = println(s"ProgramID: $programId") //To avoid compiling errors beacause the variable is never used
-      nuevosRequisitos: List[Codigo] = {
-        if (isRemove)
-          mockOriginal.requisitos.filterNot(_ == requisito)
-        else
-          mockOriginal.requisitos :+ requisito
-      }
-      spd <- EitherT {
-        /*repository
-          .updateAsignatura(original.copy(requisitos = nuevosRequisitos))
-          .map(Some(_).toRight[DomainError](ErrorDePersistencia()))*/
-        Future.successful(
-          Either.right[DomainError, Asignatura](
-            mockOriginal.copy(requisitos = nuevosRequisitos)
-          )
-        )
-      } //TODO: Add repository insert
-    } yield spd).value*/
+
 }

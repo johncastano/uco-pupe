@@ -33,6 +33,9 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
   def buscarPorId(id: String): Future[Option[ProgramaRecord]] =
     db.run(this.filter(_.id === id).result).map(_.headOption)
 
+  def buscarPorNombre(nombre: String): Future[Option[ProgramaRecord]] =
+    db.run(this.filter(_.nombre === nombre).result).map(_.headOption)
+
   def buscarPorIdConPlanesDeEstudio(
       id: String
   ): Future[Seq[ProgramaConPlanesDeEstudioRecord]] = {

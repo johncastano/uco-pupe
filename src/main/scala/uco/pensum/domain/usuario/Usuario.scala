@@ -1,25 +1,25 @@
 package uco.pensum.domain.usuario
 
+import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, ZonedDateTime}
 
 import uco.pensum.domain.errors.DomainError
-import uco.pensum.infrastructure.http.dtos.{UsuarioLogin, UsuarioRegistro}
+import uco.pensum.infrastructure.http.dtos.{Credenciales, UsuarioRegistro}
+import uco.pensum.infrastructure.postgres.{AuthRecord, UsuarioRecord}
 
 case class Usuario(
+    id: Option[Int],
     nombre: String,
     primerApellido: String,
-    segundoApellido: Option[String],
+    segundoApellido: String,
     fechaNacimiento: LocalDate,
     correo: String,
     password: String,
-    usuario: String,
-    direccion: String,
-    celular: String,
     fechaRegistro: ZonedDateTime,
     fechaModificacion: ZonedDateTime
 )
 
-case class Login(usuario: String, password: String)
+case class GToken(tokenId: String, accesToken: String)
 
 object Usuario {
 
@@ -29,41 +29,52 @@ object Usuario {
     for {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
       primerApellido <- validarCampoVacio(dto.primerApellido, "primer apellido")
-      segundoApellido <- validarCampoVacioOpcional(
+      segundoApellido <- validarCampoVacio(
         dto.segundoApellido,
         "segundo apellido"
       )
       correo <- validarCampoVacio(dto.correo, "correo")
       password <- validarCampoVacio(dto.password, "password")
-      usuario <- validarCampoVacio(dto.usuario, "usuario")
-      direccion <- validarCampoVacio(dto.direccion, "direccion")
-      celular <- validarCampoVacio(dto.celular, "celular")
       fecha = hora
     } yield
       Usuario(
+        id = None,
         nombre = nombre,
         primerApellido = primerApellido,
         segundoApellido = segundoApellido,
         fechaNacimiento = dto.fechaNacimiento,
         correo = correo,
         password = password,
-        usuario = usuario,
-        direccion = direccion,
-        celular = celular,
         fechaRegistro = fecha,
         fechaModificacion = fecha
       )
 
+  def fromRecord(record: UsuarioRecord, authRecord: AuthRecord): Usuario =
+    Usuario(
+      id = Some(record.id),
+      nombre = record.nombre,
+      primerApellido = record.primerApellido,
+      segundoApellido = record.segundoApellido,
+      fechaNacimiento = LocalDate
+        .parse(record.fechaNacimiento, DateTimeFormatter.ISO_LOCAL_DATE),
+      correo = authRecord.correo,
+      password = authRecord.password,
+      fechaRegistro = ZonedDateTime
+        .parse(record.fechaRegistro, DateTimeFormatter.ISO_ZONED_DATE_TIME),
+      fechaModificacion = ZonedDateTime
+        .parse(record.fechaModificacion, DateTimeFormatter.ISO_ZONED_DATE_TIME)
+    )
+
 }
 
-object Login {
+object GToken {
 
   import uco.pensum.domain._
 
-  def validate(dto: UsuarioLogin): Either[DomainError, Login] =
+  def validate(dto: Credenciales): Either[DomainError, GToken] =
     for {
-      usuario <- validarCampoVacio(dto.usuario, "usuario")
-      password <- validarCampoVacio(dto.password, "password")
-    } yield Login(usuario = usuario, password = password)
+      token <- validarCampoVacio(dto.gTokenId, "token")
+      accesToken <- validarCampoVacio(dto.gAccessToken, "access token")
+    } yield GToken(token, accesToken)
 
 }

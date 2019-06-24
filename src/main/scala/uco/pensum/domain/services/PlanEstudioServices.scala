@@ -4,7 +4,6 @@ import uco.pensum.domain.errors.{
   CurriculumAlreadyExists,
   CurriculumNotFound,
   DomainError,
-  PlanDeEstudioIdInvalido,
   ProgramNotFound
 }
 import cats.data.{EitherT, OptionT}
@@ -13,22 +12,26 @@ import com.typesafe.scalalogging.LazyLogging
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.domain.repositories.PensumRepository
+import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
+import uco.pensum.infrastructure.http.jwt.GUserCredentials
 import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 trait PlanEstudioServices extends LazyLogging {
 
   implicit val executionContext: ExecutionContext
   implicit val repository: PensumRepository
+  implicit val googleDriveClient: GoogleDriveClient
 
   def agregarPlanDeEstudio(
       planDeEstudio: PlanDeEstudioAsignacion,
       programId: String
+  )(
+      implicit gUser: GUserCredentials
   ): Future[Either[DomainError, PlanDeEstudio]] =
     (for {
-      _ <- EitherT.fromOptionF(
+      pid <- EitherT.fromOptionF(
         repository.programaRepository.buscarProgramaPorId(programId),
         ProgramNotFound()
       )
@@ -40,17 +43,24 @@ trait PlanEstudioServices extends LazyLogging {
       pe <- EitherT.fromEither[Future](
         PlanDeEstudio.validar(planDeEstudio, programId)
       )
+      gf <- EitherT(
+        GDriveService.createFolder(
+          gUser.accessToken,
+          PlanDeEstudio.addINPprefix(pe.inp),
+          Some(pid.id)
+        )
+      )
+      pde = pe.copy(id = Option(gf.getId))
       _ <- EitherT.right[DomainError](
         repository.planDeEstudioRepository
-          .almacenarOActualizarPlanDeEstudios(pe)
+          .almacenarOActualizarPlanDeEstudios(pde)
       )
-    } yield pe).value
+    } yield pde).value
 
-  def planDeEstudioPorId(
+  def planDeEstudioPorInp(
       programId: String,
       inp: String
   ): Future[Option[PlanDeEstudioRecord]] =
-    //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
     repository.planDeEstudioRepository
       .buscarPlanDeEstudioPorINPYProgramaId(inp, programId)
 
@@ -64,21 +74,13 @@ trait PlanEstudioServices extends LazyLogging {
       programaId: String
   ): Future[Either[DomainError, PlanDeEstudioRecord]] =
     (for {
-      correctId <- EitherT(
-        Future.successful(
-          Try(id.toInt).toEither.leftMap(_ => PlanDeEstudioIdInvalido())
-        )
-      )
-      _ = println(
-        s"************************************************* CORRECT ID: $correctId"
-      )
       pe <- OptionT(
         repository.planDeEstudioRepository
-          .buscarPlanDeEstudioPorIdYProgramaId(correctId, programaId)
+          .buscarPlanDeEstudioPorIdYProgramaId(id, programaId)
       ).toRight(CurriculumNotFound())
       _ <- EitherT.right[DomainError](
         repository.planDeEstudioRepository
-          .eliminarPlanDeEstudio(correctId, programaId)
+          .eliminarPlanDeEstudio(id, programaId)
       )
     } yield pe).value
 

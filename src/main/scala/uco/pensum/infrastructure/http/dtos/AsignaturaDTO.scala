@@ -42,7 +42,10 @@ case class AsignaturaRespuesta(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    horasPracticas: Int,
+    horasIndependientesDelEstudiante: Int,
     nivel: Int,
+    gDriveFolderId: String,
     requisitos: List[RequisitoRespuesta],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime

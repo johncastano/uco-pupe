@@ -14,6 +14,8 @@ object tables {
   val asignaturas = TableQuery[Asignaturas]
   val componentesDeFormacion = TableQuery[ComponentesDeFormacion]
   val planDeEstudioAsignaturas = TableQuery[PlanDeEstudioAsignaturas]
+  val usuarios = TableQuery[Usuario]
+  val auth = TableQuery[Auth]
   val requisitos = TableQuery[Requisitos]
   //Tables have to be listed depending on the relations that has each other
   val tables = List(
@@ -22,7 +24,9 @@ object tables {
     componentesDeFormacion,
     asignaturas,
     planDeEstudioAsignaturas,
-    requisitos
+    requisitos,
+    usuarios,
+    auth
   )
 
   def setup(

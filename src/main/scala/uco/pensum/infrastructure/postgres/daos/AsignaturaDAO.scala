@@ -21,8 +21,6 @@ class Asignaturas(tag: Tag)
   def trabajoDelEstudiante = column[Int]("TIE")
   def nivel = column[Int]("nivel")
   def componenteDeFormacionId = column[Int]("componente_de_formacion_id")
-  def direccionPlanDeEstudios =
-    column[String]("direccion_plan_de_estudio_url")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
   def componenteDeFormacion =
@@ -35,7 +33,7 @@ class Asignaturas(tag: Tag)
       onUpdate = ForeignKeyAction.Restrict,
       onDelete = ForeignKeyAction.Cascade
     )
-  def * =
+  def * : ProvenShape[AsignaturaRecord] =
     (
       codigo,
       nombre,
@@ -46,7 +44,6 @@ class Asignaturas(tag: Tag)
       trabajoDelEstudiante,
       nivel,
       componenteDeFormacionId,
-      direccionPlanDeEstudios,
       fechaDeCreacion,
       fechaDeModificacion
     ).mapTo[AsignaturaRecord]
@@ -55,6 +52,7 @@ class Asignaturas(tag: Tag)
 abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Asignaturas(_)) {
+
   def encontrarPorCodigo(codigo: String): Future[Option[AsignaturaRecord]] =
     db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
 
@@ -62,6 +60,45 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     db.run(
       this returning this
         .map(_.codigo) into ((acc, id) => acc.copy(codigo = id)) += asignatura
+    )
+
+  def actualizar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
+    db.run(
+        this.filter(_.codigo === asignatura.codigo).update(asignatura)
+      )
+      .map(_ => asignatura)
+
+  def encontrarPorInpYCodigo(
+      programaId: String,
+      inp: String,
+      codigo: String
+  ): Future[Option[AsignaturaConComponenteRecord]] =
+    db.run(
+      (for {
+        pe <- tables.planesDeEstudio.filter(
+          pe => pe.inp === inp && pe.programaId === programaId
+        )
+        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+        if a.codigo === codigo && pea.planDeEstudioID === pe.id
+      } yield
+        (
+          a.codigo,
+          a.nombre,
+          a.creditos,
+          pe.inp,
+          a.horasTeoricas,
+          a.horasLaboratorio,
+          a.horasPracticas,
+          a.trabajoDelEstudiante,
+          a.nivel,
+          a.componenteDeFormacionId,
+          cdf.nombre,
+          cdf.abreviatura,
+          cdf.color,
+          pea.id,
+          a.fechaDeCreacion,
+          a.fechaDeModificacion
+        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
     )
 
   def obtenerAsignaturasPorINPYPrograma(
@@ -82,6 +119,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           a.codigo,
           a.nombre,
           a.creditos,
+          pe.inp,
           a.horasTeoricas,
           a.horasLaboratorio,
           a.horasPracticas,
@@ -91,6 +129,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           cdf.nombre,
           cdf.abreviatura,
           cdf.color,
+          pea.id,
           r.map(_.codigoAsignaturaRequisito).getOrElse(""),
           r.map(_.tipoRequisito).getOrElse(""),
           a.direccionPlanDeEstudios,

@@ -67,7 +67,8 @@ object Asignatura {
 
   def validar(
       dto: AsignaturaActualizacion,
-      original: Asignatura
+      original: AsignaturaConComponenteRecord,
+      componenteDeFormacion: ComponenteDeFormacion
   ): Either[DomainError, Asignatura] = {
     for {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
@@ -75,7 +76,7 @@ object Asignatura {
       nivel <- validarValorEntero(dto.nivel, "nivel")
     } yield
       Asignatura(
-        codigo = original.codigo,
+        codigo = original.codigoAsignatura,
         inp = original.inp,
         componenteDeFormacionId = original.componenteDeFormacionId,
         nombre = nombre,
@@ -87,8 +88,12 @@ object Asignatura {
           dto.trabajoIndependienteEstudiante
         ),
         nivel = nivel,
-        requisitos = original.requisitos,
-        fechaDeRegistro = original.fechaDeRegistro,
+        requisitos = Nil,
+        fechaDeRegistro = ZonedDateTime
+          .parse(
+            original.fechaDeCreacion,
+            DateTimeFormatter.ISO_ZONED_DATE_TIME
+          ),
         fechaDeModificacion = hora
       )
   }
