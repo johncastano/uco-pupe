@@ -12,7 +12,8 @@ import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.requisito.{CoRequisito, PreRequisito, Requisito}
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
-  AsignaturaAsignacion
+  AsignaturaAsignacion,
+  RequisitosActualizacion
 }
 import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
 import uco.pensum.infrastructure.http.jwt.GUserCredentials
@@ -213,10 +214,9 @@ trait AsignaturaServices extends LazyLogging {
     //TODO: Validate if is better generate a unique ID to avoid problems when updating entity DAO key
     //repository.getAsignaturaPorCodigo(programId, inp)
     Future.successful(
-      Some(asignaturaMock.copy(requisitos = Nil))
       Some(
         asignaturaMock
-          .copy(requisitos = List(Requisito("ISH001", PreRequisito)))
+          .copy(requisitos = List(Requisito(Some(1), "ISH001", PreRequisito)))
       )
     )
   }
@@ -252,11 +252,10 @@ trait AsignaturaServices extends LazyLogging {
           Either.right[DomainError, Asignatura](
             asignaturaMock.copy(
               requisitos = List(
-                Requisito("ISH0122", PreRequisito),
-                Requisito("ISH101", CoRequisito)
+                Requisito(Some(1), "ISH0122", PreRequisito),
+                Requisito(Some(1), "ISH101", CoRequisito)
               )
             )
-            asignaturaMock.copy(requisitos = Nil)
           )
         )
       )

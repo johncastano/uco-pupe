@@ -3,10 +3,11 @@ package uco.pensum.infrastructure.http.dtos.mapper
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import uco.pensum.domain.asignatura.{Asignatura, Requisito}
+import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
+import uco.pensum.domain.requisito.Requisito
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.infrastructure.http.jwt.GUserCredentials
@@ -81,9 +82,8 @@ class MapperDTOInstances extends MapperSugar {
           horasIndependientesDelEstudiante =
             asignatura.horas.independietesDelEstudiante,
           nivel = asignatura.nivel,
-          requisitos = asignatura.requisitos.map(_.to[RequisitoDTO]),
+          requisitos = asignatura.requisitos.map(_.to[RequisitoRespuesta]),
           gDriveFolderId = "",
-          requisitos = Nil, //TODO: Modify
           fechaDeRegistro = asignatura.fechaDeRegistro,
           fechaDeModificacion = asignatura.fechaDeModificacion
         )
@@ -109,7 +109,7 @@ class MapperDTOInstances extends MapperSugar {
           horasIndependientesDelEstudiante =
             asgn.horas.independietesDelEstudiante,
           nivel = asgn.nivel,
-          requisitos = asgn.requisitos.map(_.to[RequisitoDTO]),
+          requisitos = asgn.requisitos.map(_.to[RequisitoRespuesta]),
           gDriveFolderId = gDriveFid,
           fechaDeRegistro = asgn.fechaDeRegistro,
           fechaDeModificacion = asgn.fechaDeModificacion
@@ -180,9 +180,8 @@ class MapperDTOInstances extends MapperSugar {
           horasPracticas = a.horas.practicas,
           horasIndependientesDelEstudiante = a.horas.independietesDelEstudiante,
           nivel = a.nivel,
-          requisitos = a.requisitos.map(_.to[RequisitoDTO]),
+          requisitos = a.requisitos.map(_.to[RequisitoRespuesta]),
           gDriveFolderId = pear.id,
-          requisitos = Nil, //TODO: Modify
           fechaDeRegistro = a.fechaDeRegistro,
           fechaDeModificacion = a.fechaDeModificacion
         )
@@ -209,13 +208,17 @@ class MapperDTOInstances extends MapperSugar {
           creditos = asignatura.creditos,
           horasTeoricas = asignatura.horasTeoricas,
           horasLaboratorio = asignatura.horasLaboratorio,
+          horasPracticas = asignatura.horasPracticas,
+          horasIndependientesDelEstudiante = asignatura.trabajoDelEstudiante,
           nivel = asignatura.nivel,
           requisitos = List(
             RequisitoRespuesta(
+              requisito.id.getOrElse(0),
               requisito.codigoAsignatura,
-              requisito.tipoRequisito.toString
+              requisito.tipo.toString
             )
-          ), //TODO: Change
+          ),
+          gDriveFolderId = "",
           fechaDeRegistro = ZonedDateTime.parse(asignatura.fechaDeCreacion),
           fechaDeModificacion =
             ZonedDateTime.parse(asignatura.fechaDeModificacion)
@@ -223,11 +226,13 @@ class MapperDTOInstances extends MapperSugar {
       }
     }
 
-  implicit def requisitoToRequisitoDTO: Mapper[Requisito, RequisitoDTO] = {
-    new Mapper[Requisito, RequisitoDTO] {
-      override def to(requisito: Requisito): RequisitoDTO =
-        RequisitoDTO(
-          codigo = requisito.codigo,
+  implicit def requisitoToRequisitoDTO
+    : Mapper[Requisito, RequisitoRespuesta] = {
+    new Mapper[Requisito, RequisitoRespuesta] {
+      override def to(requisito: Requisito): RequisitoRespuesta =
+        RequisitoRespuesta(
+          id = requisito.id.getOrElse(0),
+          codigo = requisito.codigoAsignatura,
           tipo = requisito.tipo.toString
         )
     }

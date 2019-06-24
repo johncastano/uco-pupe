@@ -33,7 +33,7 @@ class Asignaturas(tag: Tag)
       onUpdate = ForeignKeyAction.Restrict,
       onDelete = ForeignKeyAction.Cascade
     )
-  def * : ProvenShape[AsignaturaRecord] =
+  def * =
     (
       codigo,
       nombre,
@@ -110,9 +110,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
         pe <- tables.planesDeEstudio.filter(
           pe => pe.inp === inp && pe.programaId === programaId
         )
-        (((a, pea), cdf), r) <- (tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join
-          tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
-          joinLeft tables.requisitos on (_._1._1.codigo === _.codigoAsignatura))
+        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
         if pea.planDeEstudioID === pe.id
       } yield
         (
@@ -130,9 +128,6 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           cdf.abreviatura,
           cdf.color,
           pea.id,
-          r.map(_.codigoAsignaturaRequisito).getOrElse(""),
-          r.map(_.tipoRequisito).getOrElse(""),
-          a.direccionPlanDeEstudios,
           a.fechaDeCreacion,
           a.fechaDeModificacion
         ).mapTo[AsignaturaConComponenteRecord]).result

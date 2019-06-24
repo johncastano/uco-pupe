@@ -1,14 +1,17 @@
 package uco.pensum.domain.asignatura
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 import uco.pensum.domain.asignatura.Asignatura.Codigo
+import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion
 }
 import uco.pensum.domain.requisito.Requisito
+import uco.pensum.infrastructure.postgres.AsignaturaConComponenteRecord
 
 case class Horas(
     teoricas: Int,
@@ -20,7 +23,7 @@ case class Horas(
 case class Asignatura(
     codigo: Codigo,
     inp: String,
-    componenteDeFormacionId: Int,
+    componenteDeFormacion: ComponenteDeFormacion,
     nombre: String,
     creditos: Int,
     horas: Horas,
@@ -38,7 +41,7 @@ object Asignatura {
   def validar(
       dto: AsignaturaAsignacion,
       inp: String,
-      componenteDeFormacionId: Int
+      componenteDeFormacion: ComponenteDeFormacion
   ): Either[DomainError, Asignatura] = {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
@@ -49,7 +52,7 @@ object Asignatura {
       Asignatura(
         codigo = codigo,
         inp = inp,
-        componenteDeFormacionId = componenteDeFormacionId,
+        componenteDeFormacion = componenteDeFormacion,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
@@ -78,7 +81,7 @@ object Asignatura {
       Asignatura(
         codigo = original.codigoAsignatura,
         inp = original.inp,
-        componenteDeFormacionId = original.componenteDeFormacionId,
+        componenteDeFormacion = componenteDeFormacion,
         nombre = nombre,
         creditos = creditos,
         horas = Horas(

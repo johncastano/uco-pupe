@@ -6,6 +6,7 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
+import uco.pensum.domain.requisito.Requisito
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 import uco.pensum.infrastructure.postgres.{
@@ -14,6 +15,7 @@ import uco.pensum.infrastructure.postgres.{
   ComponenteDeFormacionRecord,
   PlanDeEstudioRecord,
   ProgramaRecord,
+  RequisitoRecord,
   UsuarioRecord
 }
 
@@ -23,7 +25,7 @@ class MapperRecordsInstances extends MapperSugar {
   implicit def ProgramaToProgramaRecord: Mapper[Programa, ProgramaRecord] =
     new Mapper[Programa, ProgramaRecord] {
       override def to(programa: Programa): ProgramaRecord = ProgramaRecord(
-        programa.id,
+        programa.id.getOrElse(""),
         programa.nombre,
         programa.snies,
         DateTimeFormatter.ISO_ZONED_DATE_TIME.format(programa.fechaDeRegistro),
@@ -38,6 +40,7 @@ class MapperRecordsInstances extends MapperSugar {
     new Mapper[PlanDeEstudio, PlanDeEstudioRecord] {
       override def to(planDeEstudio: PlanDeEstudio): PlanDeEstudioRecord =
         PlanDeEstudioRecord(
+          planDeEstudio.id.getOrElse(""),
           planDeEstudio.inp,
           planDeEstudio.creditos,
           planDeEstudio.horasTeoricas,
@@ -48,8 +51,7 @@ class MapperRecordsInstances extends MapperSugar {
             .format(planDeEstudio.fechaDeRegistro),
           DateTimeFormatter.ISO_ZONED_DATE_TIME.format(
             planDeEstudio.fechaDeModificacion
-          ),
-          planDeEstudio.id.getOrElse(0)
+          )
         )
     }
 
@@ -135,7 +137,7 @@ class MapperRecordsInstances extends MapperSugar {
         RequisitoRecord(
           codigoAsignaturaRequisito = requisito.codigoAsignatura,
           codigoAsignatura = ca,
-          tipoRequisito = requisito.tipoRequisito.toString
+          tipoRequisito = requisito.tipo.toString
         )
       }
     }

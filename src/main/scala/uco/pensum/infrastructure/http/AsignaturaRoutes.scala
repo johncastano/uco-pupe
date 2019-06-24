@@ -14,14 +14,13 @@ import uco.pensum.domain.errors.{
   ErrorInterno
 }
 import io.circe.java8.time._
-import uco.pensum.domain.services.{AsignaturaServices, RequisitoServices}
+import uco.pensum.domain.services.RequisitoServices
 import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.domain.services.AsignaturaServices
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion,
-  AsignaturaRespuesta,
-  RequisitosActualizacion
+  AsignaturaRespuesta
 }
 import uco.pensum.infrastructure.http.jwt.JWT
 
@@ -95,6 +94,8 @@ trait AsignaturaRoutes
           }
         }
       }
+    }
+
   def actualizarAsignatura: Route =
     path(
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment
@@ -124,30 +125,6 @@ trait AsignaturaRoutes
           }
         }
       }
-    }
-
-  def actualizarAsignatura: Route =
-    path("programa" / Segment / "codigo" / Segment / "asignatura") {
-      (programId, codigo) =>
-        put {
-          entity(as[AsignaturaActualizacion]) { asignatura =>
-            onComplete(actualizarAsignatura(asignatura, programId, codigo)) {
-              case Failure(ex) => {
-                logger.error(s"Exception: $ex")
-                complete(InternalServerError -> ErrorInterno())
-              }
-              case Success(response) =>
-                response.fold(
-                  err =>
-                    complete(
-                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                    ),
-                  asignatura =>
-                    complete(OK -> asignatura.to[AsignaturaRespuesta])
-                )
-            }
-          }
-        }
     }
 
   /*  def eliminarRequisito: Route =
@@ -269,7 +246,6 @@ trait AsignaturaRoutes
     }
 
   val asignaturaRoutes
-    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ asignarRequisito /*~ agregarRequisito ~ eliminarRequisito*/
-    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ agregarRequisito ~ eliminarRequisito ~ subirArchivo
+    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ /*eliminarRequisito ~*/ subirArchivo ~ asignarRequisito
 
 }

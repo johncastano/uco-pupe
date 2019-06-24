@@ -4,9 +4,15 @@ import uco.pensum.domain.errors.{DomainError, RequisitoNoAceptado}
 import uco.pensum.infrastructure.http.dtos.RequisitoAsignacion
 
 sealed trait TipoRequisito
-case object PreRequisito extends TipoRequisito
-case object CoRequisito extends TipoRequisito
-case object RequisitoDeNivel extends TipoRequisito
+final case object RequisitoDeNivel extends TipoRequisito {
+  override def toString: String = "Requisito de nivel"
+}
+final case object PreRequisito extends TipoRequisito {
+  override def toString: String = "Prerequisito"
+}
+final case object CoRequisito extends TipoRequisito {
+  override def toString: String = "Corequisito"
+}
 
 object TipoRequisito {
   def apply(in: String): Either[DomainError, TipoRequisito] =
@@ -19,9 +25,9 @@ object TipoRequisito {
 }
 
 case class Requisito(
+    id: Option[Int] = Some(0),
     codigoAsignatura: String,
-    tipoRequisito: TipoRequisito,
-    id: Option[Int] = Some(0)
+    tipo: TipoRequisito
 )
 
 object Requisito {
@@ -30,5 +36,5 @@ object Requisito {
     for {
       ca <- validarCampoVacio(dto.codigoAsignatura, "Código Asignatura")
       tr <- TipoRequisito(dto.tipoDeRequisito)
-    } yield Requisito(ca, tr)
+    } yield Requisito(codigoAsignatura = ca, tipo = tr)
 }

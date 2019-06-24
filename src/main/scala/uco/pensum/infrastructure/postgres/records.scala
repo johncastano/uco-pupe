@@ -19,6 +19,7 @@ final case class ProgramaRecord(
 ) extends Record
 
 final case class PlanDeEstudioRecord(
+    id: String,
     inp: String,
     creditos: Int,
     horasTeoricas: Int,
@@ -26,14 +27,13 @@ final case class PlanDeEstudioRecord(
     horasPracticas: Int,
     programaId: String,
     fechaDeCreacion: String,
-    fechaDeModificacion: String,
-    id: Int
+    fechaDeModificacion: String
 ) extends Record
 
 final case class PlanDeEstudioAsignaturaRecord(
-    planDeEstudioID: Int,
-    codigoAsignatura: String,
-    id: Int = 0
+    id: String,
+    planDeEstudioID: String,
+    codigoAsignatura: String
 ) extends Record
 
 final case class AsignaturaRecord(
@@ -85,9 +85,6 @@ final case class AsignaturaConComponenteRecord(
     nombreComponente: String,
     abreviaturaComponente: String,
     colorComponente: String,
-    requisitoCodigo: String,
-    tipoDeRequisito: String,
-    direccionPlanDeEstudios: String,
     gdriveFolderId: String,
     fechaDeCreacion: String,
     fechaDeModificacion: String

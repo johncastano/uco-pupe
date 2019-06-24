@@ -45,15 +45,16 @@ case class AsignaturaRespuesta(
     horasPracticas: Int,
     horasIndependientesDelEstudiante: Int,
     nivel: Int,
-    gDriveFolderId: String,
     requisitos: List[RequisitoRespuesta],
+    gDriveFolderId: String,
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
 )
 
 case class RequisitoRespuesta(
-    codigoAsignatura: String,
-    tipoRequisito: String
+    id: Int,
+    codigo: String,
+    tipo: String
 )
 
 case class ComponenteDeFormacionRespuesta(
