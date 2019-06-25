@@ -14,7 +14,6 @@ import uco.pensum.domain.errors.{
   ErrorInterno
 }
 import io.circe.java8.time._
-import uco.pensum.domain.services.RequisitoServices
 import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.domain.services.AsignaturaServices
 import uco.pensum.infrastructure.http.dtos.{
@@ -27,10 +26,7 @@ import uco.pensum.infrastructure.http.jwt.JWT
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-trait AsignaturaRoutes
-    extends Directives
-    with AsignaturaServices
-    with RequisitoServices {
+trait AsignaturaRoutes extends Directives with AsignaturaServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
@@ -68,29 +64,62 @@ trait AsignaturaRoutes
 
   def asignarRequisito: Route =
     path(
-      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "requisito"
-    ) { (programId, inp, codigoAsignatura) =>
+      "programa" / "planEstudio" / "asignatura" / Segment / "requisito"
+    ) { codigoAsignatura =>
       post {
-        println(s"Programa id: $programId, $inp")
-        entity(as[RequisitoAsignacion]) { requisito =>
-          onComplete(
-            asignarRequisitoAAsignatura(
-              codigoAsignatura,
-              requisito
-            )
-          ) {
-            case Failure(ex) => {
-              logger.error(s"Exception: $ex")
-              complete(InternalServerError -> ErrorInterno())
-            }
-            case Success(response) =>
-              response.fold(
-                err =>
-                  complete(
-                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                  ),
-                r => complete(OK -> (r._1, r._2).to[AsignaturaRespuesta])
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+          entity(as[RequisitoAsignacion]) { requisito =>
+            onComplete(
+              asignarRequisitoAAsignatura(
+                codigoAsignatura,
+                requisito
               )
+            ) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  r => complete(OK -> r.to[AsignaturaRespuesta])
+                )
+            }
+          }
+        }
+      }
+    }
+
+  def actualizarRequisito: Route =
+    path(
+      "programa" / "planEstudio" / "asignatura" / Segment / "requisito" / Segment
+    ) { (codigoAsignatura, requisitoId) =>
+      put {
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+          entity(as[RequisitoActualizacion]) { requisito =>
+            onComplete(
+              actualizarRequisitoAAsignatura(
+                codigoAsignatura,
+                requisitoId,
+                requisito
+              )
+            ) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  r => complete(OK -> r.to[AsignaturaRespuesta])
+                )
+            }
           }
         }
       }
@@ -127,20 +156,14 @@ trait AsignaturaRoutes
       }
     }
 
-  /*  def eliminarRequisito: Route =
+  def eliminarRequisito: Route =
     path(
-      "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment / "requisito"
-    ) { (programId, inp, codigo) =>
+      "programa" / "planEstudio" / "asignatura" / Segment / "requisito" / Segment
+    ) { (asignatura, codigo) =>
       delete {
-        entity(as[RequisitosActualizacion]) { requisitos =>
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
           onComplete(
-            actualizarRequisitos(
-              requisitos,
-              programId,
-              inp,
-              codigo,
-              isRemove = true
-            )
+            eliminarRequisitoAsignatura(asignatura, codigo)
           ) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
@@ -157,12 +180,12 @@ trait AsignaturaRoutes
           }
         }
       }
-    }*/
+    }
 
   def asignaturaPorCodigo: Route =
-    path("programa" / Segment / "asignatura" / Segment) { (programId, codigo) =>
+    path("programa" / "planEstudio" / "asignatura" / Segment) { codigo =>
       get {
-        onComplete(asignaturaPorCodigo(programId, codigo)) {
+        onComplete(asignaturaPorCodigo(codigo)) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -197,19 +220,21 @@ trait AsignaturaRoutes
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment
     ) { (programId, inp, codigo) =>
       delete {
-        onComplete(eliminarAsignatura(programId, inp, codigo)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+          onComplete(eliminarAsignatura(programId, inp, codigo)) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              response.fold(
+                err =>
+                  complete(
+                    BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                  ),
+                asignatura => complete(OK -> asignatura.to[AsignaturaRespuesta])
+              )
           }
-          case Success(response) =>
-            response.fold(
-              err =>
-                complete(
-                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                ),
-              asignatura => complete(OK -> asignatura.to[AsignaturaRespuesta])
-            )
         }
       }
     }
@@ -246,6 +271,6 @@ trait AsignaturaRoutes
     }
 
   val asignaturaRoutes
-    : Route = agregarAsignatura ~ actualizarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ eliminarAsignatura ~ /*eliminarRequisito ~*/ subirArchivo ~ asignarRequisito
+    : Route = agregarAsignatura ~ actualizarAsignatura ~ eliminarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ asignarRequisito ~ actualizarRequisito ~ eliminarRequisito
 
 }

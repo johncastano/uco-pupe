@@ -38,9 +38,10 @@ final case class ProgramNotFound(
     mensaje: String = "El programa especificado no existe"
 ) extends DomainError
 
-final case class PlanDeEstudioIdInvalido(
+final case class IdRequisitoInvalido(
     codigo: Int = 100033,
-    mensaje: String = "El id del plan de estudio debe ser un valor numerico"
+    mensaje: String =
+      "El id del requisito para la asignatura especificada debe ser un valor numerico"
 ) extends DomainError
 
 final case class CurriculumNotFound(
@@ -63,6 +64,16 @@ final case class AsignaturaInexistente(
     mensaje: String = "La asignatura no existe"
 ) extends DomainError
 
+final case class RequisitoInvalido(
+    codigo: Int = 100004,
+    mensaje: String = "No se puede asignar como requisito la misma asignatura"
+) extends DomainError
+
+final case class RequisitoDuplicado(
+    codigo: Int = 100004,
+    mensaje: String = "El requisito ya esta asignado a la asignatura"
+) extends DomainError
+
 final case class AsignaturaRequisitoInexistente(
     codigo: Int = 100004,
     mensaje: String = "La asignatura requisito no existe"
@@ -78,6 +89,12 @@ final case class AsignaturaNotFound(
     mensaje: String = "La asignatura especificada no existe"
 ) extends DomainError
 
+final case class PlanDeEstudioAsignaturaNotFound(
+    codigo: Int = 100003,
+    mensaje: String =
+      "La relacion entre el plan de estudio y la asignatura no existe"
+) extends DomainError
+
 final case class CannotUpdatePlanDeEstudio(
     codigo: Int = 10005,
     mensaje: String =
@@ -87,6 +104,11 @@ final case class CannotUpdatePlanDeEstudio(
 final case class RequisitoNoAceptado(
     codigo: Int = 100006,
     mensaje: String = "El requisito ingresado no es aceptado"
+) extends DomainError
+
+final case class RequisitoNoEncontrado(
+    codigo: Int = 100006,
+    mensaje: String = "El requisito no existe"
 ) extends DomainError
 
 final case class GParentFolderNotFound(codigo: Int, mensaje: String)

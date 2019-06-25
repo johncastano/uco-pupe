@@ -56,6 +56,9 @@ trait ProgramServices extends LazyLogging {
       pd <- EitherT.fromEither[Future](
         Programa.validate(programa, Programa.fromRecord(original))
       )
+      _ <- EitherT.right[DomainError](
+        repository.programaRepository.actualizarPrograma(pd)
+      )
       _ <- EitherT(
         GDriveService.actualizarDriveFolderName(
           pd.id.getOrElse(""),
@@ -63,9 +66,6 @@ trait ProgramServices extends LazyLogging {
           gUser.accessToken,
           !pd.nombre.equalsIgnoreCase(original.nombre)
         )
-      )
-      _ <- EitherT.right[DomainError](
-        repository.programaRepository.actualizarPrograma(pd)
       )
     } yield pd).value
 

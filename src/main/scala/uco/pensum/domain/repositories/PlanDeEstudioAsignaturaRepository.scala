@@ -21,4 +21,7 @@ class PlanDeEstudioAsignaturaRepository(
         codigoAsignatura = codigoAsignatura
       )
     )
+
+  def buscarPorId(id: String): Future[Option[PlanDeEstudioAsignaturaRecord]] =
+    provider.planesDeEstudioAsignatura.buscarPorId(id)
 }

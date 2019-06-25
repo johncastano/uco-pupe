@@ -3,6 +3,7 @@ package uco.pensum.infrastructure.postgres.daos
 import uco.pensum.infrastructure.postgres.{
   AsignaturaConComponenteRecord,
   AsignaturaRecord,
+  RequisitoRecord,
   tables
 }
 import slick.jdbc.PostgresProfile
@@ -67,6 +68,47 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
         this.filter(_.codigo === asignatura.codigo).update(asignatura)
       )
       .map(_ => asignatura)
+
+  def requisitos(
+      codigo: String
+  ): Future[List[RequisitoRecord]] =
+    db.run((for {
+      (_, requisitos) <- (tables.asignaturas join tables.requisitos on (_.codigo === _.codigoAsignatura))
+        .filter {
+          case (asignatura, _) => asignatura.codigo === codigo
+        }
+    } yield requisitos).result.map(_.toList))
+
+  def encontrarInfoPorCodigo(
+      codigo: String
+  ): Future[Option[AsignaturaConComponenteRecord]] =
+    db.run(
+      (for {
+        (
+          ((asignaturas, planDeEstudioAsignaturas), planesDeEstudio),
+          componentesDeFormacion
+        ) <- tables.asignaturas
+          .filter(_.codigo === codigo) join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.planesDeEstudio on (_._2.planDeEstudioID === _.id) join tables.componentesDeFormacion on (_._1._1.componenteDeFormacionId === _.id)
+      } yield
+        (
+          asignaturas.codigo,
+          asignaturas.nombre,
+          asignaturas.creditos,
+          planesDeEstudio.inp,
+          asignaturas.horasTeoricas,
+          asignaturas.horasLaboratorio,
+          asignaturas.horasPracticas,
+          asignaturas.trabajoDelEstudiante,
+          asignaturas.nivel,
+          asignaturas.componenteDeFormacionId,
+          componentesDeFormacion.nombre,
+          componentesDeFormacion.abreviatura,
+          componentesDeFormacion.color,
+          planDeEstudioAsignaturas.id,
+          asignaturas.fechaDeCreacion,
+          asignaturas.fechaDeModificacion
+        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
+    )
 
   def encontrarPorInpYCodigo(
       programaId: String,

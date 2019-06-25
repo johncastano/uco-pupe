@@ -10,6 +10,8 @@ import uco.pensum.domain.requisito.Requisito
 import uco.pensum.domain.usuario.Usuario
 import uco.pensum.infrastructure.mapper.{Mapper, MapperSugar}
 import uco.pensum.infrastructure.postgres.{
+  AsignaturaConComponenteRecord,
+  AsignaturaConRequisitos,
   AsignaturaRecord,
   AuthRecord,
   ComponenteDeFormacionRecord,
@@ -74,6 +76,40 @@ class MapperRecordsInstances extends MapperSugar {
         )
     }
 
+  implicit def AsignaturaToAsignaturaFullRecord: Mapper[
+    (AsignaturaConComponenteRecord, List[RequisitoRecord]),
+    AsignaturaConRequisitos
+  ] =
+    new Mapper[
+      (AsignaturaConComponenteRecord, List[RequisitoRecord]),
+      AsignaturaConRequisitos
+    ] {
+      override def to(
+          asign: (AsignaturaConComponenteRecord, List[RequisitoRecord])
+      ): AsignaturaConRequisitos = {
+        val (asignatura, requisitos) = asign
+        AsignaturaConRequisitos(
+          codigoAsignatura = asignatura.codigoAsignatura,
+          nombreAsignatura = asignatura.nombreAsignatura,
+          creditos = asignatura.creditos,
+          inp = asignatura.inp,
+          horasTeoricas = asignatura.horasTeoricas,
+          horasLaboratorio = asignatura.horasLaboratorio,
+          horasPracticas = asignatura.horasPracticas,
+          trabajoDelEstudiante = asignatura.trabajoDelEstudiante,
+          nivel = asignatura.nivel,
+          componenteDeFormacionId = asignatura.componenteDeFormacionId,
+          nombreComponente = asignatura.nombreComponente,
+          abreviaturaComponente = asignatura.abreviaturaComponente,
+          colorComponente = asignatura.colorComponente,
+          requisitos = requisitos,
+          gdriveFolderId = asignatura.gdriveFolderId,
+          fechaDeCreacion = asignatura.fechaDeCreacion,
+          fechaDeModificacion = asignatura.fechaDeModificacion
+        )
+      }
+    }
+
   implicit def ComponenteDeFormacionToComponenteDeFormacionRecord
     : Mapper[ComponenteDeFormacion, ComponenteDeFormacionRecord] =
     new Mapper[ComponenteDeFormacion, ComponenteDeFormacionRecord] {
@@ -135,9 +171,10 @@ class MapperRecordsInstances extends MapperSugar {
       ): RequisitoRecord = {
         val (ca, requisito) = in
         RequisitoRecord(
-          codigoAsignaturaRequisito = requisito.codigoAsignatura,
+          id = requisito.id.getOrElse(0),
+          tipo = requisito.tipo.toString,
           codigoAsignatura = ca,
-          tipoRequisito = requisito.tipo.toString
+          codigoAsignaturaRequisito = requisito.codigoAsignatura
         )
       }
     }

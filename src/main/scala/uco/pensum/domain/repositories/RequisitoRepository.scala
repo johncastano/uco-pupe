@@ -17,4 +17,17 @@ class RequisitoRepository(implicit val provider: PensumDatabase) {
       (asignaturaCodigo, requisito).to[RequisitoRecord]
     )
 
+  def actualizarRequisito(
+      asignaturaCodigo: String,
+      requisito: Requisito
+  ): Future[RequisitoRecord] =
+    provider.requisitos.actualizar(
+      (asignaturaCodigo, requisito).to[RequisitoRecord]
+    )
+
+  def buscarPorId(id: Int): Future[Option[RequisitoRecord]] =
+    provider.requisitos.buscarPorId(id)
+
+  def eliminarPorId(id: Int): Future[Int] = provider.requisitos.eliminar(id)
+
 }

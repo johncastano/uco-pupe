@@ -58,9 +58,10 @@ final case class ComponenteDeFormacionRecord(
 ) extends Record
 
 final case class RequisitoRecord(
-    codigoAsignaturaRequisito: String,
+    id: Int,
+    tipo: String,
     codigoAsignatura: String,
-    tipoRequisito: String
+    codigoAsignaturaRequisito: String
 ) extends Record
 
 final case class ProgramaConPlanesDeEstudioRecord(
@@ -89,6 +90,27 @@ final case class AsignaturaConComponenteRecord(
     fechaDeCreacion: String,
     fechaDeModificacion: String
 )
+
+final case class AsignaturaConRequisitos(
+    codigoAsignatura: String,
+    nombreAsignatura: String,
+    creditos: Int,
+    inp: String,
+    horasTeoricas: Int,
+    horasLaboratorio: Int,
+    horasPracticas: Int,
+    trabajoDelEstudiante: Int,
+    nivel: Int,
+    componenteDeFormacionId: Int,
+    nombreComponente: String,
+    abreviaturaComponente: String,
+    colorComponente: String,
+    requisitos: List[RequisitoRecord],
+    gdriveFolderId: String,
+    fechaDeCreacion: String,
+    fechaDeModificacion: String
+)
+
 final case class UsuarioRecord(
     id: Int,
     nombre: String,

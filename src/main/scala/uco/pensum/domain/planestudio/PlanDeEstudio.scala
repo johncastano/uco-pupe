@@ -7,7 +7,7 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.dtos.PlanDeEstudioAsignacion
 import uco.pensum.infrastructure.postgres.{
-  AsignaturaConComponenteRecord,
+  AsignaturaConRequisitos,
   PlanDeEstudioRecord
 }
 
@@ -85,9 +85,26 @@ object PlanDeEstudio {
       fechaDeModificacion = hora
     )
 
+  def restarCampos(
+      record: PlanDeEstudioRecord,
+      asignatura: Asignatura
+  ): PlanDeEstudio =
+    PlanDeEstudio(
+      id = Some(record.id),
+      inp = record.inp,
+      creditos = record.creditos - asignatura.creditos,
+      horasTeoricas = record.horasTeoricas - asignatura.horas.teoricas,
+      horasLaboratorio = record.horasLaboratorio - asignatura.horas.laboratorio,
+      horasPracticas = record.horasPracticas - asignatura.horas.practicas,
+      programId = record.programaId,
+      fechaDeRegistro = ZonedDateTime
+        .parse(record.fechaDeCreacion, DateTimeFormatter.ISO_ZONED_DATE_TIME),
+      fechaDeModificacion = hora
+    )
+
   def recalcularCampos(
       record: PlanDeEstudioRecord,
-      asignaturaOriginal: AsignaturaConComponenteRecord,
+      asignaturaOriginal: AsignaturaConRequisitos,
       asignaturaActualizada: Asignatura
   ): PlanDeEstudio = {
 

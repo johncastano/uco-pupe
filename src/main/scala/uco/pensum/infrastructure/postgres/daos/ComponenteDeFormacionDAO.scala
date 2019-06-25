@@ -33,7 +33,7 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
     db.run(
         this
           .filter(
-            _.nombre === nombre
+            _.nombre.toLowerCase === nombre.toLowerCase
           )
           .result
       )

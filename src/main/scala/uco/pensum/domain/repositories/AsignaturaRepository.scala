@@ -4,12 +4,16 @@ import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.{
   AsignaturaConComponenteRecord,
+  AsignaturaConRequisitos,
   AsignaturaRecord
 }
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class AsignaturaRepository(implicit val provider: PensumDatabase) {
+class AsignaturaRepository(
+    implicit val provider: PensumDatabase,
+    ec: ExecutionContext
+) {
   import uco.pensum.infrastructure.mapper.MapperRecords._
 
   def almacenarAsignatura(asignatura: Asignatura): Future[AsignaturaRecord] =
@@ -27,12 +31,32 @@ class AsignaturaRepository(implicit val provider: PensumDatabase) {
       programaId: String,
       inp: String,
       codigo: String
-  ): Future[Option[AsignaturaConComponenteRecord]] =
-    provider.asignaturas.encontrarPorInpYCodigo(programaId, inp, codigo)
+  ): Future[Option[AsignaturaConRequisitos]] = {
+    for {
+      asignatura <- provider.asignaturas.encontrarPorInpYCodigo(
+        programaId,
+        inp,
+        codigo
+      )
+      requisitos <- provider.asignaturas.requisitos(codigo)
+    } yield asignatura.map(a => (a, requisitos).to[AsignaturaConRequisitos])
+
+  }
+
+  def buscarFullAsignaturaPorCodigo(
+      codigo: String
+  ): Future[Option[AsignaturaConRequisitos]] =
+    for {
+      asignatura <- provider.asignaturas.encontrarInfoPorCodigo(codigo)
+      requisitos <- provider.asignaturas.requisitos(codigo)
+    } yield asignatura.map(a => (a, requisitos).to[AsignaturaConRequisitos])
 
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,
       inp: String
   ): Future[Seq[AsignaturaConComponenteRecord]] =
     provider.asignaturas.obtenerAsignaturasPorINPYPrograma(programaId, inp)
+
+  def eliminarPorCodigo(codigo: String): Future[Int] =
+    provider.asignaturas.eliminarPorCodigo(codigo)
 }
