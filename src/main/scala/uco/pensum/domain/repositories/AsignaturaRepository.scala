@@ -54,8 +54,21 @@ class AsignaturaRepository(
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,
       inp: String
-  ): Future[Seq[AsignaturaConComponenteRecord]] =
-    provider.asignaturas.obtenerAsignaturasPorINPYPrograma(programaId, inp)
+  ): Future[List[AsignaturaConRequisitos]] = {
+    import cats.implicits._
+    for {
+      asignaturas: List[AsignaturaConComponenteRecord] <- provider.asignaturas
+        .obtenerAsignaturasPorINPYPrograma(programaId, inp)
+      awr <- asignaturas.traverse(
+        asignatura =>
+          provider.asignaturas
+            .requisitos(asignatura.codigoAsignatura)
+            .map(
+              requisitos => (asignatura, requisitos).to[AsignaturaConRequisitos]
+            )
+      )
+    } yield awr
+  }
 
   def eliminarPorCodigo(codigo: String): Future[Int] =
     provider.asignaturas.eliminarPorCodigo(codigo)

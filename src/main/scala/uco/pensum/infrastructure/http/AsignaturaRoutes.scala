@@ -209,7 +209,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             }
             case Success(response) =>
               complete(
-                OK -> response.map(r => (inp, r).to[AsignaturaRespuesta])
+                OK -> response.map(r => r.to[AsignaturaRespuesta])
               )
           }
         }

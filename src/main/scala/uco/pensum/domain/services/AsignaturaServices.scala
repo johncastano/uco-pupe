@@ -17,10 +17,7 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
 import uco.pensum.infrastructure.http.jwt.GUserCredentials
-import uco.pensum.infrastructure.postgres.{
-  AsignaturaConComponenteRecord,
-  AsignaturaConRequisitos
-}
+import uco.pensum.infrastructure.postgres.AsignaturaConRequisitos
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -60,16 +57,16 @@ trait AsignaturaServices extends LazyLogging {
       upd <- EitherT.fromEither[Future](
         PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
       )
+      gf <- EitherT(
+        GDriveService.createFolder(gUser.accessToken, a.nombre, Some(pe.id))
+      )
+      asr <- EitherT.right[DomainError](
+        repository.asignaturaRepository.almacenarAsignatura(a)
+      )
       _ <- OptionT(
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(upd)
       ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
-      asr <- EitherT.right[DomainError](
-        repository.asignaturaRepository.almacenarAsignatura(a)
-      )
-      gf <- EitherT(
-        GDriveService.createFolder(gUser.accessToken, a.nombre, Some(pe.id))
-      )
       pear <- EitherT.right[DomainError](
         repository.planDeEstudioAsignaturaRepository
           .almacenarOActualizarPlaDeEstudioAsignatura(
@@ -83,9 +80,10 @@ trait AsignaturaServices extends LazyLogging {
   def asignaturasPorInp(
       programId: String,
       inp: String
-  ): Future[Seq[AsignaturaConComponenteRecord]] =
+  ): Future[List[AsignaturaConRequisitos]] =
     repository.asignaturaRepository
-      .obtenerAsignaturasPorINPYPrograma(programId, inp) //TODO: RETURN REQUISITOS IN THIS CALL, THINK IN A SOLUTION TO AVOID MAKE SEVERAL QUERIES PER ASIGNATURA
+      .obtenerAsignaturasPorINPYPrograma(programId, inp)
+      .map(a => a.sortBy(_.nivel))
 
   def actualizarAsignatura(
       asignatura: AsignaturaActualizacion,
@@ -166,11 +164,13 @@ trait AsignaturaServices extends LazyLogging {
             case None            => Left(RequisitoNoEncontrado())
           }
       )
-      asi <- EitherT.fromEither[Future](
-        Asignatura.agregarRequisito(a, r).asRight[DomainError]
-      )
-      _ <- EitherT.right[DomainError](
+      rr <- EitherT.right[DomainError](
         repository.requisitoRepository.almacenarRequisito(asignaturaCodigo, r)
+      )
+      asi <- EitherT.fromEither[Future](
+        Asignatura
+          .agregarRequisito(a, r.copy(id = Some(rr.id)))
+          .asRight[DomainError]
       )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.actualizarAsignatura(asi)

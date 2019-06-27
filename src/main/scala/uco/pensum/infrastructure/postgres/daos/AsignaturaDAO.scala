@@ -146,7 +146,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,
       inp: String
-  ): Future[Seq[AsignaturaConComponenteRecord]] =
+  ): Future[List[AsignaturaConComponenteRecord]] =
     db.run(
       (for {
         pe <- tables.planesDeEstudio.filter(
@@ -172,7 +172,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
           pea.id,
           a.fechaDeCreacion,
           a.fechaDeModificacion
-        ).mapTo[AsignaturaConComponenteRecord]).result
+        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.toList)
     )
 
   def eliminarPorCodigo(codigo: String): Future[Int] =
