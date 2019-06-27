@@ -31,7 +31,6 @@ object Main extends App with HttpService {
   private val host = config.getString("pupe.http.host")
   private val port = config.getString("pupe.http.port").toInt
 
-  //TODO: Wrap it into a object
   val httpTransport: NetHttpTransport = new NetHttpTransport
   val jsonFactory: JacksonFactory = JacksonFactory.getDefaultInstance
 
