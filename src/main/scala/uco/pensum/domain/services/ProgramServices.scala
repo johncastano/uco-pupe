@@ -33,7 +33,7 @@ trait ProgramServices extends LazyLogging {
       pd <- EitherT.fromEither[Future](Programa.validate(programa))
       _ <- OptionT(
         repository.programaRepository
-          .buscarProgramaPorNombre(programa.nombre) //TODO: MEJORAR BUSQUEDA PARA IGNORAR MAYUS/MINUS y ASI EVITAR CREAR 2 PROGRAMAS COMO (ING Sistemas e Ing sistemas)
+          .buscarProgramaPorNombre(programa.nombre)
       ).map(_ => ProgramaExistente()).toLeft(())
       gf <- EitherT(GDriveService.createFolder(gUser.accessToken, pd.nombre))
       vp = pd.copy(Option(gf.getId))
@@ -56,9 +56,6 @@ trait ProgramServices extends LazyLogging {
       pd <- EitherT.fromEither[Future](
         Programa.validate(programa, Programa.fromRecord(original))
       )
-      _ <- EitherT.right[DomainError](
-        repository.programaRepository.actualizarPrograma(pd)
-      )
       _ <- EitherT(
         GDriveService.actualizarDriveFolderName(
           pd.id.getOrElse(""),
@@ -66,6 +63,9 @@ trait ProgramServices extends LazyLogging {
           gUser.accessToken,
           !pd.nombre.equalsIgnoreCase(original.nombre)
         )
+      )
+      _ <- EitherT.right[DomainError](
+        repository.programaRepository.actualizarPrograma(pd)
       )
     } yield pd).value
 

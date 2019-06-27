@@ -54,11 +54,11 @@ trait AsignaturaServices extends LazyLogging {
         Asignatura
           .validar(asignatura, inp, ComponenteDeFormacion.fromRecord(cf))
       )
-      upd <- EitherT.fromEither[Future](
-        PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
-      )
       gf <- EitherT(
         GDriveService.createFolder(gUser.accessToken, a.nombre, Some(pe.id))
+      )
+      upd <- EitherT.fromEither[Future](
+        PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
       )
       asr <- EitherT.right[DomainError](
         repository.asignaturaRepository.almacenarAsignatura(a)
