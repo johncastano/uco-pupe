@@ -2,7 +2,10 @@ package uco.pensum.domain.componenteformacion
 
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.domain.validarCampoVacio
-import uco.pensum.infrastructure.http.dtos.ComponenteDeFormacionAsignacion
+import uco.pensum.infrastructure.http.dtos.{
+  ComponenteDeFormacionActualizacion,
+  ComponenteDeFormacionAsignacion
+}
 import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
 
 case class ComponenteDeFormacion(
@@ -21,6 +24,16 @@ object ComponenteDeFormacion {
       abv <- validarCampoVacio(dto.abreviatura, "abreviatura")
       c <- validarCampoVacio(dto.color, "color")
     } yield ComponenteDeFormacion(n, abv, c)
+
+  def validar(
+      dto: ComponenteDeFormacionActualizacion,
+      original: ComponenteDeFormacion
+  ): DomainError Either ComponenteDeFormacion =
+    for {
+      n <- validarCampoVacio(dto.nombre, "nombre")
+      abv <- validarCampoVacio(dto.abreviatura, "abreviatura")
+      c <- validarCampoVacio(dto.color, "color")
+    } yield ComponenteDeFormacion(n, abv, c, original.id)
 
   def fromRecord(
       record: ComponenteDeFormacionRecord

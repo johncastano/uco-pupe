@@ -1,7 +1,6 @@
 package uco.pensum.infrastructure.http
 
-import akka.http.scaladsl.model.StatusCodes._
-import akka.http.scaladsl.model.StatusCodes.InternalServerError
+import akka.http.scaladsl.model.StatusCodes.{InternalServerError, _}
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -9,6 +8,7 @@ import io.circe.generic.auto._
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.services.ComponenteDeFormacionServices
 import uco.pensum.infrastructure.http.dtos.{
+  ComponenteDeFormacionActualizacion,
   ComponenteDeFormacionAsignacion,
   ComponenteDeFormacionRespuesta
 }
@@ -57,7 +57,7 @@ trait ComponenteDeFormacionRoutes
   def listarComponentesDeFormacion =
     path("componente") {
       get {
-        onComplete(obtenerComponenetesDeFormacion) {
+        onComplete(obtenerComponentesDeFormacion) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -67,6 +67,33 @@ trait ComponenteDeFormacionRoutes
         }
       }
     }
+
+  def actualizarComponenteDeFormacion: Route = path("componente" / Segment) {
+    nombre =>
+      put {
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+          entity(as[ComponenteDeFormacionActualizacion]) { componente =>
+            onComplete(
+              actualizarComponenteDeFormacion(nombre, componente)
+            ) {
+              case Failure(ex) => {
+                logger.error(s"Exception: $ex")
+                complete(InternalServerError -> ErrorInterno())
+              }
+              case Success(response) =>
+                response.fold(
+                  err =>
+                    complete(
+                      BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                    ),
+                  cf =>
+                    complete(Created -> cf.to[ComponenteDeFormacionRespuesta])
+                )
+            }
+          }
+        }
+      }
+  }
 
   val componentesRoutes
     : Route = agregarComponenteDeFormacion ~ listarComponentesDeFormacion

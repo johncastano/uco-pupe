@@ -6,7 +6,6 @@ import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
 
 import scala.concurrent.{ExecutionContext, Future}
 
-// TODO: Complete DAO
 class ComponentesDeFormacion(tag: Tag)
     extends Table[ComponenteDeFormacionRecord](tag, "componentes_de_formacion") {
 
@@ -38,6 +37,20 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
           .result
       )
       .map(_.headOption)
+
+  def almacenar(
+      componente: ComponenteDeFormacionRecord
+  ): Future[ComponenteDeFormacionRecord] =
+    db.run(
+      this returning this
+        .map(_.id) into ((acc, id) => acc.copy(id = id)) += componente
+    )
+
+  def actualizar(
+      componente: ComponenteDeFormacionRecord
+  ): Future[ComponenteDeFormacionRecord] =
+    db.run(this.filter(_.id === componente.id).update(componente))
+      .map(_ => componente)
 
   def almacenarOActualizar(
       record: ComponenteDeFormacionRecord

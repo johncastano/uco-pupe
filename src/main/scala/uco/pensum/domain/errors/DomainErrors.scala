@@ -59,6 +59,11 @@ final case class ComponenteDeFormacionExistente(
     mensaje: String = "El componente de formacion ya existe"
 ) extends DomainError
 
+final case class ComponenteDeFormacionNoEncontrado(
+    codigo: Int = 100006,
+    mensaje: String = "El componente de formacion no se encontró"
+) extends DomainError
+
 final case class AsignaturaInexistente(
     codigo: Int = 100004,
     mensaje: String = "La asignatura no existe"

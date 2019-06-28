@@ -21,10 +21,17 @@ class ComponenteDeFormacionRepository(
   ): Future[Option[ComponenteDeFormacionRecord]] =
     provider.componentesDeFormacion.buscarPorNombre(nombre)
 
-  def almacenarOActualizarComponenteDeFormacion(
+  def almacenar(
       componenteDeFormacion: ComponenteDeFormacion
-  ): Future[Option[ComponenteDeFormacionRecord]] =
-    provider.componentesDeFormacion.almacenarOActualizar(
+  ): Future[ComponenteDeFormacionRecord] =
+    provider.componentesDeFormacion.almacenar(
+      componenteDeFormacion.to[ComponenteDeFormacionRecord]
+    )
+
+  def actualizar(
+      componenteDeFormacion: ComponenteDeFormacion
+  ): Future[ComponenteDeFormacionRecord] =
+    provider.componentesDeFormacion.actualizar(
       componenteDeFormacion.to[ComponenteDeFormacionRecord]
     )
 

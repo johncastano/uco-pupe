@@ -5,3 +5,9 @@ case class ComponenteDeFormacionAsignacion(
     abreviatura: String,
     color: String
 )
+
+case class ComponenteDeFormacionActualizacion(
+    nombre: String,
+    abreviatura: String,
+    color: String
+)
