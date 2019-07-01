@@ -58,4 +58,7 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
     db.run(
       (this returning this).insertOrUpdate(record)
     )
+
+  def eliminarPorId(id: Int): Future[Int] =
+    db.run(this.filter(_.id === id).delete)
 }

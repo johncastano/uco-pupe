@@ -35,4 +35,7 @@ class ComponenteDeFormacionRepository(
       componenteDeFormacion.to[ComponenteDeFormacionRecord]
     )
 
+  def borrar(id: Int): Future[Int] =
+    provider.componentesDeFormacion.eliminarPorId(id)
+
 }

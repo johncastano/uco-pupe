@@ -63,4 +63,18 @@ trait ComponenteDeFormacionServices extends LazyLogging {
       )
     } yield c).value
 
+  def borrarComponente(
+      nombre: String
+  ): Future[DomainError Either ComponenteDeFormacionRecord] =
+    (for {
+      g <- EitherT(
+        repository.componenteDeFormacionRepository
+          .buscarPorNombre(nombre)
+          .map(_.toRight(ComponenteDeFormacionNoEncontrado()))
+      )
+      _ <- EitherT.right[DomainError](
+        repository.componenteDeFormacionRepository.borrar(g.id)
+      )
+    } yield g).value
+
 }

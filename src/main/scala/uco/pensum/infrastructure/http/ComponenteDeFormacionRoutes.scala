@@ -95,6 +95,27 @@ trait ComponenteDeFormacionRoutes
       }
   }
 
+  def borrarComponente: Route = path("componente" / Segment) { nombre =>
+    delete {
+      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+        onComplete(borrarComponente(nombre)) {
+          case Failure(ex) => {
+            logger.error(s"Exception: $ex")
+            complete(InternalServerError -> ErrorInterno())
+          }
+          case Success(response) =>
+            response.fold(
+              err =>
+                complete(
+                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                ),
+              pr => complete(OK -> pr.to[ComponenteDeFormacionRespuesta])
+            )
+        }
+      }
+    }
+  }
+
   val componentesRoutes
     : Route = agregarComponenteDeFormacion ~ listarComponentesDeFormacion
 
