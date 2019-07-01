@@ -1,5 +1,6 @@
 package uco.pensum.domain.repositories
 
+import monix.eval.Task
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
@@ -13,29 +14,35 @@ class ComponenteDeFormacionRepository(
   import uco.pensum.infrastructure.mapper.MapperRecords._
 
   def obtenerTodosLosComponentesDeFormacion
-    : Future[Seq[ComponenteDeFormacionRecord]] =
-    provider.componentesDeFormacion.obtenerComponenetesDeFormacion
+    : Task[Seq[ComponenteDeFormacionRecord]] =
+    Task.fromFuture(
+      provider.componentesDeFormacion.obtenerComponenetesDeFormacion
+    )
 
   def buscarPorNombre(
       nombre: String
-  ): Future[Option[ComponenteDeFormacionRecord]] =
-    provider.componentesDeFormacion.buscarPorNombre(nombre)
+  ): Task[Option[ComponenteDeFormacionRecord]] =
+    Task.fromFuture(provider.componentesDeFormacion.buscarPorNombre(nombre))
 
   def almacenar(
       componenteDeFormacion: ComponenteDeFormacion
-  ): Future[ComponenteDeFormacionRecord] =
-    provider.componentesDeFormacion.almacenar(
-      componenteDeFormacion.to[ComponenteDeFormacionRecord]
+  ): Task[ComponenteDeFormacionRecord] =
+    Task.fromFuture(
+      provider.componentesDeFormacion.almacenar(
+        componenteDeFormacion.to[ComponenteDeFormacionRecord]
+      )
     )
 
   def actualizar(
       componenteDeFormacion: ComponenteDeFormacion
-  ): Future[ComponenteDeFormacionRecord] =
-    provider.componentesDeFormacion.actualizar(
-      componenteDeFormacion.to[ComponenteDeFormacionRecord]
+  ): Task[ComponenteDeFormacionRecord] =
+    Task.fromFuture(
+      provider.componentesDeFormacion.actualizar(
+        componenteDeFormacion.to[ComponenteDeFormacionRecord]
+      )
     )
 
-  def borrar(id: Int): Future[Int] =
-    provider.componentesDeFormacion.eliminarPorId(id)
+  def borrar(id: Int): Task[Int] =
+    Task.fromFuture(provider.componentesDeFormacion.eliminarPorId(id))
 
 }

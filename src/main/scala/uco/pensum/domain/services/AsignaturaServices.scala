@@ -3,6 +3,7 @@ package uco.pensum.domain.services
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import monix.eval.Task
 import uco.pensum.domain.asignatura._
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors._
@@ -36,28 +37,28 @@ trait AsignaturaServices extends LazyLogging {
       implicit gUser: GUserCredentials
   ): Future[Either[DomainError, (Asignatura, String)]] =
     (for {
-      pe <- EitherT.fromOptionF(
+      pe <- EitherT(
         repository.planDeEstudioRepository
-          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId),
-        CurriculumNotFound()
+          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId)
+          .map(_.toRight(CurriculumNotFound()))
       )
-      cf <- EitherT.fromOptionF(
+      cf <- EitherT(
         repository.componenteDeFormacionRepository
-          .buscarPorNombre(asignatura.componenteDeFormacion),
-        ComponenteDeFormacionNoExiste()
+          .buscarPorNombre(asignatura.componenteDeFormacion)
+          .map(_.toRight(ComponenteDeFormacionNoExiste()))
       )
       _ <- OptionT(
         repository.asignaturaRepository
           .buscarAsignaturaPorCodigo(asignatura.codigo)
       ).map(_ => AsignaturaExistente()).toLeft(())
-      a <- EitherT.fromEither[Future](
+      a <- EitherT.fromEither[Task](
         Asignatura
           .validar(asignatura, inp, ComponenteDeFormacion.fromRecord(cf))
       )
       gf <- EitherT(
         GDriveService.createFolder(gUser.accessToken, a.nombre, Some(pe.id))
       )
-      upd <- EitherT.fromEither[Future](
+      upd <- EitherT.fromEither[Task](
         PlanDeEstudio.sumarCampos(pe, a).asRight[DomainError]
       )
       asr <- EitherT.right[DomainError](

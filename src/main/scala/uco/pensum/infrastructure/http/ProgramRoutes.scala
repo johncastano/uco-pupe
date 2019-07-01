@@ -7,6 +7,7 @@ import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import io.circe.java8.time._
+import monix.execution.Scheduler
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.services.ProgramServices
@@ -17,14 +18,13 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.http.jwt.JWT
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val executionContext: ExecutionContext
+  implicit val executionContext: Scheduler
   implicit val repository: PensumRepository
   implicit val materializer: Materializer
   implicit val jwt: JWT
@@ -33,7 +33,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     post {
       authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
         entity(as[ProgramaAsignacion]) { programa =>
-          onComplete(agregarPrograma(programa)(user.gCredentials)) {
+          onComplete(agregarPrograma(programa)(user.gCredentials).runToFuture) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())
@@ -56,7 +56,9 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     put {
       authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
         entity(as[ProgramaActualizacion]) { programa =>
-          onComplete(actualizarPrograma(id, programa)(user.gCredentials)) {
+          onComplete(
+            actualizarPrograma(id, programa)(user.gCredentials).runToFuture
+          ) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())
@@ -77,7 +79,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def porgramaPorId: Route = path("programa" / Segment) { id =>
     get {
-      onComplete(devolverProgramaPorId(id)) {
+      onComplete(devolverProgramaPorId(id).runToFuture) {
         case Failure(ex) => {
           logger.error(s"Exception: $ex")
           complete(InternalServerError -> ErrorInterno())
@@ -96,7 +98,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def programas: Route = path("programa") {
     get {
-      onComplete(devolverProgramas) {
+      onComplete(devolverProgramas.runToFuture) {
         case Failure(ex) => {
           logger.error(s"Exception: $ex")
           complete(InternalServerError -> ErrorInterno())
@@ -110,7 +112,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
   def borrarPrograma: Route = path("programa" / Segment) { id =>
     delete {
       authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-        onComplete(borrarPrograma(id)) {
+        onComplete(borrarPrograma(id).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())

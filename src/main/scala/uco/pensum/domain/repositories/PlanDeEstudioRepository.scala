@@ -1,10 +1,9 @@
 package uco.pensum.domain.repositories
 
+import monix.eval.Task
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.PlanDeEstudioRecord
-
-import scala.concurrent.Future
 
 class PlanDeEstudioRepository(
     implicit val provider: PensumDatabase
@@ -13,33 +12,41 @@ class PlanDeEstudioRepository(
 
   def almacenarOActualizarPlanDeEstudios(
       planDeEstudio: PlanDeEstudio
-  ): Future[Option[PlanDeEstudioRecord]] =
-    provider.planesDeEstudio.almacenarOActualizar(
-      planDeEstudio.to[PlanDeEstudioRecord]
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      provider.planesDeEstudio.almacenarOActualizar(
+        planDeEstudio.to[PlanDeEstudioRecord]
+      )
     )
 
   def buscarPlanDeEstudioPorINP(
       inp: String
-  ): Future[Option[PlanDeEstudioRecord]] =
-    provider.planesDeEstudio.buscarPorINP(inp)
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(provider.planesDeEstudio.buscarPorINP(inp))
 
   def buscarPlanDeEstudioPorINPYProgramaId(
       inp: String,
       programaId: String
-  ): Future[Option[PlanDeEstudioRecord]] =
-    provider.planesDeEstudio.buscarPorProgramIdAndINP(inp, programaId)
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      provider.planesDeEstudio.buscarPorProgramIdAndINP(inp, programaId)
+    )
 
   def buscarPlanDeEstudioPorIdYProgramaId(
       id: String,
       programaId: String
-  ): Future[Option[PlanDeEstudioRecord]] =
-    provider.planesDeEstudio.buscarPorIdAndProgramaId(id, programaId)
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      provider.planesDeEstudio.buscarPorIdAndProgramaId(id, programaId)
+    )
 
   def obtenerTodosLosPlanesDeEstudioPorPrograma(
       programaId: String
-  ): Future[Seq[PlanDeEstudioRecord]] =
-    provider.planesDeEstudio.buscarPlanesDeEstudioPorProgramaId(programaId)
+  ): Task[Seq[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      provider.planesDeEstudio.buscarPlanesDeEstudioPorProgramaId(programaId)
+    )
 
-  def eliminarPlanDeEstudio(id: String, programaId: String): Future[Int] =
-    provider.planesDeEstudio.eliminarPorId(id, programaId)
+  def eliminarPlanDeEstudio(id: String, programaId: String): Task[Int] =
+    Task.fromFuture(provider.planesDeEstudio.eliminarPorId(id, programaId))
 }

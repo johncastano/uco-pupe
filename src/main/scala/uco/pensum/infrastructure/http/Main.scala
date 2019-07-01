@@ -7,6 +7,7 @@ import akka.stream.ActorMaterializer
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.typesafe.config.ConfigFactory
+import monix.execution.Scheduler
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.domain.repositories._
@@ -23,7 +24,7 @@ import scala.util.{Failure, Success}
 object Main extends App with HttpService {
 
   implicit val system: ActorSystem = ActorSystem("pensum-http")
-  implicit val executionContext: ExecutionContextExecutor = system.dispatcher
+  implicit val scheduler: Scheduler = system.dispatcher
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   private val config = ConfigFactory.load()

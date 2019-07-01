@@ -13,24 +13,24 @@ import uco.pensum.infrastructure.http.dtos.{
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import monix.eval.Task
+import monix.execution.Scheduler
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
 import uco.pensum.infrastructure.http.jwt.GUserCredentials
 import uco.pensum.infrastructure.postgres.ProgramaRecord
 
-import scala.concurrent.{ExecutionContext, Future}
-
 trait ProgramServices extends LazyLogging {
 
-  implicit val executionContext: ExecutionContext
+  implicit val executionContext: Scheduler
   implicit val repository: PensumRepository
   implicit val googleDriveClient: GoogleDriveClient
 
   def agregarPrograma(
       programa: ProgramaAsignacion
-  )(implicit gUser: GUserCredentials): Future[Either[DomainError, Programa]] =
+  )(implicit gUser: GUserCredentials): Task[Either[DomainError, Programa]] =
     (for {
-      pd <- EitherT.fromEither[Future](Programa.validate(programa))
+      pd <- EitherT.fromEither[Task](Programa.validate(programa))
       _ <- OptionT(
         repository.programaRepository
           .buscarProgramaPorNombre(programa.nombre)
@@ -46,14 +46,14 @@ trait ProgramServices extends LazyLogging {
   def actualizarPrograma(
       id: String,
       programa: ProgramaActualizacion
-  )(implicit gUser: GUserCredentials): Future[Either[DomainError, Programa]] =
+  )(implicit gUser: GUserCredentials): Task[Either[DomainError, Programa]] =
     (for {
       original <- EitherT(
         repository.programaRepository
           .buscarProgramaPorId(id)
           .map(_.toRight(ProgramNotFound()))
       )
-      pd <- EitherT.fromEither[Future](
+      pd <- EitherT.fromEither[Task](
         Programa.validate(programa, Programa.fromRecord(original))
       )
       _ <- EitherT(
@@ -71,19 +71,19 @@ trait ProgramServices extends LazyLogging {
 
   def devolverProgramaPorId(
       programId: String
-  ): Future[Either[DomainError, ProgramaRecord]] =
+  ): Task[Either[DomainError, ProgramaRecord]] =
     EitherT(
       repository.programaRepository
         .buscarProgramaPorId(programId)
         .map(_.toRight(ProgramNotFound()))
     ).value
 
-  def devolverProgramas: Future[Seq[ProgramaRecord]] =
+  def devolverProgramas: Task[Seq[ProgramaRecord]] =
     repository.programaRepository.obtenerTodosLosProgramas
 
   def borrarPrograma(
       programaId: String
-  ): Future[Either[DomainError, ProgramaRecord]] =
+  ): Task[Either[DomainError, ProgramaRecord]] =
     (for {
       programa <- OptionT(
         repository.programaRepository.buscarProgramaPorId(programaId)

@@ -15,8 +15,9 @@ import uco.pensum.domain.errors.{
 import uco.pensum.infrastructure.config.GCredentials
 import cats.implicits._
 import akka.http.scaladsl.model.StatusCodes._
+import monix.eval.Task
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 class GoogleDriveClient(
@@ -54,7 +55,7 @@ class GoogleDriveClient(
       parentFolderName: Option[String]
   )(
       implicit executionContext: ExecutionContext
-  ): Future[Either[DomainError, File]] = {
+  ): Task[Either[DomainError, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)
 
@@ -63,7 +64,7 @@ class GoogleDriveClient(
     fileMetadata.setParents(parentFolderId.toList.asJava)
     fileMetadata.setMimeType("application/vnd.google-apps.folder")
 
-    Future(
+    Task(
       Try(
         service.files().create(fileMetadata).setFields("id, parents").execute()
       ).toEither.leftMap {
@@ -83,7 +84,7 @@ class GoogleDriveClient(
       folderId: String
   )(
       implicit executionContext: ExecutionContext
-  ): Future[Either[DomainError, File]] = {
+  ): Task[Either[DomainError, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)
 
@@ -91,7 +92,7 @@ class GoogleDriveClient(
     fileMetadata.setName(folderName)
     fileMetadata.setMimeType("application/vnd.google-apps.folder")
 
-    Future(
+    Task(
       Try(
         service.files().update(folderId, fileMetadata).setFields("id").execute()
       ).toEither.leftMap {
