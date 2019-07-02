@@ -5,6 +5,7 @@ import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
+import monix.execution.Scheduler
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.services.ComponenteDeFormacionServices
 import uco.pensum.infrastructure.http.dtos.{
@@ -14,7 +15,6 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.http.jwt.JWT
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 trait ComponenteDeFormacionRoutes
@@ -23,7 +23,7 @@ trait ComponenteDeFormacionRoutes
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val materializer: Materializer
   implicit val jwt: JWT
 
@@ -32,7 +32,7 @@ trait ComponenteDeFormacionRoutes
       post {
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
           entity(as[ComponenteDeFormacionAsignacion]) { componente =>
-            onComplete(agregarComponenteDeFormacion(componente)) {
+            onComplete(agregarComponenteDeFormacion(componente).runToFuture) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
                 complete(InternalServerError -> ErrorInterno())
@@ -57,7 +57,7 @@ trait ComponenteDeFormacionRoutes
   def listarComponentesDeFormacion =
     path("componente") {
       get {
-        onComplete(obtenerComponentesDeFormacion) {
+        onComplete(obtenerComponentesDeFormacion.runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -74,7 +74,7 @@ trait ComponenteDeFormacionRoutes
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
           entity(as[ComponenteDeFormacionActualizacion]) { componente =>
             onComplete(
-              actualizarComponenteDeFormacion(nombre, componente)
+              actualizarComponenteDeFormacion(nombre, componente).runToFuture
             ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
@@ -95,28 +95,7 @@ trait ComponenteDeFormacionRoutes
       }
   }
 
-  def borrarComponente: Route = path("componente" / Segment) { nombre =>
-    delete {
-      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-        onComplete(borrarComponente(nombre)) {
-          case Failure(ex) => {
-            logger.error(s"Exception: $ex")
-            complete(InternalServerError -> ErrorInterno())
-          }
-          case Success(response) =>
-            response.fold(
-              err =>
-                complete(
-                  BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
-                ),
-              pr => complete(OK -> pr.to[ComponenteDeFormacionRespuesta])
-            )
-        }
-      }
-    }
-  }
-
   val componentesRoutes
-    : Route = agregarComponenteDeFormacion ~ listarComponentesDeFormacion
+    : Route = agregarComponenteDeFormacion ~ listarComponentesDeFormacion ~ actualizarComponenteDeFormacion
 
 }

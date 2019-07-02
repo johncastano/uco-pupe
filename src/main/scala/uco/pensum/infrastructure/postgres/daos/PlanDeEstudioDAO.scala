@@ -1,11 +1,12 @@
 package uco.pensum.infrastructure.postgres.daos
 
+import monix.eval.Task
 import uco.pensum.infrastructure.postgres.{PlanDeEstudioRecord, tables}
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import slick.lifted.ProvenShape
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class PlanesDeEstudio(tag: Tag)
     extends Table[PlanDeEstudioRecord](tag, "plan_de_estudios") {
@@ -40,56 +41,66 @@ class PlanesDeEstudio(tag: Tag)
 abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new PlanesDeEstudio(_)) {
-  def buscarPorINP(inp: String): Future[Option[PlanDeEstudioRecord]] =
-    db.run(this.filter(_.inp === inp).result).map(_.headOption)
+  def buscarPorINP(inp: String): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      db.run(this.filter(_.inp === inp).result).map(_.headOption)
+    )
 
   def buscarPlanesDeEstudioPorProgramaId(
       programaId: String
-  ): Future[Seq[PlanDeEstudioRecord]] =
-    db.run(
-      this
-        .filter(
-          _.programaId === programaId
-        )
-        .result
+  ): Task[Seq[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      db.run(
+        this
+          .filter(
+            _.programaId === programaId
+          )
+          .result
+      )
     )
 
   def buscarPorProgramIdAndINP(
       inp: String,
       programId: String
-  ): Future[Option[PlanDeEstudioRecord]] =
-    db.run(
-      this
-        .filter(
-          pe => pe.inp === inp && pe.programaId === programId
-        )
-        .result
-        .map(_.headOption)
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      db.run(
+        this
+          .filter(
+            pe => pe.inp === inp && pe.programaId === programId
+          )
+          .result
+          .map(_.headOption)
+      )
     )
 
   def buscarPorIdAndProgramaId(
       id: String,
       programId: String
-  ): Future[Option[PlanDeEstudioRecord]] =
-    db.run(
-      this
-        .filter(pe => pe.id === id && pe.programaId === programId)
-        .result
-        .map(_.headOption)
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      db.run(
+        this
+          .filter(pe => pe.id === id && pe.programaId === programId)
+          .result
+          .map(_.headOption)
+      )
     )
 
   def almacenarOActualizar(
       record: PlanDeEstudioRecord
-  ): Future[Option[PlanDeEstudioRecord]] = {
-    db.run(
-      (this returning this).insertOrUpdate(record)
+  ): Task[Option[PlanDeEstudioRecord]] =
+    Task.fromFuture(
+      db.run(
+        (this returning this).insertOrUpdate(record)
+      )
     )
 
-  }
-
-  def eliminarPorId(id: String, programaId: String): Future[Int] =
-    db.run(
-      this.filter(pe => pe.id === id && pe.programaId === programaId).delete
+  def eliminarPorId(id: String, programaId: String): Task[Int] =
+    Task.fromFuture(
+      db.run(
+        this.filter(pe => pe.id === id && pe.programaId === programaId).delete
+      )
     )
 
 }

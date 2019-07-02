@@ -14,6 +14,7 @@ import uco.pensum.domain.errors.{
   ErrorInterno
 }
 import io.circe.java8.time._
+import monix.execution.Scheduler
 import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.domain.services.AsignaturaServices
 import uco.pensum.infrastructure.http.dtos.{
@@ -23,14 +24,14 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.http.jwt.JWT
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 trait AsignaturaRoutes extends Directives with AsignaturaServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val materializer: Materializer
   implicit val jwt: JWT
 
@@ -41,7 +42,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
           authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
             entity(as[AsignaturaAsignacion]) { asignatura =>
               onComplete(
-                agregarAsignatura(asignatura, programId, inp)(user.gCredentials)
+                agregarAsignatura(asignatura, programId, inp)(user.gCredentials).runToFuture
               ) {
                 case Failure(ex) => {
                   logger.error(s"Exception: $ex")
@@ -73,7 +74,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               asignarRequisitoAAsignatura(
                 codigoAsignatura,
                 requisito
-              )
+              ).runToFuture
             ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
@@ -105,7 +106,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                 codigoAsignatura,
                 requisitoId,
                 requisito
-              )
+              ).runToFuture
             ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
@@ -135,7 +136,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             onComplete(
               actualizarAsignatura(asignatura, programId, inp, codigo)(
                 user.gCredentials
-              )
+              ).runToFuture
             ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
@@ -163,7 +164,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
       delete {
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
           onComplete(
-            eliminarRequisitoAsignatura(asignatura, codigo)
+            eliminarRequisitoAsignatura(asignatura, codigo).runToFuture
           ) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
@@ -185,7 +186,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
   def asignaturaPorCodigo: Route =
     path("programa" / "planEstudio" / "asignatura" / Segment) { codigo =>
       get {
-        onComplete(asignaturaPorCodigo(codigo)) {
+        onComplete(asignaturaPorCodigo(codigo).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -202,7 +203,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     path("programa" / Segment / "planEstudio" / Segment / "asignatura") {
       (programId, inp) =>
         get {
-          onComplete(asignaturasPorInp(programId, inp)) {
+          onComplete(asignaturasPorInp(programId, inp).runToFuture) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())
@@ -221,7 +222,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     ) { (programId, inp, codigo) =>
       delete {
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-          onComplete(eliminarAsignatura(programId, inp, codigo)) {
+          onComplete(eliminarAsignatura(programId, inp, codigo).runToFuture) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())

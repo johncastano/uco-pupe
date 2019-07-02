@@ -1,13 +1,10 @@
 package uco.pensum.domain.services
 
 import cats.data.EitherT
-import cats.implicits._
 import com.google.api.services.drive.model.File
 import monix.eval.Task
 import uco.pensum.domain.errors.DomainError
 import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
-
-import scala.concurrent.ExecutionContext
 
 object GDriveService {
 
@@ -17,8 +14,7 @@ object GDriveService {
       parentFolderId: Option[String] = None,
       parentFolderName: Option[String] = None
   )(
-      implicit googleDriveClient: GoogleDriveClient,
-      executionContext: ExecutionContext
+      implicit googleDriveClient: GoogleDriveClient
   ): Task[Either[DomainError, File]] =
     googleDriveClient.createFolder(
       accessToken,
@@ -33,8 +29,7 @@ object GDriveService {
       accessToken: String,
       actualizar: Boolean
   )(
-      implicit googleDriveClient: GoogleDriveClient,
-      executionContext: ExecutionContext
+      implicit googleDriveClient: GoogleDriveClient
   ): Task[Either[DomainError, Unit]] = {
     if (actualizar)
       EitherT(googleDriveClient.updateFolderName(accessToken, nombre, folderId))

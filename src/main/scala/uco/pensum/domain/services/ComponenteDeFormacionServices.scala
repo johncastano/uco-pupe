@@ -3,6 +3,8 @@ package uco.pensum.domain.services
 import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import monix.eval.Task
+import monix.execution.Scheduler
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.{
   ComponenteDeFormacionExistente,
@@ -16,18 +18,16 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
 
-import scala.concurrent.{ExecutionContext, Future}
-
 trait ComponenteDeFormacionServices extends LazyLogging {
 
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val repository: PensumRepository
 
   def agregarComponenteDeFormacion(
       componente: ComponenteDeFormacionAsignacion
-  ): Future[Either[DomainError, ComponenteDeFormacion]] =
+  ): Task[Either[DomainError, ComponenteDeFormacion]] =
     (for {
-      cf <- EitherT.fromEither[Future](
+      cf <- EitherT.fromEither[Task](
         ComponenteDeFormacion.validar(componente)
       )
       _ <- OptionT(
@@ -41,20 +41,20 @@ trait ComponenteDeFormacionServices extends LazyLogging {
       )
     } yield cf.copy(id = cfr.id.some)).value
 
-  def obtenerComponentesDeFormacion: Future[Seq[ComponenteDeFormacionRecord]] =
+  def obtenerComponentesDeFormacion: Task[Seq[ComponenteDeFormacionRecord]] =
     repository.componenteDeFormacionRepository.obtenerTodosLosComponentesDeFormacion
 
   def actualizarComponenteDeFormacion(
       nombre: String,
       componente: ComponenteDeFormacionActualizacion
-  ): Future[DomainError Either ComponenteDeFormacion] =
+  ): Task[DomainError Either ComponenteDeFormacion] =
     (for {
       ori <- EitherT(
         repository.componenteDeFormacionRepository
           .buscarPorNombre(nombre)
           .map(_.toRight(ComponenteDeFormacionNoEncontrado()))
       )
-      c <- EitherT.fromEither[Future](
+      c <- EitherT.fromEither[Task](
         ComponenteDeFormacion
           .validar(componente, ComponenteDeFormacion.fromRecord(ori))
       )
@@ -62,19 +62,5 @@ trait ComponenteDeFormacionServices extends LazyLogging {
         repository.componenteDeFormacionRepository.actualizar(c)
       )
     } yield c).value
-
-  def borrarComponente(
-      nombre: String
-  ): Future[DomainError Either ComponenteDeFormacionRecord] =
-    (for {
-      g <- EitherT(
-        repository.componenteDeFormacionRepository
-          .buscarPorNombre(nombre)
-          .map(_.toRight(ComponenteDeFormacionNoEncontrado()))
-      )
-      _ <- EitherT.right[DomainError](
-        repository.componenteDeFormacionRepository.borrar(g.id)
-      )
-    } yield g).value
 
 }

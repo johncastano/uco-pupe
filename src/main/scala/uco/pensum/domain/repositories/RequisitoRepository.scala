@@ -1,10 +1,9 @@
 package uco.pensum.domain.repositories
 
+import monix.eval.Task
 import uco.pensum.domain.requisito.Requisito
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.RequisitoRecord
-
-import scala.concurrent.Future
 
 class RequisitoRepository(implicit val provider: PensumDatabase) {
   import uco.pensum.infrastructure.mapper.MapperRecords._
@@ -12,7 +11,7 @@ class RequisitoRepository(implicit val provider: PensumDatabase) {
   def almacenarRequisito(
       asignaturaCodigo: String,
       requisito: Requisito
-  ): Future[RequisitoRecord] =
+  ): Task[RequisitoRecord] =
     provider.requisitos.almacenar(
       (asignaturaCodigo, requisito).to[RequisitoRecord]
     )
@@ -20,14 +19,14 @@ class RequisitoRepository(implicit val provider: PensumDatabase) {
   def actualizarRequisito(
       asignaturaCodigo: String,
       requisito: Requisito
-  ): Future[RequisitoRecord] =
+  ): Task[RequisitoRecord] =
     provider.requisitos.actualizar(
       (asignaturaCodigo, requisito).to[RequisitoRecord]
     )
 
-  def buscarPorId(id: Int): Future[Option[RequisitoRecord]] =
+  def buscarPorId(id: Int): Task[Option[RequisitoRecord]] =
     provider.requisitos.buscarPorId(id)
 
-  def eliminarPorId(id: Int): Future[Int] = provider.requisitos.eliminar(id)
+  def eliminarPorId(id: Int): Task[Int] = provider.requisitos.eliminar(id)
 
 }

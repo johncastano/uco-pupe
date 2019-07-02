@@ -1,10 +1,11 @@
 package uco.pensum.infrastructure.postgres.daos
 
+import monix.eval.Task
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.infrastructure.postgres.{RequisitoRecord, tables}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class Requisitos(tag: Tag) extends Table[RequisitoRecord](tag, "requisitos") {
   def id = column[Int]("id", O.PrimaryKey, O.AutoInc)
@@ -38,23 +39,31 @@ abstract class RequisitosDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Requisitos(_)) {
 
-  def almacenar(requisito: RequisitoRecord): Future[RequisitoRecord] =
-    db.run(
-      this returning this
-        .map(_.id) into (
-          (
-              acc,
-              id
-          ) => acc.copy(id = id)
-      ) += requisito
+  def almacenar(requisito: RequisitoRecord): Task[RequisitoRecord] =
+    Task.fromFuture(
+      db.run(
+        this returning this
+          .map(_.id) into (
+            (
+                acc,
+                id
+            ) => acc.copy(id = id)
+        ) += requisito
+      )
     )
 
-  def actualizar(record: RequisitoRecord): Future[RequisitoRecord] =
-    db.run(this.filter(_.id === record.id).update(record)).map(_ => record)
+  def actualizar(record: RequisitoRecord): Task[RequisitoRecord] =
+    Task.fromFuture(
+      db.run(this.filter(_.id === record.id).update(record)).map(_ => record)
+    )
 
-  def buscarPorId(id: Int): Future[Option[RequisitoRecord]] =
-    db.run(this.filter(_.id === id).result).map(_.headOption)
+  def buscarPorId(id: Int): Task[Option[RequisitoRecord]] =
+    Task.fromFuture(
+      db.run(this.filter(_.id === id).result).map(_.headOption)
+    )
 
-  def eliminar(id: Int): Future[Int] = db.run(this.filter(_.id === id).delete)
+  def eliminar(id: Int): Task[Int] = Task.fromFuture(
+    db.run(this.filter(_.id === id).delete)
+  )
 
 }

@@ -1,5 +1,6 @@
 package uco.pensum.infrastructure.postgres.daos
 
+import monix.eval.Task
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.infrastructure.postgres.{
@@ -7,7 +8,7 @@ import uco.pensum.infrastructure.postgres.{
   tables
 }
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class PlanDeEstudioAsignaturas(tag: Tag)
     extends Table[PlanDeEstudioAsignaturaRecord](
@@ -38,18 +39,24 @@ abstract class PlanDeEstudioAsignaturasDAO(db: PostgresProfile.backend.Database)
     implicit ec: ExecutionContext
 ) extends TableQuery(new PlanDeEstudioAsignaturas(_)) {
 
-  def buscarPorId(id: String): Future[Option[PlanDeEstudioAsignaturaRecord]] =
-    db.run(this.filter(_.id === id).result).map(_.headOption)
+  def buscarPorId(id: String): Task[Option[PlanDeEstudioAsignaturaRecord]] =
+    Task.fromFuture(
+      db.run(this.filter(_.id === id).result).map(_.headOption)
+    )
 
   def almacenar(
       planDeEstudioAsignatura: PlanDeEstudioAsignaturaRecord
-  ): Future[PlanDeEstudioAsignaturaRecord] =
-    db.run(
-      this returning this
-        .map(_.id) into ((acc, id) => acc.copy(id = id)) += planDeEstudioAsignatura
+  ): Task[PlanDeEstudioAsignaturaRecord] =
+    Task.fromFuture(
+      db.run(
+        this returning this
+          .map(_.id) into ((acc, id) => acc.copy(id = id)) += planDeEstudioAsignatura
+      )
     )
 
-  def eliminarPorId(id: String): Future[Int] =
-    db.run(this.filter(_.id === id).delete)
+  def eliminarPorId(id: String): Task[Int] =
+    Task.fromFuture(
+      db.run(this.filter(_.id === id).delete)
+    )
 
 }

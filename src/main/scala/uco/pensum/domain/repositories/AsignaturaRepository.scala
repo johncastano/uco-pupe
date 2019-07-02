@@ -4,33 +4,25 @@ import monix.eval.Task
 import uco.pensum.domain.asignatura.Asignatura
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.{
-  AsignaturaConComponenteRecord,
   AsignaturaConRequisitos,
   AsignaturaRecord
 }
 
-import scala.concurrent.{ExecutionContext, Future}
-
 class AsignaturaRepository(
-    implicit val provider: PensumDatabase,
-    ec: ExecutionContext
+    implicit val provider: PensumDatabase
 ) {
   import uco.pensum.infrastructure.mapper.MapperRecords._
 
   def almacenarAsignatura(asignatura: Asignatura): Task[AsignaturaRecord] =
-    Task.fromFuture(
-      provider.asignaturas.almacenar(asignatura.to[AsignaturaRecord])
-    )
+    provider.asignaturas.almacenar(asignatura.to[AsignaturaRecord])
 
   def actualizarAsignatura(asignatura: Asignatura): Task[AsignaturaRecord] =
-    Task.fromFuture(
-      provider.asignaturas.actualizar(asignatura.to[AsignaturaRecord])
-    )
+    provider.asignaturas.actualizar(asignatura.to[AsignaturaRecord])
 
   def buscarAsignaturaPorCodigo(
       codigo: String
   ): Task[Option[AsignaturaRecord]] =
-    Task.fromFuture(provider.asignaturas.encontrarPorCodigo(codigo))
+    provider.asignaturas.encontrarPorCodigo(codigo)
 
   def buscarAsignaturaPorInpYCodigo(
       programaId: String,
@@ -38,14 +30,13 @@ class AsignaturaRepository(
       codigo: String
   ): Task[Option[AsignaturaConRequisitos]] = {
     for {
-      asignatura <- Task.fromFuture(
-        provider.asignaturas.encontrarPorInpYCodigo(
-          programaId,
-          inp,
-          codigo
-        )
+      asignatura <- provider.asignaturas.encontrarPorInpYCodigo(
+        programaId,
+        inp,
+        codigo
       )
-      requisitos <- Task.fromFuture(provider.asignaturas.requisitos(codigo))
+
+      requisitos <- provider.asignaturas.requisitos(codigo)
     } yield asignatura.map(a => (a, requisitos).to[AsignaturaConRequisitos])
 
   }
@@ -54,10 +45,8 @@ class AsignaturaRepository(
       codigo: String
   ): Task[Option[AsignaturaConRequisitos]] =
     for {
-      asignatura <- Task.fromFuture(
-        provider.asignaturas.encontrarInfoPorCodigo(codigo)
-      )
-      requisitos <- Task.fromFuture(provider.asignaturas.requisitos(codigo))
+      asignatura <- provider.asignaturas.encontrarInfoPorCodigo(codigo)
+      requisitos <- provider.asignaturas.requisitos(codigo)
     } yield asignatura.map(a => (a, requisitos).to[AsignaturaConRequisitos])
 
   def obtenerAsignaturasPorINPYPrograma(
@@ -66,24 +55,19 @@ class AsignaturaRepository(
   ): Task[List[AsignaturaConRequisitos]] = {
     import cats.implicits._
     for {
-      asignaturas: List[AsignaturaConComponenteRecord] <- Task.fromFuture(
-        provider.asignaturas
-          .obtenerAsignaturasPorINPYPrograma(programaId, inp)
-      )
+      asignaturas <- provider.asignaturas
+        .obtenerAsignaturasPorINPYPrograma(programaId, inp)
       awr <- asignaturas.traverse(
         asignatura =>
-          Task.fromFuture(
-            provider.asignaturas
-              .requisitos(asignatura.codigoAsignatura)
-              .map(
-                requisitos =>
-                  (asignatura, requisitos).to[AsignaturaConRequisitos]
-              )
-          )
+          provider.asignaturas
+            .requisitos(asignatura.codigoAsignatura)
+            .map(
+              requisitos => (asignatura, requisitos).to[AsignaturaConRequisitos]
+            )
       )
     } yield awr
   }
 
   def eliminarPorCodigo(codigo: String): Task[Int] =
-    Task.fromFuture(provider.asignaturas.eliminarPorCodigo(codigo))
+    provider.asignaturas.eliminarPorCodigo(codigo)
 }

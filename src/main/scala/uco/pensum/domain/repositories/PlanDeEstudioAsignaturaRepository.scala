@@ -1,9 +1,8 @@
 package uco.pensum.domain.repositories
 
+import monix.eval.Task
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.PlanDeEstudioAsignaturaRecord
-
-import scala.concurrent.Future
 
 class PlanDeEstudioAsignaturaRepository(
     implicit val provider: PensumDatabase
@@ -13,7 +12,7 @@ class PlanDeEstudioAsignaturaRepository(
       planDeEstudioId: String,
       codigoAsignatura: String,
       gDriveFolderId: String
-  ): Future[PlanDeEstudioAsignaturaRecord] =
+  ): Task[PlanDeEstudioAsignaturaRecord] =
     provider.planesDeEstudioAsignatura.almacenar(
       PlanDeEstudioAsignaturaRecord(
         id = gDriveFolderId,
@@ -22,6 +21,6 @@ class PlanDeEstudioAsignaturaRepository(
       )
     )
 
-  def buscarPorId(id: String): Future[Option[PlanDeEstudioAsignaturaRecord]] =
+  def buscarPorId(id: String): Task[Option[PlanDeEstudioAsignaturaRecord]] =
     provider.planesDeEstudioAsignatura.buscarPorId(id)
 }

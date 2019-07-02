@@ -1,5 +1,6 @@
 package uco.pensum.infrastructure.postgres.daos
 
+import monix.eval.Task
 import uco.pensum.infrastructure.postgres.{
   AsignaturaConComponenteRecord,
   AsignaturaRecord,
@@ -9,7 +10,7 @@ import uco.pensum.infrastructure.postgres.{
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class Asignaturas(tag: Tag)
     extends Table[AsignaturaRecord](tag, "asignaturas") {
@@ -54,128 +55,144 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new Asignaturas(_)) {
 
-  def encontrarPorCodigo(codigo: String): Future[Option[AsignaturaRecord]] =
-    db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
-
-  def almacenar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
-    db.run(
-      this returning this
-        .map(_.codigo) into ((acc, id) => acc.copy(codigo = id)) += asignatura
+  def encontrarPorCodigo(codigo: String): Task[Option[AsignaturaRecord]] =
+    Task.fromFuture(
+      db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
     )
 
-  def actualizar(asignatura: AsignaturaRecord): Future[AsignaturaRecord] =
-    db.run(
-        this.filter(_.codigo === asignatura.codigo).update(asignatura)
+  def almacenar(asignatura: AsignaturaRecord): Task[AsignaturaRecord] =
+    Task.fromFuture(
+      db.run(
+        this returning this
+          .map(_.codigo) into ((acc, id) => acc.copy(codigo = id)) += asignatura
       )
-      .map(_ => asignatura)
+    )
+
+  def actualizar(asignatura: AsignaturaRecord): Task[AsignaturaRecord] =
+    Task.fromFuture(
+      db.run(
+          this.filter(_.codigo === asignatura.codigo).update(asignatura)
+        )
+        .map(_ => asignatura)
+    )
 
   def requisitos(
       codigo: String
-  ): Future[List[RequisitoRecord]] =
-    db.run((for {
-      (_, requisitos) <- (tables.asignaturas join tables.requisitos on (_.codigo === _.codigoAsignatura))
-        .filter {
-          case (asignatura, _) => asignatura.codigo === codigo
-        }
-    } yield requisitos).result.map(_.toList))
+  ): Task[List[RequisitoRecord]] =
+    Task.fromFuture(
+      db.run((for {
+        (_, requisitos) <- (tables.asignaturas join tables.requisitos on (_.codigo === _.codigoAsignatura))
+          .filter {
+            case (asignatura, _) => asignatura.codigo === codigo
+          }
+      } yield requisitos).result.map(_.toList))
+    )
 
   def encontrarInfoPorCodigo(
       codigo: String
-  ): Future[Option[AsignaturaConComponenteRecord]] =
-    db.run(
-      (for {
-        (
-          ((asignaturas, planDeEstudioAsignaturas), planesDeEstudio),
-          componentesDeFormacion
-        ) <- tables.asignaturas
-          .filter(_.codigo === codigo) join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.planesDeEstudio on (_._2.planDeEstudioID === _.id) join tables.componentesDeFormacion on (_._1._1.componenteDeFormacionId === _.id)
-      } yield
-        (
-          asignaturas.codigo,
-          asignaturas.nombre,
-          asignaturas.creditos,
-          planesDeEstudio.inp,
-          asignaturas.horasTeoricas,
-          asignaturas.horasLaboratorio,
-          asignaturas.horasPracticas,
-          asignaturas.trabajoDelEstudiante,
-          asignaturas.nivel,
-          asignaturas.componenteDeFormacionId,
-          componentesDeFormacion.nombre,
-          componentesDeFormacion.abreviatura,
-          componentesDeFormacion.color,
-          planDeEstudioAsignaturas.id,
-          asignaturas.fechaDeCreacion,
-          asignaturas.fechaDeModificacion
-        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
+  ): Task[Option[AsignaturaConComponenteRecord]] =
+    Task.fromFuture(
+      db.run(
+        (for {
+          (
+            ((asignaturas, planDeEstudioAsignaturas), planesDeEstudio),
+            componentesDeFormacion
+          ) <- tables.asignaturas
+            .filter(_.codigo === codigo) join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.planesDeEstudio on (_._2.planDeEstudioID === _.id) join tables.componentesDeFormacion on (_._1._1.componenteDeFormacionId === _.id)
+        } yield
+          (
+            asignaturas.codigo,
+            asignaturas.nombre,
+            asignaturas.creditos,
+            planesDeEstudio.inp,
+            asignaturas.horasTeoricas,
+            asignaturas.horasLaboratorio,
+            asignaturas.horasPracticas,
+            asignaturas.trabajoDelEstudiante,
+            asignaturas.nivel,
+            asignaturas.componenteDeFormacionId,
+            componentesDeFormacion.nombre,
+            componentesDeFormacion.abreviatura,
+            componentesDeFormacion.color,
+            planDeEstudioAsignaturas.id,
+            asignaturas.fechaDeCreacion,
+            asignaturas.fechaDeModificacion
+          ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
+      )
     )
 
   def encontrarPorInpYCodigo(
       programaId: String,
       inp: String,
       codigo: String
-  ): Future[Option[AsignaturaConComponenteRecord]] =
-    db.run(
-      (for {
-        pe <- tables.planesDeEstudio.filter(
-          pe => pe.inp === inp && pe.programaId === programaId
-        )
-        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
-        if a.codigo === codigo && pea.planDeEstudioID === pe.id
-      } yield
-        (
-          a.codigo,
-          a.nombre,
-          a.creditos,
-          pe.inp,
-          a.horasTeoricas,
-          a.horasLaboratorio,
-          a.horasPracticas,
-          a.trabajoDelEstudiante,
-          a.nivel,
-          a.componenteDeFormacionId,
-          cdf.nombre,
-          cdf.abreviatura,
-          cdf.color,
-          pea.id,
-          a.fechaDeCreacion,
-          a.fechaDeModificacion
-        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
+  ): Task[Option[AsignaturaConComponenteRecord]] =
+    Task.fromFuture(
+      db.run(
+        (for {
+          pe <- tables.planesDeEstudio.filter(
+            pe => pe.inp === inp && pe.programaId === programaId
+          )
+          ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+          if a.codigo === codigo && pea.planDeEstudioID === pe.id
+        } yield
+          (
+            a.codigo,
+            a.nombre,
+            a.creditos,
+            pe.inp,
+            a.horasTeoricas,
+            a.horasLaboratorio,
+            a.horasPracticas,
+            a.trabajoDelEstudiante,
+            a.nivel,
+            a.componenteDeFormacionId,
+            cdf.nombre,
+            cdf.abreviatura,
+            cdf.color,
+            pea.id,
+            a.fechaDeCreacion,
+            a.fechaDeModificacion
+          ).mapTo[AsignaturaConComponenteRecord]).result.map(_.headOption)
+      )
     )
 
   def obtenerAsignaturasPorINPYPrograma(
       programaId: String,
       inp: String
-  ): Future[List[AsignaturaConComponenteRecord]] =
-    db.run(
-      (for {
-        pe <- tables.planesDeEstudio.filter(
-          pe => pe.inp === inp && pe.programaId === programaId
-        )
-        ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
-        if pea.planDeEstudioID === pe.id
-      } yield
-        (
-          a.codigo,
-          a.nombre,
-          a.creditos,
-          pe.inp,
-          a.horasTeoricas,
-          a.horasLaboratorio,
-          a.horasPracticas,
-          a.trabajoDelEstudiante,
-          a.nivel,
-          a.componenteDeFormacionId,
-          cdf.nombre,
-          cdf.abreviatura,
-          cdf.color,
-          pea.id,
-          a.fechaDeCreacion,
-          a.fechaDeModificacion
-        ).mapTo[AsignaturaConComponenteRecord]).result.map(_.toList)
+  ): Task[List[AsignaturaConComponenteRecord]] =
+    Task.fromFuture(
+      db.run(
+        (for {
+          pe <- tables.planesDeEstudio.filter(
+            pe => pe.inp === inp && pe.programaId === programaId
+          )
+          ((a, pea), cdf) <- tables.asignaturas join tables.planDeEstudioAsignaturas on (_.codigo === _.codigoAsignatura) join tables.componentesDeFormacion on (_._1.componenteDeFormacionId === _.id)
+          if pea.planDeEstudioID === pe.id
+        } yield
+          (
+            a.codigo,
+            a.nombre,
+            a.creditos,
+            pe.inp,
+            a.horasTeoricas,
+            a.horasLaboratorio,
+            a.horasPracticas,
+            a.trabajoDelEstudiante,
+            a.nivel,
+            a.componenteDeFormacionId,
+            cdf.nombre,
+            cdf.abreviatura,
+            cdf.color,
+            pea.id,
+            a.fechaDeCreacion,
+            a.fechaDeModificacion
+          ).mapTo[AsignaturaConComponenteRecord]).result.map(_.toList)
+      )
     )
 
-  def eliminarPorCodigo(codigo: String): Future[Int] =
-    db.run(this.filter(_.codigo === codigo).delete)
+  def eliminarPorCodigo(codigo: String): Task[Int] =
+    Task.fromFuture(
+      db.run(this.filter(_.codigo === codigo).delete)
+    )
 
 }

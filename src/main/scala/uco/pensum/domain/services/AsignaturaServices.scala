@@ -4,6 +4,7 @@ import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import monix.eval.Task
+import monix.execution.Scheduler
 import uco.pensum.domain.asignatura._
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors._
@@ -20,12 +21,11 @@ import uco.pensum.infrastructure.http.googleApi.GoogleDriveClient
 import uco.pensum.infrastructure.http.jwt.GUserCredentials
 import uco.pensum.infrastructure.postgres.AsignaturaConRequisitos
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 trait AsignaturaServices extends LazyLogging {
 
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val repository: PensumRepository
   implicit val googleDriveClient: GoogleDriveClient
 
@@ -35,7 +35,7 @@ trait AsignaturaServices extends LazyLogging {
       inp: String
   )(
       implicit gUser: GUserCredentials
-  ): Future[Either[DomainError, (Asignatura, String)]] =
+  ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
       pe <- EitherT(
         repository.planDeEstudioRepository
@@ -81,7 +81,7 @@ trait AsignaturaServices extends LazyLogging {
   def asignaturasPorInp(
       programId: String,
       inp: String
-  ): Future[List[AsignaturaConRequisitos]] =
+  ): Task[List[AsignaturaConRequisitos]] =
     repository.asignaturaRepository
       .obtenerAsignaturasPorINPYPrograma(programId, inp)
       .map(a => a.sortBy(_.nivel))
@@ -93,31 +93,31 @@ trait AsignaturaServices extends LazyLogging {
       codigo: String
   )(
       implicit gUser: GUserCredentials
-  ): Future[Either[DomainError, (Asignatura, String)]] =
+  ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
-      pe <- EitherT.fromOptionF(
+      pe <- EitherT(
         repository.planDeEstudioRepository
-          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId),
-        CurriculumNotFound()
+          .buscarPlanDeEstudioPorINPYProgramaId(inp, programId)
+          .map(_.toRight(CurriculumNotFound()))
       )
-      cf <- EitherT.fromOptionF(
+      cf <- EitherT(
         repository.componenteDeFormacionRepository
-          .buscarPorNombre(asignatura.componenteDeFormacion),
-        ComponenteDeFormacionNoExiste()
+          .buscarPorNombre(asignatura.componenteDeFormacion)
+          .map(_.toRight(ComponenteDeFormacionNoExiste()))
       )
-      oas <- EitherT.fromOptionF(
+      oas <- EitherT(
         repository.asignaturaRepository
-          .buscarFullAsignaturaPorCodigo(codigo),
-        AsignaturaNotFound()
+          .buscarFullAsignaturaPorCodigo(codigo)
+          .map(_.toRight(AsignaturaNotFound()))
       )
-      av <- EitherT.fromEither[Future](
+      av <- EitherT.fromEither[Task](
         Asignatura.validar(
           asignatura,
           original = oas,
           componenteDeFormacion = ComponenteDeFormacion.fromRecord(cf)
         )
       )
-      upd <- EitherT.fromEither[Future](
+      upd <- EitherT.fromEither[Task](
         PlanDeEstudio.recalcularCampos(pe, oas, av).asRight[DomainError]
       )
       _ <- OptionT(
@@ -140,14 +140,14 @@ trait AsignaturaServices extends LazyLogging {
   def asignarRequisitoAAsignatura(
       asignaturaCodigo: String,
       dto: RequisitoAsignacion
-  ): Future[Either[DomainError, (Asignatura, String)]] =
+  ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
-      a <- EitherT.fromOptionF(
+      a <- EitherT(
         repository.asignaturaRepository
-          .buscarFullAsignaturaPorCodigo(asignaturaCodigo),
-        AsignaturaInexistente()
+          .buscarFullAsignaturaPorCodigo(asignaturaCodigo)
+          .map(_.toRight(AsignaturaInexistente()))
       )
-      r <- EitherT.fromEither[Future](Requisito.validar(dto))
+      r <- EitherT.fromEither[Task](Requisito.validar(dto))
       _ <- EitherT(
         repository.asignaturaRepository
           .buscarAsignaturaPorCodigo(r.codigoAsignatura)
@@ -168,7 +168,7 @@ trait AsignaturaServices extends LazyLogging {
       rr <- EitherT.right[DomainError](
         repository.requisitoRepository.almacenarRequisito(asignaturaCodigo, r)
       )
-      asi <- EitherT.fromEither[Future](
+      asi <- EitherT.fromEither[Task](
         Asignatura
           .agregarRequisito(a, r.copy(id = Some(rr.id)))
           .asRight[DomainError]
@@ -182,24 +182,25 @@ trait AsignaturaServices extends LazyLogging {
       asignaturaCodigo: String,
       requisitoId: String,
       dto: RequisitoActualizacion
-  ): Future[Either[DomainError, (Asignatura, String)]] =
+  ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
       rid <- EitherT(
-        Future.successful(
+        Task(
           Try(requisitoId.toInt).toOption.toRight(IdRequisitoInvalido())
         )
       )
-      a <- EitherT.fromOptionF(
+      a <- EitherT(
         repository.asignaturaRepository
-          .buscarFullAsignaturaPorCodigo(asignaturaCodigo),
-        AsignaturaInexistente()
+          .buscarFullAsignaturaPorCodigo(asignaturaCodigo)
+          .map(_.toRight(AsignaturaInexistente()))
       )
-      req <- EitherT.fromOptionF(
-        repository.requisitoRepository.buscarPorId(rid),
-        RequisitoNoEncontrado()
+      req <- EitherT(
+        repository.requisitoRepository
+          .buscarPorId(rid)
+          .map(_.toRight(RequisitoNoEncontrado()))
       )
-      rvalid <- EitherT.fromEither[Future](Requisito.validar(dto, req))
-      asi <- EitherT.fromEither[Future](
+      rvalid <- EitherT.fromEither[Task](Requisito.validar(dto, req))
+      asi <- EitherT.fromEither[Task](
         Asignatura.modificarRequisito(a, rvalid).asRight[DomainError]
       )
       _ <- EitherT.right[DomainError](
@@ -214,23 +215,24 @@ trait AsignaturaServices extends LazyLogging {
   def eliminarRequisitoAsignatura(
       asignaturaCodigo: String,
       requisitoId: String
-  ): Future[Either[DomainError, (Asignatura, String)]] =
+  ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
       rid <- EitherT(
-        Future.successful(
+        Task(
           Try(requisitoId.toInt).toOption.toRight(IdRequisitoInvalido())
         )
       )
-      a <- EitherT.fromOptionF(
+      a <- EitherT(
         repository.asignaturaRepository
-          .buscarFullAsignaturaPorCodigo(asignaturaCodigo),
-        AsignaturaInexistente()
+          .buscarFullAsignaturaPorCodigo(asignaturaCodigo)
+          .map(_.toRight(AsignaturaInexistente()))
       )
-      req <- EitherT.fromOptionF(
-        repository.requisitoRepository.buscarPorId(rid),
-        RequisitoNoEncontrado()
+      req <- EitherT(
+        repository.requisitoRepository
+          .buscarPorId(rid)
+          .map(_.toRight(RequisitoNoEncontrado()))
       )
-      asi <- EitherT.fromEither[Future](
+      asi <- EitherT.fromEither[Task](
         Asignatura
           .eliminarRequisito(a, Requisito.fromRecord(req))
           .asRight[DomainError]
@@ -245,14 +247,14 @@ trait AsignaturaServices extends LazyLogging {
 
   def asignaturaPorCodigo(
       codigo: String
-  ): Future[Option[AsignaturaConRequisitos]] =
+  ): Task[Option[AsignaturaConRequisitos]] =
     repository.asignaturaRepository.buscarFullAsignaturaPorCodigo(codigo)
 
   def eliminarAsignatura(
       programaId: String,
       planDeEstudioId: String,
       codigo: String
-  ): Future[Either[DomainError, AsignaturaConRequisitos]] = {
+  ): Task[Either[DomainError, AsignaturaConRequisitos]] = {
     (for {
       a <- EitherT(
         repository.asignaturaRepository
@@ -264,7 +266,7 @@ trait AsignaturaServices extends LazyLogging {
           .buscarPlanDeEstudioPorIdYProgramaId(planDeEstudioId, programaId)
           .map(_.toRight(CurriculumNotFound()))
       )
-      pdea <- EitherT.fromEither[Future](
+      pdea <- EitherT.fromEither[Task](
         PlanDeEstudio
           .restarCampos(pe, Asignatura.fromRecord(a))
           .asRight[DomainError]

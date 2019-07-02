@@ -1,10 +1,11 @@
 package uco.pensum.infrastructure.postgres.daos
 
+import monix.eval.Task
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.infrastructure.postgres.UsuarioRecord
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class Usuario(tag: Tag) extends Table[UsuarioRecord](tag, "usuario") {
 
@@ -34,15 +35,21 @@ abstract class UsuarioDAO(db: PostgresProfile.backend.Database)(
 
   def almacenarOActualizar(
       record: UsuarioRecord
-  ): Future[Option[UsuarioRecord]] =
-    db.run(
-      (this returning this).insertOrUpdate(record)
+  ): Task[Option[UsuarioRecord]] =
+    Task.fromFuture(
+      db.run(
+        (this returning this).insertOrUpdate(record)
+      )
     )
 
-  def encontrarPorId(id: Int): Future[Option[UsuarioRecord]] =
-    db.run(this.filter(_.id === id).result).map(_.headOption)
+  def encontrarPorId(id: Int): Task[Option[UsuarioRecord]] =
+    Task.fromFuture(
+      db.run(this.filter(_.id === id).result).map(_.headOption)
+    )
 
-  def eliminarPorId(id: Int): Future[Int] =
-    db.run(this.filter(_.id === id).delete)
+  def eliminarPorId(id: Int): Task[Int] =
+    Task.fromFuture(
+      db.run(this.filter(_.id === id).delete)
+    )
 
 }

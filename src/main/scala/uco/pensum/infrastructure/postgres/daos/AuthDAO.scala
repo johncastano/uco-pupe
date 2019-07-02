@@ -1,10 +1,11 @@
 package uco.pensum.infrastructure.postgres.daos
 
+import monix.eval.Task
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.infrastructure.postgres.{AuthRecord, tables}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class Auth(tag: Tag) extends Table[AuthRecord](tag, "auth") {
 
@@ -35,15 +36,21 @@ abstract class AuthDAO(db: PostgresProfile.backend.Database)(
 
   def almacenarOActualizar(
       record: AuthRecord
-  ): Future[Option[AuthRecord]] =
-    db.run(
-      (this returning this).insertOrUpdate(record)
+  ): Task[Option[AuthRecord]] =
+    Task.fromFuture(
+      db.run(
+        (this returning this).insertOrUpdate(record)
+      )
     )
 
-  def encontrarPorCorreo(correo: String): Future[Option[AuthRecord]] =
-    db.run(this.filter(_.correo === correo).result).map(_.headOption)
+  def encontrarPorCorreo(correo: String): Task[Option[AuthRecord]] =
+    Task.fromFuture(
+      db.run(this.filter(_.correo === correo).result).map(_.headOption)
+    )
 
-  def eliminarPorId(correo: String): Future[Int] =
-    db.run(this.filter(_.correo === correo).delete)
+  def eliminarPorId(correo: String): Task[Int] =
+    Task.fromFuture(
+      db.run(this.filter(_.correo === correo).delete)
+    )
 
 }

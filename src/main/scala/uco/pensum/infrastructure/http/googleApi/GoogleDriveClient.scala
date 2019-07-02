@@ -17,7 +17,6 @@ import cats.implicits._
 import akka.http.scaladsl.model.StatusCodes._
 import monix.eval.Task
 
-import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 class GoogleDriveClient(
@@ -53,8 +52,6 @@ class GoogleDriveClient(
       folderName: String,
       parentFolderId: Option[String],
       parentFolderName: Option[String]
-  )(
-      implicit executionContext: ExecutionContext
   ): Task[Either[DomainError, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)
@@ -82,8 +79,6 @@ class GoogleDriveClient(
       accessToken: String,
       folderName: String,
       folderId: String
-  )(
-      implicit executionContext: ExecutionContext
   ): Task[Either[DomainError, File]] = {
 
     val service: Drive = prepareGoogleDrive(accessToken)

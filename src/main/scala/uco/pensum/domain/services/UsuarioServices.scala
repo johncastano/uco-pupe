@@ -2,8 +2,10 @@ package uco.pensum.domain.services
 
 import akka.http.scaladsl.server.directives.Credentials
 import cats.data.{EitherT, OptionT}
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
+import monix.eval
+import monix.eval.Task
+import monix.execution.Scheduler
 import uco.pensum.domain.errors.{DomainError, TokenIncorrecto, UsuarioExistente}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.usuario.{GToken, Usuario}
@@ -11,20 +13,20 @@ import uco.pensum.infrastructure.http.dtos.{Credenciales, UsuarioRegistro}
 import uco.pensum.infrastructure.http.jwt.{GUserCredentials, GoogleToken, JWT}
 import uco.pensum.infrastructure.postgres.AuthRecord
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 trait UsuarioServices extends LazyLogging {
 
   implicit val repository: PensumRepository
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val jwt: JWT
   implicit val googleToken: GoogleToken
 
   def registrarUsuario(
       usuario: UsuarioRegistro
-  ): Future[Either[DomainError, Usuario]] =
+  ): Task[Either[DomainError, Usuario]] =
     (for {
-      usu <- EitherT.fromEither[Future](Usuario.validate(usuario))
+      usu <- EitherT.fromEither[eval.Task](Usuario.validate(usuario))
       _ <- OptionT(repository.authRepository.buscarCorreo(usu.correo))
         .map(_ => UsuarioExistente())
         .toLeft(())
@@ -39,10 +41,10 @@ trait UsuarioServices extends LazyLogging {
 
   def login2(
       credenciales: Credenciales
-  ): Future[Either[DomainError, GUserCredentials]] =
+  ): eval.Task[Either[DomainError, GUserCredentials]] =
     (for {
-      gToken <- EitherT.fromEither[Future](GToken.validate(credenciales))
-      validUser <- EitherT.fromEither[Future] {
+      gToken <- EitherT.fromEither[eval.Task](GToken.validate(credenciales))
+      validUser <- EitherT.fromEither[eval.Task] {
         googleToken
           .verifyToken(gToken.tokenId, gToken.accesToken)
           .toRight[DomainError](TokenIncorrecto())
@@ -65,9 +67,9 @@ trait UsuarioServices extends LazyLogging {
         OptionT(repository.authRepository.buscarCorreo(correo))
           .filter(record => cp.verify(record.password))
           .value
-      case _ => Future.successful(None)
+      case _ => Task(None)
     }
 
-  }
+  }.runToFuture
 
 }

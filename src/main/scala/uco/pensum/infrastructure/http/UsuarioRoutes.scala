@@ -8,25 +8,25 @@ import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import io.circe.java8.time._
+import monix.execution.Scheduler
 import uco.pensum.domain.errors.{ErrorGenerico, ErrorInterno}
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.domain.services.UsuarioServices
 import uco.pensum.infrastructure.http.dtos.{
   Credenciales,
+  UsuarioGoogle,
   UsuarioRegistro,
-  UsuarioRespuesta,
-  UsuarioGoogle
+  UsuarioRespuesta
 }
 import uco.pensum.infrastructure.http.jwt.JWT
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val repository: PensumRepository
   implicit val materializer: Materializer
   implicit val jwt: JWT
@@ -34,7 +34,7 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
   def agregarUsuario: Route = path("usuario") {
     post {
       entity(as[UsuarioRegistro]) { usuario =>
-        onComplete(registrarUsuario(usuario)) {
+        onComplete(registrarUsuario(usuario).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -63,7 +63,7 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
   def usuarioLogin2: Route = path("usuario" / "login2") {
     post {
       entity(as[Credenciales]) { credentials =>
-        onComplete(login2(credentials)) {
+        onComplete(login2(credentials).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())

@@ -11,7 +11,6 @@ import uco.pensum.infrastructure.http.dtos.{
   ProgramaAsignacion
 }
 import cats.data.{EitherT, OptionT}
-import cats.implicits._
 import com.typesafe.scalalogging.LazyLogging
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -22,7 +21,7 @@ import uco.pensum.infrastructure.postgres.ProgramaRecord
 
 trait ProgramServices extends LazyLogging {
 
-  implicit val executionContext: Scheduler
+  implicit val scheduler: Scheduler
   implicit val repository: PensumRepository
   implicit val googleDriveClient: GoogleDriveClient
 

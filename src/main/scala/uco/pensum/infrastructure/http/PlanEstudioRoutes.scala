@@ -11,6 +11,7 @@ import uco.pensum.domain.errors.{
   ErrorInterno
 }
 import io.circe.java8.time._
+import monix.execution.Scheduler
 import uco.pensum.domain.services.PlanEstudioServices
 import uco.pensum.infrastructure.http.dtos.{
   PlanDeEstudioAsignacion,
@@ -18,14 +19,13 @@ import uco.pensum.infrastructure.http.dtos.{
 }
 import uco.pensum.infrastructure.http.jwt.JWT
 
-import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val executionContext: ExecutionContext
+  implicit val scheduler: Scheduler
   implicit val materializer: Materializer
   implicit val jwt: JWT
 
@@ -35,7 +35,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
           entity(as[PlanDeEstudioAsignacion]) { planDeEstudio =>
             onComplete(
-              agregarPlanDeEstudio(planDeEstudio, programId)(user.gCredentials)
+              agregarPlanDeEstudio(planDeEstudio, programId)(user.gCredentials).runToFuture
             ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")
@@ -58,7 +58,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
   def planDeEstudioPorInp: Route =
     path("programa" / Segment / "planEstudio" / Segment) { (programId, inp) =>
       get {
-        onComplete(planDeEstudioPorInp(programId, inp)) {
+        onComplete(planDeEstudioPorInp(programId, inp).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -74,7 +74,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
   def planesDeEstudio: Route = path("programa" / Segment / "planEstudio") {
     programId =>
       get {
-        onComplete(planesDeEstudio(programId)) {
+        onComplete(planesDeEstudio(programId).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -89,7 +89,9 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
     path("programa" / Segment / "planEstudio" / Segment) { (programaId, id) =>
       delete {
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-          onComplete(eliminarPlanDeEstudio(id = id, programaId = programaId)) {
+          onComplete(
+            eliminarPlanDeEstudio(id = id, programaId = programaId).runToFuture
+          ) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())

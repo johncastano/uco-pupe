@@ -24,7 +24,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val executionContext: Scheduler
+  implicit val scheduler: Scheduler
   implicit val repository: PensumRepository
   implicit val materializer: Materializer
   implicit val jwt: JWT

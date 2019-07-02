@@ -17,14 +17,14 @@ import uco.pensum.infrastructure.http.jwt.{GoogleToken, JWT}
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.tables
 
-import scala.concurrent.{Await, ExecutionContextExecutor}
+import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 object Main extends App with HttpService {
 
   implicit val system: ActorSystem = ActorSystem("pensum-http")
-  implicit val scheduler: Scheduler = system.dispatcher
+  implicit val scheduler: Scheduler = Scheduler.io()
   implicit val materializer: ActorMaterializer = ActorMaterializer()
 
   private val config = ConfigFactory.load()
