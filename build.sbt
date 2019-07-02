@@ -23,6 +23,7 @@ lazy val pupe = (project in file(".")).
         circeParser,
         httpCirce,
         monix,
+        osLib,
         pureConfig,
         scalaTest % Test,
         slick,

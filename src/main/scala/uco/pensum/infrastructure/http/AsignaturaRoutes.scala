@@ -6,6 +6,7 @@ import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Framing, Source}
 import akka.util.ByteString
+import os.Path
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import uco.pensum.domain.errors.{
@@ -17,6 +18,7 @@ import io.circe.java8.time._
 import monix.execution.Scheduler
 import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.domain.services.AsignaturaServices
+import uco.pensum.infrastructure.encoder.CSV
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion,
@@ -31,6 +33,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
+  implicit val wd: Path
   implicit val scheduler: Scheduler
   implicit val materializer: Materializer
   implicit val jwt: JWT
@@ -216,6 +219,39 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
         }
     }
 
+  def reporteAsignaturaPorINP: Route =
+    path(
+      "programa" / Segment / "planEstudio" / Segment / "asignatura" / "reporte"
+    ) { (programId, inp) =>
+      get {
+        onComplete(asignaturasPorInp(programId, inp).runToFuture) {
+          case Failure(ex) => {
+            logger.error(s"Exception: $ex")
+            complete(InternalServerError -> ErrorInterno())
+          }
+          case Success(response) => {
+            println(s"response: $response")
+            case class AsignaturaReporte(
+                creditos: Int,
+                horasDeTrabajoDirecto: Int,
+                horasDeTrabajoIndependiente: Int,3
+                horasTotales: Int,
+                componenteDeFormacion: Int
+            )
+            import uco.pensum.infrastructure.encoder.CSVs._
+            import cats.instances.all._
+            os.write.append(
+              wd / "asignaturasPorInpYPrograma.csv",
+              s"${response.foreach(r => CSV.to(AsignaturaReporte(r.creditos, r.horasLaboratorio + r.horasPracticas + r.horasTeoricas, r.trabajoDelEstudiante, r.horasTeoricas, r.componenteDeFormacionId)))}"
+            )
+            complete(
+              OK -> response.map(r => r.to[AsignaturaRespuesta])
+            )
+          }
+        }
+      }
+    }
+
   def eliminarAsignatura: Route =
     path(
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment
@@ -272,6 +308,6 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     }
 
   val asignaturaRoutes
-    : Route = agregarAsignatura ~ actualizarAsignatura ~ eliminarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ asignarRequisito ~ actualizarRequisito ~ eliminarRequisito
+    : Route = agregarAsignatura ~ actualizarAsignatura ~ eliminarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ asignarRequisito ~ actualizarRequisito ~ eliminarRequisito ~ reporteAsignaturaPorINP
 
 }
