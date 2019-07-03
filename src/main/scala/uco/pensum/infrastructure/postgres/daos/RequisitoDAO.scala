@@ -40,7 +40,7 @@ abstract class RequisitosDAO(db: PostgresProfile.backend.Database)(
 ) extends TableQuery(new Requisitos(_)) {
 
   def almacenar(requisito: RequisitoRecord): Task[RequisitoRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this returning this
           .map(_.id) into (
@@ -53,16 +53,16 @@ abstract class RequisitosDAO(db: PostgresProfile.backend.Database)(
     )
 
   def actualizar(record: RequisitoRecord): Task[RequisitoRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === record.id).update(record)).map(_ => record)
     )
 
   def buscarPorId(id: Int): Task[Option[RequisitoRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).result).map(_.headOption)
     )
 
-  def eliminar(id: Int): Task[Int] = Task.fromFuture(
+  def eliminar(id: Int): Task[Int] = Task.deferFuture(
     db.run(this.filter(_.id === id).delete)
   )
 

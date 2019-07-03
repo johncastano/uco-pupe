@@ -35,7 +35,7 @@ object GDriveService {
       EitherT(googleDriveClient.updateFolderName(accessToken, nombre, folderId))
         .map(_ => ())
         .value
-    else Task(Right(()))
+    else Task.now(Right(()))
   }
 
 }

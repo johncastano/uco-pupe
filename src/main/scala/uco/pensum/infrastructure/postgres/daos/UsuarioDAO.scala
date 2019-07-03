@@ -36,19 +36,19 @@ abstract class UsuarioDAO(db: PostgresProfile.backend.Database)(
   def almacenarOActualizar(
       record: UsuarioRecord
   ): Task[Option[UsuarioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (this returning this).insertOrUpdate(record)
       )
     )
 
   def encontrarPorId(id: Int): Task[Option[UsuarioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).result).map(_.headOption)
     )
 
   def eliminarPorId(id: Int): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).delete)
     )
 

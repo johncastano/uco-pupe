@@ -56,12 +56,12 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
 ) extends TableQuery(new Asignaturas(_)) {
 
   def encontrarPorCodigo(codigo: String): Task[Option[AsignaturaRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.codigo === codigo).result).map(_.headOption)
     )
 
   def almacenar(asignatura: AsignaturaRecord): Task[AsignaturaRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this returning this
           .map(_.codigo) into ((acc, id) => acc.copy(codigo = id)) += asignatura
@@ -69,7 +69,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     )
 
   def actualizar(asignatura: AsignaturaRecord): Task[AsignaturaRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
           this.filter(_.codigo === asignatura.codigo).update(asignatura)
         )
@@ -79,7 +79,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
   def requisitos(
       codigo: String
   ): Task[List[RequisitoRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run((for {
         (_, requisitos) <- (tables.asignaturas join tables.requisitos on (_.codigo === _.codigoAsignatura))
           .filter {
@@ -91,7 +91,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
   def encontrarInfoPorCodigo(
       codigo: String
   ): Task[Option[AsignaturaConComponenteRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (for {
           (
@@ -126,7 +126,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
       inp: String,
       codigo: String
   ): Task[Option[AsignaturaConComponenteRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (for {
           pe <- tables.planesDeEstudio.filter(
@@ -160,7 +160,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
       programaId: String,
       inp: String
   ): Task[List[AsignaturaConComponenteRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (for {
           pe <- tables.planesDeEstudio.filter(
@@ -191,7 +191,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
     )
 
   def eliminarPorCodigo(codigo: String): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.codigo === codigo).delete)
     )
 

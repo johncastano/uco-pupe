@@ -222,7 +222,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
 
   def reporteAsignaturaPorINP: Route =
     path(
-      "programa" / Segment / "planEstudio" / Segment / "asignatura" / "reporte"
+      "programa" / Segment / "planEstudio" / Segment / "reporte"
     ) { (programId, inp) =>
       {
         onComplete(asignaturasPorInp(programId, inp).runToFuture) {

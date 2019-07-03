@@ -23,7 +23,7 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
 ) extends TableQuery(new ComponentesDeFormacion(_)) {
 
   def obtenerComponenetesDeFormacion: Task[Seq[ComponenteDeFormacionRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this.result
       )
@@ -32,11 +32,13 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
   def buscarPorNombre(
       nombre: String
   ): Task[Option[ComponenteDeFormacionRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
           this
             .filter(
-              _.nombre.toLowerCase === nombre.toLowerCase
+              _.nombre
+                .replace(" ", "")
+                .toLowerCase === nombre.filterNot(_.isWhitespace).toLowerCase
             )
             .result
         )
@@ -46,7 +48,7 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
   def almacenar(
       componente: ComponenteDeFormacionRecord
   ): Task[ComponenteDeFormacionRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this returning this
           .map(_.id) into ((acc, id) => acc.copy(id = id)) += componente
@@ -56,21 +58,21 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
   def actualizar(
       componente: ComponenteDeFormacionRecord
   ): Task[ComponenteDeFormacionRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === componente.id).update(componente))
         .map(_ => componente)
     )
   def almacenarOActualizar(
       record: ComponenteDeFormacionRecord
   ): Task[Option[ComponenteDeFormacionRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (this returning this).insertOrUpdate(record)
       )
     )
 
   def eliminarPorId(id: Int): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).delete)
     )
 }
