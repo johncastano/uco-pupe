@@ -1,6 +1,7 @@
 package uco.pensum.infrastructure.http
 
 import akka.http.scaladsl.model.StatusCodes._
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.http.scaladsl.server.directives.FileInfo
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
@@ -24,7 +25,7 @@ import uco.pensum.infrastructure.http.dtos.{
   _
 }
 import uco.pensum.infrastructure.http.jwt.JWT
-import uco.pensum.reports.{AsignaturasPorInp, ReporteAsignaturasPorINP}
+import uco.pensum.reports.ReporteAsignaturasPorINP
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -223,23 +224,31 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     path(
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / "reporte"
     ) { (programId, inp) =>
-      get {
+      {
         onComplete(asignaturasPorInp(programId, inp).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) => {
-            os.write(
-              wd / s"AsignaturasPorInpYProgramaReporte-${System.currentTimeMillis}.csv",
-              s"${AsignaturaWriter.writeReport(
-                ReporteAsignaturasPorINP.fromAsignaturasConRequisitos(response)
-              )}"
+            complete(
+              HttpResponse(
+                entity = HttpEntity.Chunked
+                  .fromData(
+                    ContentTypes.`application/octet-stream`,
+                    Source.single(
+                      ByteString(
+                        AsignaturaWriter
+                          .generateReport(
+                            ReporteAsignaturasPorINP
+                              .fromAsignaturasConRequisitos(response)
+                          )
+                      )
+                    )
+                  )
+              )
             )
           }
-          complete(
-            OK -> response.map(r => r.to[AsignaturaRespuesta])
-          )
         }
       }
     }

@@ -11,7 +11,7 @@ case class HeaderReporteAsignaturas(
     componenteDeFormacion: String = "Componente de Formación"
 )
 
-case class AsignaturasPorInp(
+case class AsignaturasPorInpBodyReport(
     nivel: String,
     asignaturasNivel: List[AsignaturaReporte],
     totalesNivel: TotalesNivel
@@ -37,7 +37,7 @@ case class TotalesNivel(
 object ReporteAsignaturasPorINP {
   def fromAsignaturasConRequisitos(
       x: List[AsignaturaConRequisitos]
-  ): List[AsignaturasPorInp] = {
+  ): List[AsignaturasPorInpBodyReport] = {
     import uco.pensum.infrastructure.mapper.MapperReports._
     val nivel1 = separarValoresPorNivel(x, 1)
     val nivel2 = separarValoresPorNivel(x, 2)
@@ -50,52 +50,52 @@ object ReporteAsignaturasPorINP {
     val nivel9 = separarValoresPorNivel(x, 9)
     val nivel10 = separarValoresPorNivel(x, 10)
     List(
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 1",
         nivel1._1.map(_.to[AsignaturaReporte]),
         nivel1._2.copy(totalesNivel = "Totales Nivel 1")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 2",
         nivel2._1.map(_.to[AsignaturaReporte]),
         nivel2._2.copy(totalesNivel = "Totales Nivel 2")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 3",
         nivel3._1.map(_.to[AsignaturaReporte]),
         nivel3._2.copy(totalesNivel = "Totales Nivel 3")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 4",
         nivel4._1.map(_.to[AsignaturaReporte]),
         nivel4._2.copy(totalesNivel = "Totales Nivel 4")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 5",
         nivel5._1.map(_.to[AsignaturaReporte]),
         nivel5._2.copy(totalesNivel = "Totales Nivel 5")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 6",
         nivel6._1.map(_.to[AsignaturaReporte]),
         nivel6._2.copy(totalesNivel = "Totales Nivel 6")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 7",
         nivel7._1.map(_.to[AsignaturaReporte]),
         nivel7._2.copy(totalesNivel = "Totales Nivel 7")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 8",
         nivel8._1.map(_.to[AsignaturaReporte]),
         nivel8._2.copy(totalesNivel = "Totales Nivel 8")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 9",
         nivel9._1.map(_.to[AsignaturaReporte]),
         nivel9._2.copy(totalesNivel = "Totales Nivel 9")
       ),
-      AsignaturasPorInp(
+      AsignaturasPorInpBodyReport(
         "Nivel 10",
         nivel10._1.map(_.to[AsignaturaReporte]),
         nivel10._2.copy(totalesNivel = "Totales Nivel 10")
