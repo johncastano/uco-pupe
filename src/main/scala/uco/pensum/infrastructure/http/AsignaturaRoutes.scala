@@ -6,25 +6,25 @@ import akka.http.scaladsl.server.{Directives, Route}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Framing, Source}
 import akka.util.ByteString
-import os.Path
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
+import monix.execution.Scheduler
+import os.Path
 import uco.pensum.domain.errors.{
   CurriculumNotFound,
   ErrorGenerico,
   ErrorInterno
 }
-import io.circe.java8.time._
-import monix.execution.Scheduler
-import uco.pensum.infrastructure.http.dtos._
 import uco.pensum.domain.services.AsignaturaServices
-import uco.pensum.infrastructure.encoder.CSV
+import uco.pensum.infrastructure.encoder.AsignaturaWriter
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion,
-  AsignaturaRespuesta
+  AsignaturaRespuesta,
+  _
 }
 import uco.pensum.infrastructure.http.jwt.JWT
+import uco.pensum.reports.{AsignaturasPorInp, ReporteAsignaturasPorINP}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
@@ -230,24 +230,16 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) => {
-            println(s"response: $response")
-            case class AsignaturaReporte(
-                creditos: Int,
-                horasDeTrabajoDirecto: Int,
-                horasDeTrabajoIndependiente: Int,3
-                horasTotales: Int,
-                componenteDeFormacion: Int
-            )
-            import uco.pensum.infrastructure.encoder.CSVs._
-            import cats.instances.all._
-            os.write.append(
-              wd / "asignaturasPorInpYPrograma.csv",
-              s"${response.foreach(r => CSV.to(AsignaturaReporte(r.creditos, r.horasLaboratorio + r.horasPracticas + r.horasTeoricas, r.trabajoDelEstudiante, r.horasTeoricas, r.componenteDeFormacionId)))}"
-            )
-            complete(
-              OK -> response.map(r => r.to[AsignaturaRespuesta])
+            os.write(
+              wd / s"AsignaturasPorInpYProgramaReporte-${System.currentTimeMillis}.csv",
+              s"${AsignaturaWriter.writeReport(
+                ReporteAsignaturasPorINP.fromAsignaturasConRequisitos(response)
+              )}"
             )
           }
+          complete(
+            OK -> response.map(r => r.to[AsignaturaRespuesta])
+          )
         }
       }
     }

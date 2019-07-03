@@ -33,4 +33,6 @@ object CSVs extends ProductTypeClassCompanion[CSV] {
   }
 
   implicit def showCSV[A](implicit s: Show[A]): CSV[A] = CSV[A](s.show)
+  implicit def listToCSV[A](implicit c: CSV[A]): CSV[List[A]] =
+    CSV(_.map(c.to).mkString("\n"))
 }
