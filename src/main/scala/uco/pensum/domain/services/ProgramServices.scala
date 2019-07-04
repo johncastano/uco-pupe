@@ -55,6 +55,10 @@ trait ProgramServices extends LazyLogging {
       pd <- EitherT.fromEither[Task](
         Programa.validate(programa, Programa.fromRecord(original))
       )
+      _ <- OptionT(
+        repository.programaRepository
+          .buscarProgramaPorNombre(pd.nombre)
+      ).map(_ => ProgramaExistente()).toLeft(())
       _ <- EitherT(
         GDriveService.actualizarDriveFolderName(
           pd.id.getOrElse(""),
