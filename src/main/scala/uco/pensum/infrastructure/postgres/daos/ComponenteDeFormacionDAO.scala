@@ -29,6 +29,20 @@ abstract class ComponenteDeFormacionDAO(db: PostgresProfile.backend.Database)(
       )
     )
 
+  def buscarPorId(
+      id: Int
+  ): Task[Option[ComponenteDeFormacionRecord]] =
+    Task.deferFuture(
+      db.run(
+          this
+            .filter(
+              _.id === id
+            )
+            .result
+        )
+        .map(_.headOption)
+    )
+
   def buscarPorNombre(
       nombre: String
   ): Task[Option[ComponenteDeFormacionRecord]] =
