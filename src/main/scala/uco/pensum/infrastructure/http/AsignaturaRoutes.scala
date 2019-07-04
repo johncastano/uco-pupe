@@ -10,7 +10,6 @@ import akka.util.ByteString
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 import monix.execution.Scheduler
-import os.Path
 import uco.pensum.domain.errors.{
   CurriculumNotFound,
   ErrorGenerico,
@@ -34,7 +33,6 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
 
   import uco.pensum.infrastructure.mapper.MapperProductDTO._
 
-  implicit val wd: Path
   implicit val scheduler: Scheduler
   implicit val materializer: Materializer
   implicit val jwt: JWT

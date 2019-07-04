@@ -8,7 +8,6 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.typesafe.config.ConfigFactory
 import monix.execution.Scheduler
-import os.Path
 import slick.jdbc.PostgresProfile
 import slick.jdbc.PostgresProfile.api._
 import uco.pensum.domain.repositories._
@@ -23,8 +22,6 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 object Main extends App with HttpService {
-
-  implicit val wd: Path = os.pwd / "src" / "main" / "resources" / "reportes"
 
   implicit val system: ActorSystem = ActorSystem("pensum-http")
   implicit val scheduler: Scheduler = Scheduler.io()

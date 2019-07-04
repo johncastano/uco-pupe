@@ -5,13 +5,13 @@ lazy val pupe = (project in file(".")).
     inThisBuild(List(
       scalaVersion := "2.12.7",
       name := "UCO-pupe",
+      dockerBaseImage := "openjdk:8-jre-alpine",
+      packageName in Docker := "pupe-http",
+      mainClass in Compile := Some("uco.pensum.infrastructure.http.Main"),
       fork := true,
       fork in Test := true,
       fork in IntegrationTest := true,
-      coverageEnabled := true,
-      coverageMinimum := 40,
-      coverageFailOnMinimum := true,
-      coverageHighlighting := true,
+      scalafmtOnCompile in ThisBuild := true,
       resolvers += Resolver.bintrayRepo("hseeberger", "maven"),
       libraryDependencies ++= Seq(
         akkaHttp,
@@ -23,7 +23,6 @@ lazy val pupe = (project in file(".")).
         circeParser,
         httpCirce,
         monix,
-        osLib,
         pureConfig,
         scalaTest % Test,
         slick,
@@ -89,4 +88,5 @@ lazy val pupe = (project in file(".")).
       )))
     ))
   )
-scalafmtOnCompile in ThisBuild := true
+enablePlugins(JavaAppPackaging)
+enablePlugins(DockerPlugin)
