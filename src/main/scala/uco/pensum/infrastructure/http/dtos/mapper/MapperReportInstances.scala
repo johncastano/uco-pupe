@@ -15,7 +15,7 @@ class MapperReportInstances extends MapperSugar {
     asignaturaConRequisitos => {
       val horasDirectas = asignaturaConRequisitos.horasTeoricas + asignaturaConRequisitos.horasPracticas + asignaturaConRequisitos.horasLaboratorio
       AsignaturaReporte(
-        asignaturaConRequisitos.nombreAsignatura,
+        asignaturaConRequisitos.nombreAsignatura.replace(",", " "),
         asignaturaConRequisitos.creditos,
         horasDirectas,
         asignaturaConRequisitos.trabajoDelEstudiante,
