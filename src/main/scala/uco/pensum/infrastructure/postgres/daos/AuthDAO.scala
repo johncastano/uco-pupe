@@ -37,19 +37,19 @@ abstract class AuthDAO(db: PostgresProfile.backend.Database)(
   def almacenarOActualizar(
       record: AuthRecord
   ): Task[Option[AuthRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (this returning this).insertOrUpdate(record)
       )
     )
 
   def encontrarPorCorreo(correo: String): Task[Option[AuthRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.correo === correo).result).map(_.headOption)
     )
 
   def eliminarPorId(correo: String): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.correo === correo).delete)
     )
 

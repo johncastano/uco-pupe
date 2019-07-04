@@ -26,7 +26,7 @@ trait UsuarioServices extends LazyLogging {
       usuario: UsuarioRegistro
   ): Task[Either[DomainError, Usuario]] =
     (for {
-      usu <- EitherT.fromEither[eval.Task](Usuario.validate(usuario))
+      usu <- EitherT.fromEither[Task](Usuario.validate(usuario))
       _ <- OptionT(repository.authRepository.buscarCorreo(usu.correo))
         .map(_ => UsuarioExistente())
         .toLeft(())
@@ -43,8 +43,8 @@ trait UsuarioServices extends LazyLogging {
       credenciales: Credenciales
   ): eval.Task[Either[DomainError, GUserCredentials]] =
     (for {
-      gToken <- EitherT.fromEither[eval.Task](GToken.validate(credenciales))
-      validUser <- EitherT.fromEither[eval.Task] {
+      gToken <- EitherT.fromEither[Task](GToken.validate(credenciales))
+      validUser <- EitherT.fromEither[Task] {
         googleToken
           .verifyToken(gToken.tokenId, gToken.accesToken)
           .toRight[DomainError](TokenIncorrecto())

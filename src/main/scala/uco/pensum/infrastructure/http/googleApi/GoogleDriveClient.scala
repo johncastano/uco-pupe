@@ -61,7 +61,7 @@ class GoogleDriveClient(
     fileMetadata.setParents(parentFolderId.toList.asJava)
     fileMetadata.setMimeType("application/vnd.google-apps.folder")
 
-    Task(
+    Task.now(
       Try(
         service.files().create(fileMetadata).setFields("id, parents").execute()
       ).toEither.leftMap {
@@ -87,7 +87,7 @@ class GoogleDriveClient(
     fileMetadata.setName(folderName)
     fileMetadata.setMimeType("application/vnd.google-apps.folder")
 
-    Task(
+    Task.now(
       Try(
         service.files().update(folderId, fileMetadata).setFields("id").execute()
       ).toEither.leftMap {

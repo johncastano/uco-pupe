@@ -40,14 +40,14 @@ abstract class PlanDeEstudioAsignaturasDAO(db: PostgresProfile.backend.Database)
 ) extends TableQuery(new PlanDeEstudioAsignaturas(_)) {
 
   def buscarPorId(id: String): Task[Option[PlanDeEstudioAsignaturaRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).result).map(_.headOption)
     )
 
   def almacenar(
       planDeEstudioAsignatura: PlanDeEstudioAsignaturaRecord
   ): Task[PlanDeEstudioAsignaturaRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this returning this
           .map(_.id) into ((acc, id) => acc.copy(id = id)) += planDeEstudioAsignatura
@@ -55,7 +55,7 @@ abstract class PlanDeEstudioAsignaturasDAO(db: PostgresProfile.backend.Database)
     )
 
   def eliminarPorId(id: String): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).delete)
     )
 

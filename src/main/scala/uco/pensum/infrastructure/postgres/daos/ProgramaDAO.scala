@@ -27,19 +27,19 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
 ) extends TableQuery(new Programas(_)) {
 
   def obtenerTodosLosProgramas: Task[Seq[ProgramaRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this.result
       )
     )
 
   def buscarPorId(id: String): Task[Option[ProgramaRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).result).map(_.headOption)
     )
 
   def buscarPorNombre(nombre: String): Task[Option[ProgramaRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
           this
             .filter(
@@ -55,7 +55,7 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
   def buscarPorIdConPlanesDeEstudio(
       id: String
   ): Task[Seq[ProgramaConPlanesDeEstudioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (for {
           (p, pe) <- tables.programas joinLeft tables.planesDeEstudio on (_.id === _.programaId)
@@ -67,7 +67,7 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
     )
 
   def almacenar(programa: ProgramaRecord): Task[ProgramaRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this returning this
           .map(_.id) into ((acc, id) => acc.copy(id = id)) += programa
@@ -75,13 +75,13 @@ abstract class ProgramasDAO(db: PostgresProfile.backend.Database)(
     )
 
   def actualizar(programa: ProgramaRecord): Task[ProgramaRecord] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === programa.id).update(programa))
         .map(_ => programa)
     )
 
   def eliminarPorId(id: String): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.id === id).delete)
     )
 }

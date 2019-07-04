@@ -185,7 +185,7 @@ trait AsignaturaServices extends LazyLogging {
   ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
       rid <- EitherT(
-        Task(
+        Task.now(
           Try(requisitoId.toInt).toOption.toRight(IdRequisitoInvalido())
         )
       )
@@ -218,7 +218,7 @@ trait AsignaturaServices extends LazyLogging {
   ): Task[Either[DomainError, (Asignatura, String)]] =
     (for {
       rid <- EitherT(
-        Task(
+        Task.now(
           Try(requisitoId.toInt).toOption.toRight(IdRequisitoInvalido())
         )
       )

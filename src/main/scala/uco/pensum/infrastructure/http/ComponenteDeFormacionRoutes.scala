@@ -72,9 +72,9 @@ trait ComponenteDeFormacionRoutes
     nombre =>
       put {
         authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-          entity(as[ComponenteDeFormacionActualizacion]) { componente =>
+          entity(as[ComponenteDeFormacionActualizacion]) { componenteId =>
             onComplete(
-              actualizarComponenteDeFormacion(nombre, componente).runToFuture
+              actualizarComponenteDeFormacion(nombre, componenteId).runToFuture
             ) {
               case Failure(ex) => {
                 logger.error(s"Exception: $ex")

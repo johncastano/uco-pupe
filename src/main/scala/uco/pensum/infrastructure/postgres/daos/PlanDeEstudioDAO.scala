@@ -42,14 +42,14 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
     implicit ec: ExecutionContext
 ) extends TableQuery(new PlanesDeEstudio(_)) {
   def buscarPorINP(inp: String): Task[Option[PlanDeEstudioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(this.filter(_.inp === inp).result).map(_.headOption)
     )
 
   def buscarPlanesDeEstudioPorProgramaId(
       programaId: String
   ): Task[Seq[PlanDeEstudioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this
           .filter(
@@ -63,7 +63,7 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
       inp: String,
       programId: String
   ): Task[Option[PlanDeEstudioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this
           .filter(
@@ -78,7 +78,7 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
       id: String,
       programId: String
   ): Task[Option[PlanDeEstudioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this
           .filter(pe => pe.id === id && pe.programaId === programId)
@@ -90,14 +90,14 @@ abstract class PlanesDeEstudioDAO(db: PostgresProfile.backend.Database)(
   def almacenarOActualizar(
       record: PlanDeEstudioRecord
   ): Task[Option[PlanDeEstudioRecord]] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         (this returning this).insertOrUpdate(record)
       )
     )
 
   def eliminarPorId(id: String, programaId: String): Task[Int] =
-    Task.fromFuture(
+    Task.deferFuture(
       db.run(
         this.filter(pe => pe.id === id && pe.programaId === programaId).delete
       )

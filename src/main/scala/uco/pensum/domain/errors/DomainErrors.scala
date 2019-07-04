@@ -44,6 +44,12 @@ final case class IdRequisitoInvalido(
       "El id del requisito para la asignatura especificada debe ser un valor numerico"
 ) extends DomainError
 
+final case class IdComponenteInvalido(
+    codigo: Int = 100033,
+    mensaje: String =
+      "El id del componente de formacion debe ser un valor numerico"
+) extends DomainError
+
 final case class CurriculumNotFound(
     codigo: Int = 100003,
     mensaje: String = "El INP especificado no existe para el programa dado"

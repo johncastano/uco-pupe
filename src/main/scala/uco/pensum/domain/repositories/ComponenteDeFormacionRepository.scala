@@ -15,6 +15,9 @@ class ComponenteDeFormacionRepository(
     : Task[Seq[ComponenteDeFormacionRecord]] =
     provider.componentesDeFormacion.obtenerComponenetesDeFormacion
 
+  def buscarPorId(id: Int): Task[Option[ComponenteDeFormacionRecord]] =
+    provider.componentesDeFormacion.buscarPorId(id)
+
   def buscarPorNombre(
       nombre: String
   ): Task[Option[ComponenteDeFormacionRecord]] =

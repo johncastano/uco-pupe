@@ -9,7 +9,8 @@ import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.errors.{
   ComponenteDeFormacionExistente,
   ComponenteDeFormacionNoEncontrado,
-  DomainError
+  DomainError,
+  IdComponenteInvalido
 }
 import uco.pensum.domain.repositories.PensumRepository
 import uco.pensum.infrastructure.http.dtos.{
@@ -17,6 +18,8 @@ import uco.pensum.infrastructure.http.dtos.{
   ComponenteDeFormacionAsignacion
 }
 import uco.pensum.infrastructure.postgres.ComponenteDeFormacionRecord
+
+import scala.util.Try
 
 trait ComponenteDeFormacionServices extends LazyLogging {
 
@@ -45,13 +48,19 @@ trait ComponenteDeFormacionServices extends LazyLogging {
     repository.componenteDeFormacionRepository.obtenerTodosLosComponentesDeFormacion
 
   def actualizarComponenteDeFormacion(
-      nombre: String,
+      componenteId: String,
       componente: ComponenteDeFormacionActualizacion
   ): Task[DomainError Either ComponenteDeFormacion] =
     (for {
+      cid <- EitherT(
+        Task.now(
+          Try(componenteId.toInt).toOption.toRight(IdComponenteInvalido())
+        )
+      )
+
       ori <- EitherT(
         repository.componenteDeFormacionRepository
-          .buscarPorNombre(nombre)
+          .buscarPorId(cid)
           .map(_.toRight(ComponenteDeFormacionNoEncontrado()))
       )
       c <- EitherT.fromEither[Task](
