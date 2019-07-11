@@ -62,7 +62,8 @@ final case class ComponenteDeFormacionNoExiste(
 
 final case class ComponenteDeFormacionExistente(
     codigo: Int = 100005,
-    mensaje: String = "El componente de formacion ya existe"
+    mensaje: String =
+      "Ya existe otro componente de formacion con el mismo nombre"
 ) extends DomainError
 
 final case class ComponenteDeFormacionNoEncontrado(

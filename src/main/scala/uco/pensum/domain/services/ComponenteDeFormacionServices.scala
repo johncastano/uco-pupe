@@ -71,7 +71,9 @@ trait ComponenteDeFormacionServices extends LazyLogging {
         repository.componenteDeFormacionRepository.buscarPorNombre(
           c.nombre
         )
-      ).map(_ => ComponenteDeFormacionExistente()).toLeft(())
+      ).filterNot(c => c.id == ori.id)
+        .map(_ => ComponenteDeFormacionExistente())
+        .toLeft(())
       _ <- EitherT.right[DomainError](
         repository.componenteDeFormacionRepository.actualizar(c)
       )
