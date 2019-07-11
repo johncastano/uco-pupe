@@ -86,11 +86,20 @@ trait ProgramServices extends LazyLogging {
 
   def borrarPrograma(
       programaId: String
+  )(
+      implicit gUser: GUserCredentials
   ): Task[Either[DomainError, ProgramaRecord]] =
     (for {
       programa <- OptionT(
         repository.programaRepository.buscarProgramaPorId(programaId)
       ).toRight(ProgramNotFound())
+      _ <- EitherT(
+        GDriveService.marcarComoEliminada(
+          programa.id,
+          programa.nombre,
+          gUser.accessToken
+        )
+      )
       _ <- EitherT.right[DomainError](
         repository.programaRepository.borrarPrograma(programaId)
       )

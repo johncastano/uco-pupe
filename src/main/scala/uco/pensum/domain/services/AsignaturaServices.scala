@@ -254,6 +254,8 @@ trait AsignaturaServices extends LazyLogging {
       programaId: String,
       planDeEstudioId: String,
       codigo: String
+  )(
+      implicit gUser: GUserCredentials
   ): Task[Either[DomainError, AsignaturaConRequisitos]] = {
     (for {
       a <- EitherT(
@@ -275,6 +277,13 @@ trait AsignaturaServices extends LazyLogging {
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(pdea)
       ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
+      _ <- EitherT(
+        GDriveService.marcarComoEliminada(
+          a.gdriveFolderId,
+          a.nombreAsignatura,
+          gUser.accessToken
+        )
+      )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.eliminarPorCodigo(codigo)
       )

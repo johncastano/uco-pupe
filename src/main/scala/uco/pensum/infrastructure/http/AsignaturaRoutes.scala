@@ -258,8 +258,10 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
       "programa" / Segment / "planEstudio" / Segment / "asignatura" / Segment
     ) { (programId, inp, codigo) =>
       delete {
-        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-          onComplete(eliminarAsignatura(programId, inp, codigo).runToFuture) {
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+          onComplete(
+            eliminarAsignatura(programId, inp, codigo)(user.gCredentials).runToFuture
+          ) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
               complete(InternalServerError -> ErrorInterno())
