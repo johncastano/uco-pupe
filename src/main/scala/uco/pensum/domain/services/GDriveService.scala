@@ -48,8 +48,7 @@ object GDriveService {
     EitherT(
       googleDriveClient
         .updateFolderName(accessToken, setDeletedPrefix(nombre), folderId)
-    ).map(_ => ())
-      .value
+    ).map(_ => ()).value
   }
 
   private[this] def setDeletedPrefix(nombre: String): String =

@@ -59,7 +59,7 @@ object Asignatura {
           dto.horasTeoricas,
           dto.horasLaboratorio,
           dto.horasPracticas.getOrElse(0),
-          dto.trabajoIndependienteEstudiante
+          dto.horasTeoricas + dto.horasLaboratorio
         ),
         nivel = nivel,
         requisitos = Nil,
@@ -67,6 +67,17 @@ object Asignatura {
         fechaDeModificacion = hora
       )
   }
+
+  def toMap(arg: Asignatura): Map[String, String] =
+    Map(
+      "Nombre" -> arg.nombre,
+      "Componente" -> arg.componenteDeFormacion.nombre,
+      "Creditos" -> arg.creditos.toString,
+      "Horas teoricas" -> arg.horas.teoricas.toString,
+      "Horas laboratorio" -> arg.horas.laboratorio.toString,
+      "Horas practicas" -> arg.horas.practicas.toString,
+      "Nivel" -> arg.nivel.toString
+    )
 
   def validar(
       dto: AsignaturaActualizacion,
@@ -88,7 +99,7 @@ object Asignatura {
           dto.horasTeoricas,
           dto.horasLaboratorio,
           dto.horasPracticas.getOrElse(0),
-          dto.trabajoIndependienteEstudiante
+          dto.horasTeoricas + dto.horasLaboratorio
         ),
         nivel = nivel,
         requisitos = original.requisitos.map(Requisito.fromRecord),

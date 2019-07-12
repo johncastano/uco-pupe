@@ -71,6 +71,9 @@ object Main extends App with HttpService {
 
     override def requisitoRepository: RequisitoRepository =
       new RequisitoRepository
+
+    override def descripcionRepository: ComentariosRepository =
+      new ComentariosRepository
   }
 
   logger.info(s"Starting http service ....")

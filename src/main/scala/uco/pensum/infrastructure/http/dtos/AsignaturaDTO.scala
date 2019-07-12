@@ -10,7 +10,6 @@ case class AsignaturaAsignacion(
     horasTeoricas: Int,
     horasLaboratorio: Int,
     horasPracticas: Option[Int],
-    trabajoIndependienteEstudiante: Int,
     nivel: Int
 )
 
@@ -21,7 +20,6 @@ case class AsignaturaActualizacion(
     horasTeoricas: Int,
     horasLaboratorio: Int,
     horasPracticas: Option[Int],
-    trabajoIndependienteEstudiante: Int,
     nivel: Int
 )
 
