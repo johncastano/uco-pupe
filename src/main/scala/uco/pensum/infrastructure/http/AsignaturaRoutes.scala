@@ -12,7 +12,7 @@ import io.circe.generic.auto._
 import monix.execution.Scheduler
 import os.Path
 import uco.pensum.domain.errors.{
-  CurriculumNotFound,
+  AsignaturaInexistente,
   ErrorGenerico,
   ErrorInterno
 }
@@ -196,7 +196,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
-            response.fold(complete(NotFound -> CurriculumNotFound())) { r =>
+            response.fold(complete(NotFound -> AsignaturaInexistente())) { r =>
               complete(OK -> r.to[AsignaturaRespuesta])
             }
         }
@@ -251,6 +251,49 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
           }
         }
       }
+    }
+
+  def asignarDescripcion: Route =
+    path("programa" / "planEstudio" / "asignatura" / Segment / "cambio") {
+      codigo =>
+        post {
+          authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+            entity(as[DescripcionCambioAsignacion]) { descripcionCambio =>
+              onComplete(
+                agregarDescripcionDeCambio(codigo, descripcionCambio).runToFuture
+              ) {
+                case Failure(ex) => {
+                  logger.error(s"Exception: $ex")
+                  complete(InternalServerError -> ErrorInterno())
+                }
+                case Success(response) =>
+                  response.fold(
+                    err =>
+                      complete(
+                        BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
+                      ),
+                    descripcion =>
+                      complete(OK -> descripcion.to[DescripcionCambioRespuesta])
+                  )
+              }
+            }
+          }
+        }
+    }
+
+  def descripcionCambiosPorCodigo: Route =
+    path("programa" / "planEstudio" / "asignatura" / Segment / "cambios") {
+      codigo =>
+        get {
+          onComplete(cambiosPorCodigo(codigo).runToFuture) {
+            case Failure(ex) => {
+              logger.error(s"Exception: $ex")
+              complete(InternalServerError -> ErrorInterno())
+            }
+            case Success(response) =>
+              complete(OK -> response.map(_.to[DescripcionCambioRespuesta]))
+          }
+        }
     }
 
   def eliminarAsignatura: Route =
@@ -311,6 +354,6 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
     }
 
   val asignaturaRoutes
-    : Route = agregarAsignatura ~ actualizarAsignatura ~ eliminarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ asignarRequisito ~ actualizarRequisito ~ eliminarRequisito ~ reporteAsignaturaPorINP
+    : Route = agregarAsignatura ~ actualizarAsignatura ~ eliminarAsignatura ~ asignaturaPorCodigo ~ asignaturasPorInp ~ asignarRequisito ~ actualizarRequisito ~ eliminarRequisito ~ reporteAsignaturaPorINP ~ asignarDescripcion ~ descripcionCambiosPorCodigo
 
 }

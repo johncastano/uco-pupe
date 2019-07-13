@@ -14,6 +14,7 @@ import uco.pensum.domain.requisito.Requisito
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion,
+  DescripcionCambioAsignacion,
   RequisitoActualizacion,
   RequisitoAsignacion
 }
@@ -281,6 +282,34 @@ trait AsignaturaServices extends LazyLogging {
       codigo: String
   ): Task[Option[AsignaturaConRequisitos]] =
     repository.asignaturaRepository.buscarFullAsignaturaPorCodigo(codigo)
+
+  def agregarDescripcionDeCambio(
+      codigoAsignatura: String,
+      descripcion: DescripcionCambioAsignacion
+  ): Task[Either[DomainError, DescripcionCambio]] =
+    (for {
+      a <- EitherT(
+        repository.asignaturaRepository
+          .buscarFullAsignaturaPorCodigo(codigoAsignatura)
+          .map(_.toRight(AsignaturaInexistente()))
+      )
+      cambio <- EitherT.fromEither[Task](
+        DescripcionCambio.validar(a.codigoAsignatura, descripcion)
+      )
+      cs <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(cambio)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.asignaturaRepository.actualizarAsignatura(
+          Asignatura.fromRecord(a).copy(fechaDeModificacion = cambio.fecha)
+        )
+      )
+    } yield DescripcionCambio.fromRecord(cs)).value
+
+  def cambiosPorCodigo(codigo: String): Task[List[DescripcionCambio]] =
+    repository.descripcionRepository
+      .buscarPorAsignatura(codigo)
+      .map(_.map(DescripcionCambio.fromRecord))
 
   def eliminarAsignatura(
       programaId: String,

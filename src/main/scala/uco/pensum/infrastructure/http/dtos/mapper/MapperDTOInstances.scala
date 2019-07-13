@@ -3,7 +3,7 @@ package uco.pensum.infrastructure.http.dtos.mapper
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.asignatura.{Asignatura, DescripcionCambio}
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
@@ -316,6 +316,18 @@ class MapperDTOInstances extends MapperSugar {
           abreviatura = record.abreviatura,
           nombre = record.nombre,
           color = record.color
+        )
+    )
+
+  implicit def DescripcionCambioToRespuesta
+    : Mapper[DescripcionCambio, DescripcionCambioRespuesta] =
+    Mapper(
+      cambio =>
+        DescripcionCambioRespuesta(
+          id = cambio.id.getOrElse(0),
+          codigoAsignatura = cambio.codigoAsignatura,
+          mensaje = cambio.mensaje,
+          fecha = cambio.fecha
         )
     )
 

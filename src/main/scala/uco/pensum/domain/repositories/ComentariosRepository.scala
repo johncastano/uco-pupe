@@ -16,9 +16,9 @@ class ComentariosRepository(
     provider.comentarios.buscarPorId(id)
 
   def buscarPorAsignatura(
-      nombre: String
+      codigo: String
   ): Task[List[ComentarioRecord]] =
-    provider.comentarios.buscarPorAsignatura(nombre)
+    provider.comentarios.buscarPorAsignatura(codigo)
 
   def almacenar(
       descripcionCambio: DescripcionCambio

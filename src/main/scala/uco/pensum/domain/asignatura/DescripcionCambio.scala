@@ -1,8 +1,13 @@
 package uco.pensum.domain.asignatura
 
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
+import uco.pensum.domain.errors.DomainError
 import uco.pensum.domain.requisito.Requisito
+import uco.pensum.domain.validarCampoVacio
+import uco.pensum.infrastructure.http.dtos.DescripcionCambioAsignacion
+import uco.pensum.infrastructure.postgres.ComentarioRecord
 
 case class DescripcionCambio(
     id: Option[Int],
@@ -12,6 +17,20 @@ case class DescripcionCambio(
 )
 
 object DescripcionCambio {
+
+  def validar(
+      codigo: String,
+      cambio: DescripcionCambioAsignacion
+  ): Either[DomainError, DescripcionCambio] =
+    for {
+      mensaje <- validarCampoVacio(cambio.mensaje, "descripcion cambio")
+    } yield
+      DescripcionCambio(
+        id = None,
+        codigoAsignatura = codigo,
+        mensaje = mensaje,
+        fecha = ZonedDateTime.now
+      )
 
   def apply(
       codigoAsignatura: String,
@@ -23,6 +42,15 @@ object DescripcionCambio {
       codigoAsignatura,
       mensaje,
       fecha.getOrElse(ZonedDateTime.now)
+    )
+
+  def fromRecord(cambioRecord: ComentarioRecord) =
+    DescripcionCambio(
+      id = Some(cambioRecord.id),
+      mensaje = cambioRecord.descripcion,
+      codigoAsignatura = cambioRecord.codigoAsignatura,
+      fecha = ZonedDateTime
+        .parse(cambioRecord.fecha, DateTimeFormatter.ISO_ZONED_DATE_TIME)
     )
 
   def calcular(
