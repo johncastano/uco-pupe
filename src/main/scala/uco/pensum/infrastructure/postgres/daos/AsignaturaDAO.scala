@@ -22,6 +22,7 @@ class Asignaturas(tag: Tag)
   def horasPracticas = column[Int]("horas_practicas")
   def trabajoDelEstudiante = column[Int]("TIE")
   def nivel = column[Int]("nivel")
+  def requisitoNivel = column[String]("requisito_nivel")
   def componenteDeFormacionId = column[Int]("componente_de_formacion_id")
   def fechaDeCreacion = column[String]("fecha_de_creacion")
   def fechaDeModificacion = column[String]("fecha_de_modificacion")
@@ -45,6 +46,7 @@ class Asignaturas(tag: Tag)
       horasPracticas,
       trabajoDelEstudiante,
       nivel,
+      requisitoNivel,
       componenteDeFormacionId,
       fechaDeCreacion,
       fechaDeModificacion
@@ -110,6 +112,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
             asignaturas.horasPracticas,
             asignaturas.trabajoDelEstudiante,
             asignaturas.nivel,
+            asignaturas.requisitoNivel,
             asignaturas.componenteDeFormacionId,
             componentesDeFormacion.nombre,
             componentesDeFormacion.abreviatura,
@@ -145,6 +148,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
             a.horasPracticas,
             a.trabajoDelEstudiante,
             a.nivel,
+            a.requisitoNivel,
             a.componenteDeFormacionId,
             cdf.nombre,
             cdf.abreviatura,
@@ -179,6 +183,7 @@ abstract class AsignaturasDAO(db: PostgresProfile.backend.Database)(
             a.horasPracticas,
             a.trabajoDelEstudiante,
             a.nivel,
+            a.requisitoNivel,
             a.componenteDeFormacionId,
             cdf.nombre,
             cdf.abreviatura,

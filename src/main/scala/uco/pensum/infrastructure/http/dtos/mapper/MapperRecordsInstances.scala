@@ -71,6 +71,7 @@ class MapperRecordsInstances extends MapperSugar {
         asignatura.horas.practicas,
         asignatura.horas.independietesDelEstudiante,
         asignatura.nivel,
+        asignatura.requisitoNivel,
         asignatura.componenteDeFormacion.id.getOrElse(0),
         asignatura.fechaDeRegistro.toString,
         asignatura.fechaDeModificacion.toString
@@ -93,6 +94,7 @@ class MapperRecordsInstances extends MapperSugar {
         horasPracticas = asignatura.horasPracticas,
         trabajoDelEstudiante = asignatura.trabajoDelEstudiante,
         nivel = asignatura.nivel,
+        requisitoNivel = asignatura.requisitoNivel,
         componenteDeFormacionId = asignatura.componenteDeFormacionId,
         nombreComponente = asignatura.nombreComponente,
         abreviaturaComponente = asignatura.abreviaturaComponente,

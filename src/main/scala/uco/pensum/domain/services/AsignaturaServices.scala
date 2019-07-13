@@ -141,7 +141,9 @@ trait AsignaturaServices extends LazyLogging {
         )
       )
       _ <- EitherT.right[DomainError](
-        repository.descripcionRepository.almacenar(com)
+        com
+          .map(mensaje => repository.descripcionRepository.almacenar(mensaje))
+          .sequence
       )
     } yield (av, oas.gdriveFolderId)).value
 
@@ -303,6 +305,22 @@ trait AsignaturaServices extends LazyLogging {
           .restarCampos(pe, Asignatura.fromRecord(a))
           .asRight[DomainError]
       )
+      dependencias <- EitherT(
+        repository.requisitoRepository
+          .buscarPorCodigoPR(a.codigoAsignatura)
+          .map(_.asRight[DomainError])
+      )
+      mensajes <- EitherT.fromEither[Task](
+        dependencias
+          .map(
+            req =>
+              DescripcionCambio.asignaturaEliminada(
+                req.codigoAsignatura,
+                Requisito.fromRecord(req)
+              )
+          )
+          .asRight[DomainError]
+      )
       _ <- OptionT(
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(pdea)
@@ -319,6 +337,9 @@ trait AsignaturaServices extends LazyLogging {
       )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.eliminarPorCodigo(codigo)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(mensajes)
       )
     } yield a).value
 

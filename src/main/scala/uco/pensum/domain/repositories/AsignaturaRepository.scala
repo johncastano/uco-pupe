@@ -7,6 +7,7 @@ import uco.pensum.infrastructure.postgres.{
   AsignaturaConRequisitos,
   AsignaturaRecord
 }
+import cats.implicits._
 
 class AsignaturaRepository(
     implicit val provider: PensumDatabase
@@ -53,7 +54,6 @@ class AsignaturaRepository(
       programaId: String,
       inp: String
   ): Task[List[AsignaturaConRequisitos]] = {
-    import cats.implicits._
     for {
       asignaturas <- provider.asignaturas
         .obtenerAsignaturasPorINPYPrograma(programaId, inp)

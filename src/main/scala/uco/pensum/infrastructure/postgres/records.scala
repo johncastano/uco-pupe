@@ -44,6 +44,7 @@ final case class AsignaturaRecord(
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
     nivel: Int,
+    requisitoNivel: String,
     componenteDeFormacionId: Int,
     fechaDeCreacion: String,
     fechaDeModificacion: String
@@ -81,6 +82,7 @@ final case class AsignaturaConComponenteRecord(
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
     nivel: Int,
+    requisitoNivel: String,
     componenteDeFormacionId: Int,
     nombreComponente: String,
     abreviaturaComponente: String,
@@ -100,6 +102,7 @@ final case class AsignaturaConRequisitos(
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
     nivel: Int,
+    requisitoNivel: String,
     componenteDeFormacionId: Int,
     nombreComponente: String,
     abreviaturaComponente: String,

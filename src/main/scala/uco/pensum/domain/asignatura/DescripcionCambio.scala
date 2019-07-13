@@ -28,36 +28,38 @@ object DescripcionCambio {
   def calcular(
       original: Asignatura,
       actualizada: Asignatura
-  ): DescripcionCambio = {
+  ): Option[DescripcionCambio] = {
 
     val rawOriginal = Asignatura.toMap(original)
     val rawActualizada = Asignatura.toMap(actualizada)
 
-    val mensaje = rawOriginal
+    val cambios = rawOriginal
       .foldLeft(List.empty[String]) {
         case (cambios, (parametro, antes)) => {
           rawActualizada.get(parametro) match {
             case Some(despues) if !antes.equalsIgnoreCase(despues) =>
               cambios ::: List(
-                s"$parametro: antes -> $antes, despues -> $despues"
+                s"* $parametro: antes -> $antes, despues -> $despues"
               )
             case _ => cambios ::: Nil
           }
         }
       }
-      .mkString(" ; ")
-    DescripcionCambio(
-      id = None,
-      codigoAsignatura = original.codigo,
-      mensaje = mensaje,
-      actualizada.fechaDeModificacion
-    )
+
+    if (cambios.nonEmpty)
+      Some(
+        DescripcionCambio(
+          id = None,
+          codigoAsignatura = original.codigo,
+          mensaje = s"Cambios efectuados:\n${cambios.mkString("\n")}",
+          actualizada.fechaDeModificacion
+        )
+      )
+    else None
+
   }
 
-  def nuevoRequisito(asignatura: Asignatura, requisito: Requisito) = {
-
-    //TODO: Calcular cuando es requisto de nivel u otro para generar mensaje despues del refactor de requisit de nivel
-
+  def nuevoRequisito(asignatura: Asignatura, requisito: Requisito) =
     DescripcionCambio(
       id = None,
       codigoAsignatura = asignatura.codigo,
@@ -65,29 +67,24 @@ object DescripcionCambio {
         s"${requisito.codigoAsignatura} se agregó como ${requisito.tipo.toString}",
       fecha = asignatura.fechaDeModificacion
     )
-  }
 
   def actualizarRequisito(
       asignatura: Asignatura,
       requisitoOriginal: Requisito,
       requisitoActualizado: Requisito
-  ) = {
-
-    //TODO: Calcular cuando es requisto de nivel u otro para generar mensaje despues del refactor de requisit de nivel
-
+  ): DescripcionCambio =
     DescripcionCambio(
       id = None,
       codigoAsignatura = asignatura.codigo,
       mensaje =
-        s"El requisito ${requisitoOriginal.codigoAsignatura} paso de ${requisitoOriginal.tipo.toString} a ${requisitoActualizado.tipo.toString} en la asignatura ${asignatura.codigo}",
+        s"El requisito ${requisitoOriginal.codigoAsignatura} paso de ${requisitoOriginal.tipo.toString} a ${requisitoActualizado.tipo.toString}",
       fecha = asignatura.fechaDeModificacion
     )
-  }
 
-  def requistoEliminado(asignatura: Asignatura, requisito: Requisito) = {
-
-    //TODO: Calcular cuando es requisto de nivel u otro para generar mensaje despues del refactor de requisit de nivel
-
+  def requistoEliminado(
+      asignatura: Asignatura,
+      requisito: Requisito
+  ): DescripcionCambio =
     DescripcionCambio(
       id = None,
       codigoAsignatura = asignatura.codigo,
@@ -95,6 +92,14 @@ object DescripcionCambio {
         s"${requisito.codigoAsignatura} fue eliminado como ${requisito.tipo.toString}",
       fecha = asignatura.fechaDeModificacion
     )
-  }
+
+  def asignaturaEliminada(codigoAsignatura: String, requisito: Requisito) =
+    DescripcionCambio(
+      id = None,
+      codigoAsignatura = codigoAsignatura,
+      mensaje =
+        s"${requisito.codigoAsignatura} fue eliminado como ${requisito.tipo.toString} debido a que la asignatura se eliminó",
+      fecha = ZonedDateTime.now
+    )
 
 }

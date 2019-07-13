@@ -2,7 +2,14 @@ package uco.pensum
 
 import java.time.ZonedDateTime
 
-import uco.pensum.domain.errors.{CampoVacio, DomainError, NumeroInvalido}
+import uco.pensum.domain.errors.{
+  CampoVacio,
+  DomainError,
+  NumeroInvalido,
+  RequisitoNoAceptado
+}
+
+import scala.util.Try
 
 package object domain {
 
@@ -26,7 +33,7 @@ package object domain {
     else
       Right(valor)
 
-  def validarValorEntero(
+  def esMenorOIgualACero(
       valor: Int,
       campo: String
   ): Either[DomainError, Int] = {
@@ -35,4 +42,41 @@ package object domain {
     else
       Right(valor)
   }
+
+  def esMenorQueCero(
+      valor: Int,
+      campo: String
+  ): Either[DomainError, Int] = {
+    if (valor < 0)
+      Left(NumeroInvalido(campo))
+    else
+      Right(valor)
+  }
+
+  def esMenorQueCeroOpcional(
+      valor: Option[Int],
+      campo: String
+  ): Either[DomainError, Option[Int]] = {
+    valor match {
+      case Some(value) => esMenorQueCero(value, campo).map(Some(_))
+      case None        => Right(None)
+    }
+  }
+
+  def validarRequisitoNivel(
+      requisito: String,
+      nivelActual: Int
+  ): Either[RequisitoNoAceptado, String] =
+    requisito.toLowerCase match {
+      case value if value.equalsIgnoreCase("no") => Right(value)
+      case value if value.startsWith("nivel") =>
+        Try(value.filter(_.isDigit).toInt).toOption
+          .toRight(RequisitoNoAceptado())
+          .flatMap { req =>
+            if (req <= 0 || nivelActual <= req)
+              Left(RequisitoNoAceptado())
+            else Right(s"Nivel ${req.toString}")
+          }
+      case _ => Left(RequisitoNoAceptado())
+    }
 }

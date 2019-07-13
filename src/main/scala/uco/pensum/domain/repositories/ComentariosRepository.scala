@@ -4,6 +4,7 @@ import monix.eval.Task
 import uco.pensum.domain.asignatura.DescripcionCambio
 import uco.pensum.infrastructure.mysql.database.PensumDatabase
 import uco.pensum.infrastructure.postgres.ComentarioRecord
+import cats.implicits._
 
 class ComentariosRepository(
     implicit val provider: PensumDatabase
@@ -25,5 +26,15 @@ class ComentariosRepository(
     provider.comentarios.almacenar(
       descripcionCambio.to[ComentarioRecord]
     )
+
+  def almacenar(
+      descripcionCambio: List[DescripcionCambio]
+  ): Task[List[ComentarioRecord]] = {
+    descripcionCambio
+      .map(
+        cambio => provider.comentarios.almacenar(cambio.to[ComentarioRecord])
+      )
+      .sequence
+  }
 
 }
