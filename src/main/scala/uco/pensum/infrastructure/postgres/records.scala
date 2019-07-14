@@ -3,7 +3,6 @@ package uco.pensum.infrastructure.postgres
 sealed trait Record
 
 // $COVERAGE-OFF$
-//TODO: Modify dataTypes of 'fehaDeCreacion y Modificacion'
 
 //Se usan los IDS generados por Google Drive en el id de las entidades para tener el ID del folder creado para el
 // recurso especifico sin necesidad de acoplar el codigo a la libreria de DRIVE creando otra propiedad adicional
@@ -45,6 +44,7 @@ final case class AsignaturaRecord(
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
     nivel: Int,
+    requisitoNivel: String,
     componenteDeFormacionId: Int,
     fechaDeCreacion: String,
     fechaDeModificacion: String
@@ -82,6 +82,7 @@ final case class AsignaturaConComponenteRecord(
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
     nivel: Int,
+    requisitoNivel: String,
     componenteDeFormacionId: Int,
     nombreComponente: String,
     abreviaturaComponente: String,
@@ -101,6 +102,7 @@ final case class AsignaturaConRequisitos(
     horasPracticas: Int,
     trabajoDelEstudiante: Int,
     nivel: Int,
+    requisitoNivel: String,
     componenteDeFormacionId: Int,
     nombreComponente: String,
     abreviaturaComponente: String,
@@ -125,6 +127,13 @@ final case class AuthRecord(
     correo: String,
     password: String,
     userId: Int
+)
+
+final case class ComentarioRecord(
+    id: Int,
+    codigoAsignatura: String,
+    descripcion: String,
+    fecha: String
 )
 
 // $COVERAGE-ON$

@@ -71,12 +71,21 @@ trait PlanEstudioServices extends LazyLogging {
   def eliminarPlanDeEstudio(
       id: String,
       programaId: String
+  )(
+      implicit gUser: GUserCredentials
   ): Task[Either[DomainError, PlanDeEstudioRecord]] =
     (for {
       pe <- OptionT(
         repository.planDeEstudioRepository
           .buscarPlanDeEstudioPorIdYProgramaId(id, programaId)
       ).toRight(CurriculumNotFound())
+      _ <- EitherT(
+        GDriveService.marcarComoEliminada(
+          pe.id,
+          pe.inp,
+          gUser.accessToken
+        )
+      )
       _ <- EitherT.right[DomainError](
         repository.planDeEstudioRepository
           .eliminarPlanDeEstudio(id, programaId)

@@ -2,7 +2,7 @@ package uco.pensum.infrastructure.http.dtos.mapper
 
 import java.time.format.DateTimeFormatter
 
-import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.asignatura.{Asignatura, DescripcionCambio}
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
@@ -14,6 +14,7 @@ import uco.pensum.infrastructure.postgres.{
   AsignaturaConRequisitos,
   AsignaturaRecord,
   AuthRecord,
+  ComentarioRecord,
   ComponenteDeFormacionRecord,
   PlanDeEstudioRecord,
   ProgramaRecord,
@@ -70,6 +71,7 @@ class MapperRecordsInstances extends MapperSugar {
         asignatura.horas.practicas,
         asignatura.horas.independietesDelEstudiante,
         asignatura.nivel,
+        asignatura.requisitoNivel,
         asignatura.componenteDeFormacion.id.getOrElse(0),
         asignatura.fechaDeRegistro.toString,
         asignatura.fechaDeModificacion.toString
@@ -92,6 +94,7 @@ class MapperRecordsInstances extends MapperSugar {
         horasPracticas = asignatura.horasPracticas,
         trabajoDelEstudiante = asignatura.trabajoDelEstudiante,
         nivel = asignatura.nivel,
+        requisitoNivel = asignatura.requisitoNivel,
         componenteDeFormacionId = asignatura.componenteDeFormacionId,
         nombreComponente = asignatura.nombreComponente,
         abreviaturaComponente = asignatura.abreviaturaComponente,
@@ -163,6 +166,17 @@ class MapperRecordsInstances extends MapperSugar {
         codigoAsignaturaRequisito = requisito.codigoAsignatura
       )
     }
+  )
+
+  implicit def descripcionToDescripcionRecord
+    : Mapper[DescripcionCambio, ComentarioRecord] = Mapper(
+    descripcion =>
+      ComentarioRecord(
+        id = descripcion.id.getOrElse(0),
+        codigoAsignatura = descripcion.codigoAsignatura,
+        descripcion = descripcion.mensaje,
+        fecha = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(descripcion.fecha)
+      )
   )
 
 }

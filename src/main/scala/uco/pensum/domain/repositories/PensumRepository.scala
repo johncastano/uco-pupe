@@ -11,4 +11,5 @@ trait PensumRepository {
   def planDeEstudioAsignaturaRepository: PlanDeEstudioAsignaturaRepository
   def requisitoRepository: RequisitoRepository
   def authRepository: AuthRepository
+  def descripcionRepository: ComentariosRepository
 }

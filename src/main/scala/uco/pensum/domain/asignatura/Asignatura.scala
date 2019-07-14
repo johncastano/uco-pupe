@@ -28,6 +28,7 @@ case class Asignatura(
     creditos: Int,
     horas: Horas,
     nivel: Int,
+    requisitoNivel: String,
     requisitos: List[Requisito],
     fechaDeRegistro: ZonedDateTime,
     fechaDeModificacion: ZonedDateTime
@@ -46,8 +47,18 @@ object Asignatura {
     for {
       codigo <- validarCampoVacio(dto.codigo, "codigo")
       nombre <- validarCampoVacio(dto.nombre, "nombre")
-      creditos <- validarValorEntero(dto.creditos, "creditos")
-      nivel <- validarValorEntero(dto.nivel, "nivel")
+      creditos <- esMenorOIgualACero(dto.creditos, "creditos")
+      nivel <- esMenorOIgualACero(dto.nivel, "nivel")
+      reqNivel <- validarRequisitoNivel(
+        dto.requisitoNivel,
+        nivel
+      )
+      hTeoricas <- esMenorQueCero(dto.horasTeoricas, "horas teoricas")
+      hLab <- esMenorQueCero(dto.horasLaboratorio, "horas de laboratorio")
+      hPracticas <- esMenorQueCeroOpcional(
+        dto.horasPracticas,
+        "horas practicas"
+      )
     } yield
       Asignatura(
         codigo = codigo,
@@ -56,17 +67,30 @@ object Asignatura {
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
-          dto.horasTeoricas,
-          dto.horasLaboratorio,
-          dto.horasPracticas.getOrElse(0),
-          dto.trabajoIndependienteEstudiante
+          hTeoricas,
+          hLab,
+          hPracticas.getOrElse(0),
+          dto.horasTeoricas + dto.horasLaboratorio
         ),
         nivel = nivel,
+        requisitoNivel = reqNivel,
         requisitos = Nil,
         fechaDeRegistro = hora,
         fechaDeModificacion = hora
       )
   }
+
+  def toMap(arg: Asignatura): Map[String, String] =
+    Map(
+      "Nombre" -> arg.nombre,
+      "Componente" -> arg.componenteDeFormacion.nombre,
+      "Creditos" -> arg.creditos.toString,
+      "Horas teoricas" -> arg.horas.teoricas.toString,
+      "Horas laboratorio" -> arg.horas.laboratorio.toString,
+      "Horas practicas" -> arg.horas.practicas.toString,
+      "Nivel" -> arg.nivel.toString,
+      "Requisito de nivel" -> arg.requisitoNivel
+    )
 
   def validar(
       dto: AsignaturaActualizacion,
@@ -75,8 +99,18 @@ object Asignatura {
   ): Either[DomainError, Asignatura] = {
     for {
       nombre <- validarCampoVacio(dto.nombre, "nombre")
-      creditos <- validarValorEntero(dto.creditos, "creditos")
-      nivel <- validarValorEntero(dto.nivel, "nivel")
+      creditos <- esMenorOIgualACero(dto.creditos, "creditos")
+      hTeoricas <- esMenorQueCero(dto.horasTeoricas, "horas teoricas")
+      hLab <- esMenorQueCero(dto.horasLaboratorio, "horas de laboratorio")
+      hPracticas <- esMenorQueCeroOpcional(
+        dto.horasPracticas,
+        "horas practicas"
+      )
+      nivel <- esMenorOIgualACero(dto.nivel, "nivel")
+      reqNivel <- validarRequisitoNivel(
+        dto.requisitoNivel,
+        nivel
+      )
     } yield
       Asignatura(
         codigo = original.codigoAsignatura,
@@ -85,12 +119,13 @@ object Asignatura {
         nombre = nombre,
         creditos = creditos,
         horas = Horas(
-          dto.horasTeoricas,
-          dto.horasLaboratorio,
-          dto.horasPracticas.getOrElse(0),
-          dto.trabajoIndependienteEstudiante
+          hTeoricas,
+          hLab,
+          hPracticas.getOrElse(0),
+          dto.horasTeoricas + dto.horasLaboratorio
         ),
         nivel = nivel,
+        requisitoNivel = reqNivel,
         requisitos = original.requisitos.map(Requisito.fromRecord),
         fechaDeRegistro = ZonedDateTime
           .parse(
@@ -120,6 +155,7 @@ object Asignatura {
         independietesDelEstudiante = record.trabajoDelEstudiante
       ),
       nivel = record.nivel,
+      requisitoNivel = record.requisitoNivel,
       requisitos = record.requisitos.map(Requisito.fromRecord),
       fechaDeRegistro = ZonedDateTime
         .parse(
@@ -155,6 +191,7 @@ object Asignatura {
         asignatura.trabajoDelEstudiante
       ),
       nivel = asignatura.nivel,
+      requisitoNivel = asignatura.requisitoNivel,
       requisitos = asignatura.requisitos.map(Requisito.fromRecord) :+ requisito,
       fechaDeRegistro = ZonedDateTime
         .parse(
@@ -187,6 +224,7 @@ object Asignatura {
         asignatura.trabajoDelEstudiante
       ),
       nivel = asignatura.nivel,
+      requisitoNivel = asignatura.requisitoNivel,
       requisitos = asignatura.requisitos
         .map(Requisito.fromRecord)
         .filterNot(_.id == requisito.id) :+ requisito,
@@ -221,6 +259,7 @@ object Asignatura {
         asignatura.trabajoDelEstudiante
       ),
       nivel = asignatura.nivel,
+      requisitoNivel = asignatura.requisitoNivel,
       requisitos = asignatura.requisitos
         .map(Requisito.fromRecord)
         .filterNot(requisito == _),

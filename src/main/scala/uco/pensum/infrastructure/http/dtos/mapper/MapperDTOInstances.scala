@@ -3,7 +3,7 @@ package uco.pensum.infrastructure.http.dtos.mapper
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import uco.pensum.domain.asignatura.Asignatura
+import uco.pensum.domain.asignatura.{Asignatura, DescripcionCambio}
 import uco.pensum.domain.componenteformacion.ComponenteDeFormacion
 import uco.pensum.domain.planestudio.PlanDeEstudio
 import uco.pensum.domain.programa.Programa
@@ -87,6 +87,7 @@ class MapperDTOInstances extends MapperSugar {
         horasPracticas = asignatura.horasPracticas,
         horasIndependientesDelEstudiante = asignatura.trabajoDelEstudiante,
         nivel = asignatura.nivel,
+        requisitoNivel = asignatura.requisitoNivel,
         requisitos = asignatura.requisitos.map(_.to[RequisitoRespuesta]),
         gDriveFolderId = asignatura.gdriveFolderId,
         fechaDeRegistro = fechaStringToDate.to(asignatura.fechaDeCreacion),
@@ -115,6 +116,7 @@ class MapperDTOInstances extends MapperSugar {
           horasIndependientesDelEstudiante =
             asignatura.horas.independietesDelEstudiante,
           nivel = asignatura.nivel,
+          requisitoNivel = asignatura.requisitoNivel,
           requisitos = asignatura.requisitos.map(_.to[RequisitoRespuesta]),
           gDriveFolderId = "",
           fechaDeRegistro = asignatura.fechaDeRegistro,
@@ -138,6 +140,7 @@ class MapperDTOInstances extends MapperSugar {
         horasPracticas = asgn.horas.practicas,
         horasIndependientesDelEstudiante = asgn.horas.independietesDelEstudiante,
         nivel = asgn.nivel,
+        requisitoNivel = asgn.requisitoNivel,
         requisitos = asgn.requisitos.map(_.to[RequisitoRespuesta]),
         gDriveFolderId = gDriveFid,
         fechaDeRegistro = asgn.fechaDeRegistro,
@@ -167,6 +170,7 @@ class MapperDTOInstances extends MapperSugar {
           horasPracticas = record.horasPracticas,
           horasIndependientesDelEstudiante = record.trabajoDelEstudiante,
           nivel = record.nivel,
+          requisitoNivel = record.requisitoNivel,
           requisitos = Nil,
           gDriveFolderId = "",
           fechaDeRegistro = ZonedDateTime.parse(record.fechaDeCreacion),
@@ -197,6 +201,7 @@ class MapperDTOInstances extends MapperSugar {
         horasPracticas = a.horas.practicas,
         horasIndependientesDelEstudiante = a.horas.independietesDelEstudiante,
         nivel = a.nivel,
+        requisitoNivel = a.requisitoNivel,
         requisitos = a.requisitos.map(_.to[RequisitoRespuesta]),
         gDriveFolderId = pear.id,
         fechaDeRegistro = a.fechaDeRegistro,
@@ -225,6 +230,7 @@ class MapperDTOInstances extends MapperSugar {
         horasPracticas = asignatura.horasPracticas,
         horasIndependientesDelEstudiante = asignatura.trabajoDelEstudiante,
         nivel = asignatura.nivel,
+        requisitoNivel = asignatura.requisitoNivel,
         requisitos = List(
           RequisitoRespuesta(
             requisito.id.getOrElse(0),
@@ -310,6 +316,18 @@ class MapperDTOInstances extends MapperSugar {
           abreviatura = record.abreviatura,
           nombre = record.nombre,
           color = record.color
+        )
+    )
+
+  implicit def DescripcionCambioToRespuesta
+    : Mapper[DescripcionCambio, DescripcionCambioRespuesta] =
+    Mapper(
+      cambio =>
+        DescripcionCambioRespuesta(
+          id = cambio.id.getOrElse(0),
+          codigoAsignatura = cambio.codigoAsignatura,
+          mensaje = cambio.mensaje,
+          fecha = cambio.fecha
         )
     )
 

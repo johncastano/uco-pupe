@@ -29,4 +29,10 @@ class RequisitoRepository(implicit val provider: PensumDatabase) {
 
   def eliminarPorId(id: Int): Task[Int] = provider.requisitos.eliminar(id)
 
+  def buscarPorCodigoPR(codigoPR: String): Task[List[RequisitoRecord]] =
+    provider.requisitos.buscarPorCodigoPR(codigoPR)
+
+  def eliminarPorCodigoPR(codigoPR: String): Task[Int] =
+    provider.requisitos.eliminarPorCodigoPR(codigoPR)
+
 }

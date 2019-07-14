@@ -111,8 +111,8 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
 
   def borrarPrograma: Route = path("programa" / Segment) { id =>
     delete {
-      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
-        onComplete(borrarPrograma(id).runToFuture) {
+      authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
+        onComplete(borrarPrograma(id)(user.gCredentials).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())

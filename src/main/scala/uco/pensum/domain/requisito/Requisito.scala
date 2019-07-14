@@ -8,9 +8,6 @@ import uco.pensum.infrastructure.http.dtos.{
 import uco.pensum.infrastructure.postgres.RequisitoRecord
 
 sealed trait TipoRequisito
-final case object RequisitoDeNivel extends TipoRequisito {
-  override def toString: String = "Requisito de nivel"
-}
 final case object PreRequisito extends TipoRequisito {
   override def toString: String = "Prerequisito"
 }
@@ -22,10 +19,9 @@ final case object Desconocido extends TipoRequisito
 object TipoRequisito {
   def apply(in: String): TipoRequisito =
     in.toLowerCase.filterNot(_.isWhitespace) match {
-      case "prerequisito"     => PreRequisito
-      case "corequisito"      => CoRequisito
-      case "requisitodenivel" => RequisitoDeNivel
-      case _                  => Desconocido //RequisitoNoAceptado()
+      case "prerequisito" => PreRequisito
+      case "corequisito"  => CoRequisito
+      case _              => Desconocido //RequisitoNoAceptado()
     }
 }
 

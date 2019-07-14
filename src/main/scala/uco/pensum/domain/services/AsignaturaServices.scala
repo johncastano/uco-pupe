@@ -14,6 +14,7 @@ import uco.pensum.domain.requisito.Requisito
 import uco.pensum.infrastructure.http.dtos.{
   AsignaturaActualizacion,
   AsignaturaAsignacion,
+  DescripcionCambioAsignacion,
   RequisitoActualizacion,
   RequisitoAsignacion
 }
@@ -120,6 +121,11 @@ trait AsignaturaServices extends LazyLogging {
       upd <- EitherT.fromEither[Task](
         PlanDeEstudio.recalcularCampos(pe, oas, av).asRight[DomainError]
       )
+      com <- EitherT.fromEither[Task](
+        DescripcionCambio
+          .calcular(original = Asignatura.fromRecord(oas), actualizada = av)
+          .asRight[DomainError]
+      )
       _ <- OptionT(
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(upd)
@@ -134,6 +140,11 @@ trait AsignaturaServices extends LazyLogging {
           gUser.accessToken,
           !av.nombre.equalsIgnoreCase(oas.nombreAsignatura)
         )
+      )
+      _ <- EitherT.right[DomainError](
+        com
+          .map(mensaje => repository.descripcionRepository.almacenar(mensaje))
+          .sequence
       )
     } yield (av, oas.gdriveFolderId)).value
 
@@ -168,13 +179,20 @@ trait AsignaturaServices extends LazyLogging {
       rr <- EitherT.right[DomainError](
         repository.requisitoRepository.almacenarRequisito(asignaturaCodigo, r)
       )
+      requisito = r.copy(id = Some(rr.id))
       asi <- EitherT.fromEither[Task](
         Asignatura
-          .agregarRequisito(a, r.copy(id = Some(rr.id)))
+          .agregarRequisito(a, requisito)
           .asRight[DomainError]
+      )
+      mensaje <- EitherT.fromEither[Task](
+        DescripcionCambio.nuevoRequisito(asi, requisito).asRight[DomainError]
       )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.actualizarAsignatura(asi)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(mensaje)
       )
     } yield (asi, a.gdriveFolderId)).value
 
@@ -207,8 +225,16 @@ trait AsignaturaServices extends LazyLogging {
         repository.requisitoRepository
           .actualizarRequisito(a.codigoAsignatura, rvalid)
       )
+      mensaje <- EitherT.fromEither[Task](
+        DescripcionCambio
+          .actualizarRequisito(asi, Requisito.fromRecord(req), rvalid)
+          .asRight[DomainError]
+      )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.actualizarAsignatura(asi)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(mensaje)
       )
     } yield (asi, a.gdriveFolderId)).value
 
@@ -232,16 +258,23 @@ trait AsignaturaServices extends LazyLogging {
           .buscarPorId(rid)
           .map(_.toRight(RequisitoNoEncontrado()))
       )
+      requisito = Requisito.fromRecord(req)
       asi <- EitherT.fromEither[Task](
         Asignatura
-          .eliminarRequisito(a, Requisito.fromRecord(req))
+          .eliminarRequisito(a, requisito)
           .asRight[DomainError]
+      )
+      mensaje <- EitherT.fromEither[Task](
+        DescripcionCambio.requistoEliminado(asi, requisito).asRight[DomainError]
       )
       _ <- EitherT.right[DomainError](
         repository.requisitoRepository.eliminarPorId(rid)
       )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.actualizarAsignatura(asi)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(mensaje)
       )
     } yield (asi, a.gdriveFolderId)).value
 
@@ -250,10 +283,40 @@ trait AsignaturaServices extends LazyLogging {
   ): Task[Option[AsignaturaConRequisitos]] =
     repository.asignaturaRepository.buscarFullAsignaturaPorCodigo(codigo)
 
+  def agregarDescripcionDeCambio(
+      codigoAsignatura: String,
+      descripcion: DescripcionCambioAsignacion
+  ): Task[Either[DomainError, DescripcionCambio]] =
+    (for {
+      a <- EitherT(
+        repository.asignaturaRepository
+          .buscarFullAsignaturaPorCodigo(codigoAsignatura)
+          .map(_.toRight(AsignaturaInexistente()))
+      )
+      cambio <- EitherT.fromEither[Task](
+        DescripcionCambio.validar(a.codigoAsignatura, descripcion)
+      )
+      cs <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(cambio)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.asignaturaRepository.actualizarAsignatura(
+          Asignatura.fromRecord(a).copy(fechaDeModificacion = cambio.fecha)
+        )
+      )
+    } yield DescripcionCambio.fromRecord(cs)).value
+
+  def cambiosPorCodigo(codigo: String): Task[List[DescripcionCambio]] =
+    repository.descripcionRepository
+      .buscarPorAsignatura(codigo)
+      .map(_.map(DescripcionCambio.fromRecord))
+
   def eliminarAsignatura(
       programaId: String,
       planDeEstudioId: String,
       codigo: String
+  )(
+      implicit gUser: GUserCredentials
   ): Task[Either[DomainError, AsignaturaConRequisitos]] = {
     (for {
       a <- EitherT(
@@ -271,12 +334,41 @@ trait AsignaturaServices extends LazyLogging {
           .restarCampos(pe, Asignatura.fromRecord(a))
           .asRight[DomainError]
       )
+      dependencias <- EitherT(
+        repository.requisitoRepository
+          .buscarPorCodigoPR(a.codigoAsignatura)
+          .map(_.asRight[DomainError])
+      )
+      mensajes <- EitherT.fromEither[Task](
+        dependencias
+          .map(
+            req =>
+              DescripcionCambio.asignaturaEliminada(
+                req.codigoAsignatura,
+                Requisito.fromRecord(req)
+              )
+          )
+          .asRight[DomainError]
+      )
       _ <- OptionT(
         repository.planDeEstudioRepository
           .almacenarOActualizarPlanDeEstudios(pdea)
       ).map(_ => CannotUpdatePlanDeEstudio()).toLeft(())
+      _ <- EitherT(
+        GDriveService.marcarComoEliminada(
+          a.gdriveFolderId,
+          a.nombreAsignatura,
+          gUser.accessToken
+        )
+      )
+      _ <- EitherT.right[DomainError](
+        repository.requisitoRepository.eliminarPorCodigoPR(codigo)
+      )
       _ <- EitherT.right[DomainError](
         repository.asignaturaRepository.eliminarPorCodigo(codigo)
+      )
+      _ <- EitherT.right[DomainError](
+        repository.descripcionRepository.almacenar(mensajes)
       )
     } yield a).value
 

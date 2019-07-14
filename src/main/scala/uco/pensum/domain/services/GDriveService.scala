@@ -38,4 +38,20 @@ object GDriveService {
     else Task.now(Right(()))
   }
 
+  def marcarComoEliminada(
+      folderId: String,
+      nombre: String,
+      accessToken: String
+  )(
+      implicit googleDriveClient: GoogleDriveClient
+  ): Task[Either[DomainError, Unit]] = {
+    EitherT(
+      googleDriveClient
+        .updateFolderName(accessToken, setDeletedPrefix(nombre), folderId)
+    ).map(_ => ()).value
+  }
+
+  private[this] def setDeletedPrefix(nombre: String): String =
+    s"[Eliminada desde la App] $nombre"
+
 }

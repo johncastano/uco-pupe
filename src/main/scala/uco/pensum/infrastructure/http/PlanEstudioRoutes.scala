@@ -88,9 +88,11 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
   def eliminarPlanDeEstudio: Route =
     path("programa" / Segment / "planEstudio" / Segment) { (programaId, id) =>
       delete {
-        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { _ =>
+        authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
           onComplete(
-            eliminarPlanDeEstudio(id = id, programaId = programaId).runToFuture
+            eliminarPlanDeEstudio(id = id, programaId = programaId)(
+              user.gCredentials
+            ).runToFuture
           ) {
             case Failure(ex) => {
               logger.error(s"Exception: $ex")
