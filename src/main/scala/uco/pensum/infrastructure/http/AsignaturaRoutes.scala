@@ -57,7 +57,10 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                         BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                       ),
                     asignatura =>
-                      complete(Created -> asignatura.to[AsignaturaRespuesta])
+                      complete {
+                        logger.info(s"Asignatura creada: ${asignatura._1}")
+                        Created -> asignatura.to[AsignaturaRespuesta]
+                      }
                   )
               }
             }
@@ -88,7 +91,13 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                     complete(
                       BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                     ),
-                  r => complete(OK -> r.to[AsignaturaRespuesta])
+                  r =>
+                    complete {
+                      logger.info(
+                        s"Requisito: $requisito asignado a asignatura: $codigoAsignatura"
+                      )
+                      OK -> r.to[AsignaturaRespuesta]
+                    }
                 )
             }
           }
@@ -120,7 +129,13 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                     complete(
                       BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                     ),
-                  r => complete(OK -> r.to[AsignaturaRespuesta])
+                  r =>
+                    complete {
+                      logger.info(
+                        s"Requisito: $requisitoId actualizado por: $requisito"
+                      )
+                      OK -> r.to[AsignaturaRespuesta]
+                    }
                 )
             }
           }
@@ -151,7 +166,10 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                       BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                     ),
                   asignatura =>
-                    complete(OK -> asignatura.to[AsignaturaRespuesta])
+                    complete {
+                      logger.info(s"Asignatura actualizada: $asignatura")
+                      OK -> asignatura.to[AsignaturaRespuesta]
+                    }
                 )
             }
           }
@@ -178,7 +196,13 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                   complete(
                     BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                   ),
-                asignatura => complete(OK -> asignatura.to[AsignaturaRespuesta])
+                asignatura =>
+                  complete {
+                    logger.info(
+                      s"Requisito: $codigo eliminado satisfactoriamente a asignatura: $asignatura"
+                    )
+                    OK -> asignatura.to[AsignaturaRespuesta]
+                  }
               )
           }
         }
@@ -195,7 +219,10 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
           }
           case Success(response) =>
             response.fold(complete(NotFound -> AsignaturaInexistente())) { r =>
-              complete(OK -> r.to[AsignaturaRespuesta])
+              complete {
+                logger.info(s"Asignatura por código: $codigo => $r")
+                OK -> r.to[AsignaturaRespuesta]
+              }
             }
         }
       }
@@ -211,9 +238,12 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
-              complete(
+              complete {
+                logger.info(
+                  s"Asignaturas por INP $inp y programa $programId : $response"
+                )
                 OK -> response.map(r => r.to[AsignaturaRespuesta])
-              )
+              }
           }
         }
     }
@@ -271,7 +301,12 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                         BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                       ),
                     descripcion =>
-                      complete(OK -> descripcion.to[DescripcionCambioRespuesta])
+                      complete {
+                        logger.info(
+                          s"Descripción: $descripcion  asignada a asignatura: $codigo"
+                        )
+                        OK -> descripcion.to[DescripcionCambioRespuesta]
+                      }
                   )
               }
             }
@@ -289,7 +324,12 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
-              complete(OK -> response.map(_.to[DescripcionCambioRespuesta]))
+              complete {
+                logger.info(
+                  s"Descripcion cambios por codigo de asignatura:$codigo => $response"
+                )
+                OK -> response.map(_.to[DescripcionCambioRespuesta])
+              }
           }
         }
     }
@@ -313,7 +353,13 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                   complete(
                     BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                   ),
-                asignatura => complete(OK -> asignatura.to[AsignaturaRespuesta])
+                asignatura =>
+                  complete {
+                    logger.info(
+                      s"Asignatura: $asignatura eliminada satisfactoriamente"
+                    )
+                    OK -> asignatura.to[AsignaturaRespuesta]
+                  }
               )
           }
         }

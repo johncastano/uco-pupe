@@ -44,9 +44,12 @@ trait ComponenteDeFormacionRoutes
                       BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                     ),
                   componente =>
-                    complete(
+                    complete {
+                      logger.info(
+                        s"Componente de formación: $componente agregado correctamente"
+                      )
                       Created -> componente.to[ComponenteDeFormacionRespuesta]
-                    )
+                    }
                 )
             }
           }
@@ -63,7 +66,10 @@ trait ComponenteDeFormacionRoutes
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
-            complete(OK -> response.map(_.to[ComponenteDeFormacionRespuesta]))
+            complete {
+              logger.info(s"Lista de componentes de formación: $response")
+              OK -> response.map(_.to[ComponenteDeFormacionRespuesta])
+            }
         }
       }
     }
@@ -87,7 +93,12 @@ trait ComponenteDeFormacionRoutes
                       BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                     ),
                   cf =>
-                    complete(Created -> cf.to[ComponenteDeFormacionRespuesta])
+                    complete {
+                      logger.info(
+                        s"Componente de formación con nombre: $nombre actualizado"
+                      )
+                      Created -> cf.to[ComponenteDeFormacionRespuesta]
+                    }
                 )
             }
           }

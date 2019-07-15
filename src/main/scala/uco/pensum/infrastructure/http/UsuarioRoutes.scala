@@ -52,13 +52,17 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
                     OAuth2BearerToken(jwt.generar(usuario.correo)).toString
                   )
                 ) {
-                  complete(Created -> usuario.to[UsuarioRespuesta])
+                  complete {
+                    logger.info(s"Usuario: $usuario agregado correctamente")
+                    Created -> usuario.to[UsuarioRespuesta]
+                  }
                 }
             )
         }
       }
     }
   }
+
   //TODO: This is a test approach, it should be removed
   def usuarioLogin2: Route = path("usuario" / "login2") {
     post {

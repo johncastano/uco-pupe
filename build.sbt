@@ -28,6 +28,7 @@ lazy val pupe = (project in file(".")).
         slick,
         postgresql,
         logBack,
+        slf4j,
         scalaLogging,
         httpCors,
         jwtCirce,

@@ -47,7 +47,13 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
                     complete(
                       BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                     ),
-                  pr => complete(Created -> pr.to[PlanDeEstudioRespuesta])
+                  pr =>
+                    complete {
+                      logger.info(
+                        s"Plan de estudio creado: ${pr.programId} con INP: ${pr.inp}"
+                      )
+                      Created -> pr.to[PlanDeEstudioRespuesta]
+                    }
                 )
             }
           }
@@ -65,7 +71,10 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
           }
           case Success(response) =>
             response.fold(complete(NotFound -> CurriculumNotFound())) { r =>
-              complete(OK -> r.to[PlanDeEstudioRespuesta])
+              complete {
+                logger.info(s"Plan de estudio por INP: $r")
+                OK -> r.to[PlanDeEstudioRespuesta]
+              }
             }
         }
       }
@@ -80,7 +89,10 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
-            complete(OK -> response.map(_.to[PlanDeEstudioRespuesta]))
+            complete {
+              logger.info(s"Lista de planes de estudio: ${response}")
+              OK -> response.map(_.to[PlanDeEstudioRespuesta])
+            }
         }
       }
   }
@@ -104,7 +116,11 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
                   complete(
                     BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                   ),
-                r => complete(OK -> r.to[PlanDeEstudioRespuesta])
+                r =>
+                  complete {
+                    logger.info(s"Plan de estudio eliminado con INP: ${r.inp}")
+                    OK -> r.to[PlanDeEstudioRespuesta]
+                  }
               )
           }
         }

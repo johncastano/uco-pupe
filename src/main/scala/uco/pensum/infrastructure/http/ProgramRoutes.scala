@@ -44,7 +44,11 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
                   complete(
                     BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                   ),
-                pr => complete(Created -> pr.to[ProgramaRespuesta])
+                pr =>
+                  complete {
+                    logger.info(s"Programa creado con nombre: ${pr.nombre}")
+                    Created -> pr.to[ProgramaRespuesta]
+                  }
               )
           }
         }
@@ -69,7 +73,11 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
                   complete(
                     BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                   ),
-                pr => complete(Created -> pr.to[ProgramaRespuesta])
+                pr =>
+                  complete {
+                    logger.info(s"Programa actualizado: ${pr.nombre}")
+                    Created -> pr.to[ProgramaRespuesta]
+                  }
               )
           }
         }
@@ -90,7 +98,11 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
               complete(
                 NotFound -> ErrorGenerico(err.codigo, err.mensaje)
               ),
-            pr => complete(OK -> pr.to[ProgramaRespuesta])
+            pr =>
+              complete {
+                logger.info(s"Programa por id: ${pr.id},${pr.nombre}")
+                OK -> pr.to[ProgramaRespuesta]
+              }
           )
       }
     }
@@ -104,7 +116,10 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
-          complete(OK -> response.map(_.to[ProgramaRespuesta]))
+          complete {
+            logger.info(s"Programas pors id")
+            OK -> response.map(_.to[ProgramaRespuesta])
+          }
       }
     }
   }
@@ -123,7 +138,11 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
                 complete(
                   BadRequest -> ErrorGenerico(err.codigo, err.mensaje)
                 ),
-              pr => complete(OK -> pr.to[ProgramaRespuesta])
+              pr =>
+                complete {
+                  logger.info(s"Programa borrado con id: ${pr.id}")
+                  OK -> pr.to[ProgramaRespuesta]
+                }
             )
         }
       }

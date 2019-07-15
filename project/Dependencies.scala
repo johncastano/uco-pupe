@@ -20,6 +20,7 @@ object Dependencies {
 
   lazy val logBack = "ch.qos.logback" % "logback-classic" % "1.2.3"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
+  lazy val slf4j = "org.slf4j" % "slf4j-api" % "1.7.10"
 
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
