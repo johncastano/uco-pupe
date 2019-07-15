@@ -141,12 +141,22 @@ trait AsignaturaServices extends LazyLogging {
           !av.nombre.equalsIgnoreCase(oas.nombreAsignatura)
         )
       )
+      _ <- EitherT(seDebenEliminarRequisitos(av).map(_.asRight[DomainError]))
       _ <- EitherT.right[DomainError](
         com
           .map(mensaje => repository.descripcionRepository.almacenar(mensaje))
           .sequence
       )
     } yield (av, oas.gdriveFolderId)).value
+
+  private[this] def seDebenEliminarRequisitos(
+      asignatura: Asignatura
+  ): Task[Option[Int]] =
+    if (asignatura.requisitos.isEmpty)
+      repository.requisitoRepository
+        .eliminarPorCodigoAsignatura(asignatura.codigo)
+        .map(Some(_))
+    else Task.now(None)
 
   def asignarRequisitoAAsignatura(
       asignaturaCodigo: String,

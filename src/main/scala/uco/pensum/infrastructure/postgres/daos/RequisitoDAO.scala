@@ -76,4 +76,8 @@ abstract class RequisitosDAO(db: PostgresProfile.backend.Database)(
     db.run(this.filter(_.codigoAsignaturaPR === codigoPR).delete)
   )
 
+  def eliminarPorCodigoAsignatura(codigo: String): Task[Int] = Task.deferFuture(
+    db.run(this.filter(_.codigoAsignatura === codigo).delete)
+  )
+
 }
