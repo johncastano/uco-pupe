@@ -118,6 +118,12 @@ final case class RequisitoNoAceptado(
     mensaje: String = "El requisito ingresado no es aceptado"
 ) extends DomainError
 
+final case class RequisitoDeNivelIncorrecto(
+    codigo: Int = 100006,
+    mensaje: String =
+      "El requisito de nivel debe ser menor al nivel de la asignatura"
+) extends DomainError
+
 final case class RequisitoNoEncontrado(
     codigo: Int = 100006,
     mensaje: String = "El requisito no existe"

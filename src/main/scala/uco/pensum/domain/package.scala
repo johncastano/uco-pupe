@@ -6,6 +6,7 @@ import uco.pensum.domain.errors.{
   CampoVacio,
   DomainError,
   NumeroInvalido,
+  RequisitoDeNivelIncorrecto,
   RequisitoNoAceptado
 }
 
@@ -66,15 +67,17 @@ package object domain {
   def validarRequisitoNivel(
       requisito: String,
       nivelActual: Int
-  ): Either[RequisitoNoAceptado, String] =
+  ): Either[DomainError, String] =
     requisito.toLowerCase match {
       case value if value.equalsIgnoreCase("no") => Right(value)
       case value if value.startsWith("nivel") =>
         Try(value.filter(_.isDigit).toInt).toOption
           .toRight(RequisitoNoAceptado())
           .flatMap { req =>
-            if (req <= 0 || nivelActual <= req)
-              Left(RequisitoNoAceptado())
+            if (req <= 0)
+              Left(NumeroInvalido("requisito de nivel"))
+            else if (nivelActual <= req)
+              Left(RequisitoDeNivelIncorrecto())
             else Right(s"Nivel ${req.toString}")
           }
       case _ => Left(RequisitoNoAceptado())
