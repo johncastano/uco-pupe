@@ -126,7 +126,10 @@ object Asignatura {
         ),
         nivel = nivel,
         requisitoNivel = reqNivel,
-        requisitos = original.requisitos.map(Requisito.fromRecord),
+        requisitos =
+          if (nivel >= original.nivel)
+            original.requisitos.map(Requisito.fromRecord)
+          else Nil,
         fechaDeRegistro = ZonedDateTime
           .parse(
             original.fechaDeCreacion,
