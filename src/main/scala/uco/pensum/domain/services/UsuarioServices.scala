@@ -39,7 +39,7 @@ trait UsuarioServices extends LazyLogging {
       )
     } yield usuarioConId).value
 
-  def login2(
+  def login(
       credenciales: Credenciales
   ): eval.Task[Either[DomainError, GUserCredentials]] =
     (for {
@@ -49,18 +49,9 @@ trait UsuarioServices extends LazyLogging {
           .verifyToken(gToken.tokenId, gToken.accesToken)
           .toRight[DomainError](TokenIncorrecto())
       }
-      /* usuarioValido <- EitherT(
-        repository.authRepository.buscarCorreo(cv.correo).map {
-          case Some(u) if u.password.contentEquals(cv.password) => Right(u)
-          case _                                                => Left(CredencialesIncorrectas())
-        }
-      )
-      usuarioInfo <- OptionT(
-        repository.authRepository.buscarUsuarioPorId(usuarioValido.userId)
-      ).toRight(CredencialesIncorrectas()) */
     } yield validUser).value
 
-  def login(credenciales: Credentials): Future[Option[AuthRecord]] = {
+  def login2(credenciales: Credentials): Future[Option[AuthRecord]] = {
 
     credenciales match {
       case cp @ Credentials.Provided(correo) =>

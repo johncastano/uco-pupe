@@ -63,11 +63,10 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
     }
   }
 
-  //TODO: This is a test approach, it should be removed
-  def usuarioLogin2: Route = path("usuario" / "login2") {
+  def usuarioLogin: Route = path("usuario" / "login2") {
     post {
       entity(as[Credenciales]) { credentials =>
-        onComplete(login2(credentials).runToFuture) {
+        onComplete(login(credentials).runToFuture) {
           case Failure(ex) => {
             logger.error(s"Exception: $ex")
             complete(InternalServerError -> ErrorInterno())
@@ -95,9 +94,9 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
     }
   }
 
-  def usuarioLogin: Route = path("usuario" / "login") {
+  def usuarioLogin2: Route = path("usuario" / "login") {
     post {
-      authenticateBasicAsync("auth", login) { auth =>
+      authenticateBasicAsync("auth", login2) { auth =>
         respondWithHeader(
           RawHeader(
             "Access-Token",
