@@ -39,7 +39,9 @@ class JWT(secret: String) {
       .about(gCredentials.email)
       .withContent(gCredentials.asJson.toString)
       .issuedAt(gCredentials.issueTimeSeconds)
-      .expiresIn(gCredentials.expirationTimeSeconds)
+      .expiresIn(
+        gCredentials.expirationTimeSeconds - gCredentials.issueTimeSeconds
+      )
 
     Jwt.encode(claim, secret, algo)
   }
