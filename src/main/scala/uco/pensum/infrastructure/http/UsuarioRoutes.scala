@@ -68,7 +68,7 @@ trait UsuarioRoutes extends Directives with UsuarioServices with LazyLogging {
       entity(as[Credenciales]) { credentials =>
         onComplete(login(credentials).runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(s"Exception trying to logging: $ex")
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>

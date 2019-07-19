@@ -47,7 +47,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                 agregarAsignatura(asignatura, programId, inp)(user.gCredentials).runToFuture
               ) {
                 case Failure(ex) => {
-                  logger.error(s"Exception: $ex")
+                  logger.error(
+                    s"Exception while creating a new asignatura: $ex"
+                  )
                   complete(InternalServerError -> ErrorInterno())
                 }
                 case Success(response) =>
@@ -58,7 +60,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                       ),
                     asignatura =>
                       complete {
-                        logger.info(s"Asignatura creada: ${asignatura._1}")
+                        logger.info(
+                          s"Asignatura created successfully ${asignatura._1.codigo}"
+                        )
                         Created -> asignatura.to[AsignaturaRespuesta]
                       }
                   )
@@ -82,7 +86,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               ).runToFuture
             ) {
               case Failure(ex) => {
-                logger.error(s"Exception: $ex")
+                logger.error(
+                  s"Exception while assigning new requisito to asignatura $codigoAsignatura: $ex"
+                )
                 complete(InternalServerError -> ErrorInterno())
               }
               case Success(response) =>
@@ -94,7 +100,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                   r =>
                     complete {
                       logger.info(
-                        s"Requisito: $requisito asignado a asignatura: $codigoAsignatura"
+                        s"Requisito ${requisito.codigo} was successfully asigned to asignatura $codigoAsignatura"
                       )
                       OK -> r.to[AsignaturaRespuesta]
                     }
@@ -120,7 +126,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               ).runToFuture
             ) {
               case Failure(ex) => {
-                logger.error(s"Exception: $ex")
+                logger.error(
+                  s"Exception while updating requisito with id:${requisitoId} for asignatura $codigoAsignatura: $ex"
+                )
                 complete(InternalServerError -> ErrorInterno())
               }
               case Success(response) =>
@@ -132,7 +140,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                   r =>
                     complete {
                       logger.info(
-                        s"Requisito: $requisitoId actualizado por: $requisito"
+                        s"Requisito $requisitoId was successfully updated for ${r._1.codigo}"
                       )
                       OK -> r.to[AsignaturaRespuesta]
                     }
@@ -156,7 +164,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
               ).runToFuture
             ) {
               case Failure(ex) => {
-                logger.error(s"Exception: $ex")
+                logger.error(
+                  s"Exception while updating asignatura $codigo: $ex"
+                )
                 complete(InternalServerError -> ErrorInterno())
               }
               case Success(response) =>
@@ -167,7 +177,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                     ),
                   asignatura =>
                     complete {
-                      logger.info(s"Asignatura actualizada: $asignatura")
+                      logger.info(
+                        s"Asignatura ${codigo} was updated successfully"
+                      )
                       OK -> asignatura.to[AsignaturaRespuesta]
                     }
                 )
@@ -187,7 +199,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             eliminarRequisitoAsignatura(asignatura, codigo).runToFuture
           ) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(
+                s"Exception while deleting requisito id: $codigo for asignatura ${asignatura}: $ex"
+              )
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
@@ -199,7 +213,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                 asignatura =>
                   complete {
                     logger.info(
-                      s"Requisito: $codigo eliminado satisfactoriamente a asignatura: $asignatura"
+                      s"Requisito $codigo was deleted successfully for asignatura $asignatura"
                     )
                     OK -> asignatura.to[AsignaturaRespuesta]
                   }
@@ -214,13 +228,14 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
       get {
         onComplete(asignaturaPorCodigo(codigo).runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(
+              s"Exception while getting asignatura by codigo: $codigo $ex"
+            )
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
             response.fold(complete(NotFound -> AsignaturaInexistente())) { r =>
               complete {
-                logger.info(s"Asignatura por código: $codigo => $r")
                 OK -> r.to[AsignaturaRespuesta]
               }
             }
@@ -234,14 +249,13 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
         get {
           onComplete(asignaturasPorInp(programId, inp).runToFuture) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(
+                s"Exception while getting asignaturas for programa id: $programId and plan de estudio: $inp -> $ex"
+              )
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
               complete {
-                logger.info(
-                  s"Asignaturas por INP $inp y programa $programId : $response"
-                )
                 OK -> response.map(r => r.to[AsignaturaRespuesta])
               }
           }
@@ -255,7 +269,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
       {
         onComplete(asignaturasPorInp(programId, inp).runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(
+              s"Exception while creating report for programId: $programId and plan de estudio: $inp $ex"
+            )
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) => {
@@ -291,7 +307,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                 agregarDescripcionDeCambio(codigo, descripcionCambio).runToFuture
               ) {
                 case Failure(ex) => {
-                  logger.error(s"Exception: $ex")
+                  logger.error(
+                    s"Exception while adding descripcion to asignatura $codigo: $ex"
+                  )
                   complete(InternalServerError -> ErrorInterno())
                 }
                 case Success(response) =>
@@ -303,7 +321,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                     descripcion =>
                       complete {
                         logger.info(
-                          s"Descripción: $descripcion  asignada a asignatura: $codigo"
+                          s"Descripción with id:${descripcion.id} added to asignatura: $codigo"
                         )
                         OK -> descripcion.to[DescripcionCambioRespuesta]
                       }
@@ -320,14 +338,13 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
         get {
           onComplete(cambiosPorCodigo(codigo).runToFuture) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(
+                s"Exception while Descripciones de cambios by $codigo: $ex"
+              )
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
               complete {
-                logger.info(
-                  s"Descripcion cambios por codigo de asignatura:$codigo => $response"
-                )
                 OK -> response.map(_.to[DescripcionCambioRespuesta])
               }
           }
@@ -344,7 +361,9 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
             eliminarAsignatura(programId, inp, codigo)(user.gCredentials).runToFuture
           ) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(
+                s"Exception while deleting asignatura with code $codigo $ex"
+              )
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
@@ -356,7 +375,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                 asignatura =>
                   complete {
                     logger.info(
-                      s"Asignatura: $asignatura eliminada satisfactoriamente"
+                      s"Asignatura: ${asignatura.codigoAsignatura} eliminada satisfactoriamente"
                     )
                     OK -> asignatura.to[AsignaturaRespuesta]
                   }

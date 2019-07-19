@@ -34,7 +34,9 @@ trait ComponenteDeFormacionRoutes
           entity(as[ComponenteDeFormacionAsignacion]) { componente =>
             onComplete(agregarComponenteDeFormacion(componente).runToFuture) {
               case Failure(ex) => {
-                logger.error(s"Exception: $ex")
+                logger.error(
+                  s"Exception while creating a new componente de formacion ${componente.nombre}: $ex"
+                )
                 complete(InternalServerError -> ErrorInterno())
               }
               case Success(response) =>
@@ -46,7 +48,7 @@ trait ComponenteDeFormacionRoutes
                   componente =>
                     complete {
                       logger.info(
-                        s"Componente de formación: $componente agregado correctamente"
+                        s"Componente de formación: ${componente.nombre} created successfully"
                       )
                       Created -> componente.to[ComponenteDeFormacionRespuesta]
                     }
@@ -62,12 +64,13 @@ trait ComponenteDeFormacionRoutes
       get {
         onComplete(obtenerComponentesDeFormacion.runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(
+              s"Exception while getting all componentes de formacion: $ex"
+            )
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
             complete {
-              logger.info(s"Lista de componentes de formación: $response")
               OK -> response.map(_.to[ComponenteDeFormacionRespuesta])
             }
         }
@@ -83,7 +86,9 @@ trait ComponenteDeFormacionRoutes
               actualizarComponenteDeFormacion(nombre, componenteId).runToFuture
             ) {
               case Failure(ex) => {
-                logger.error(s"Exception: $ex")
+                logger.error(
+                  s"Exception while updating componente de formacion ${nombre}: $ex"
+                )
                 complete(InternalServerError -> ErrorInterno())
               }
               case Success(response) =>
@@ -95,7 +100,7 @@ trait ComponenteDeFormacionRoutes
                   cf =>
                     complete {
                       logger.info(
-                        s"Componente de formación con nombre: $nombre actualizado"
+                        s"Componente de formación $nombre updated successfully"
                       )
                       Created -> cf.to[ComponenteDeFormacionRespuesta]
                     }

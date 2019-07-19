@@ -2,7 +2,6 @@ package uco.pensum.infrastructure.http
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.headers.BasicHttpCredentials
 import akka.stream.ActorMaterializer
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
@@ -77,9 +76,6 @@ object Main extends App with HttpService {
   Http().bindAndHandle(routes, host, port) onComplete {
     case Success(Http.ServerBinding(address)) =>
       logger.info(s"Http service listening on $address ...")
-      logger.info(
-        s"Basic HTTP Header Authorization: Authorization ${BasicHttpCredentials("cmj@gmail.com", "123456").toString()}"
-      )
     case Failure(ex) =>
       logger.error(s"There was an error starting http service $ex")
       Await.ready(system.terminate(), 5.seconds)

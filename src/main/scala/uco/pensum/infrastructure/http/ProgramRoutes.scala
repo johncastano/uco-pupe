@@ -35,7 +35,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
         entity(as[ProgramaAsignacion]) { programa =>
           onComplete(agregarPrograma(programa)(user.gCredentials).runToFuture) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(s"Exception while creating a new programa: $ex")
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
@@ -46,7 +46,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
                   ),
                 pr =>
                   complete {
-                    logger.info(s"Programa creado con nombre: ${pr.nombre}")
+                    logger.info(s"Programa ${pr.nombre} created successfully")
                     Created -> pr.to[ProgramaRespuesta]
                   }
               )
@@ -64,7 +64,9 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
             actualizarPrograma(id, programa)(user.gCredentials).runToFuture
           ) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(
+                s"Exception while updating programa with id $id: $ex"
+              )
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
@@ -75,7 +77,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
                   ),
                 pr =>
                   complete {
-                    logger.info(s"Programa actualizado: ${pr.nombre}")
+                    logger.info(s"Programa ${pr.nombre} updated successfully")
                     Created -> pr.to[ProgramaRespuesta]
                   }
               )
@@ -89,7 +91,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     get {
       onComplete(devolverProgramaPorId(id).runToFuture) {
         case Failure(ex) => {
-          logger.error(s"Exception: $ex")
+          logger.error(s"Exception while getting program by id: $ex")
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
@@ -100,7 +102,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
               ),
             pr =>
               complete {
-                logger.info(s"Programa por id: ${pr.id},${pr.nombre}")
+                logger.debug(s"Programa by id: ${pr.id}, nombre: ${pr.nombre}")
                 OK -> pr.to[ProgramaRespuesta]
               }
           )
@@ -112,12 +114,11 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
     get {
       onComplete(devolverProgramas.runToFuture) {
         case Failure(ex) => {
-          logger.error(s"Exception: $ex")
+          logger.error(s"Exception while getting all programs: $ex")
           complete(InternalServerError -> ErrorInterno())
         }
         case Success(response) =>
           complete {
-            logger.info(s"Programas pors id")
             OK -> response.map(_.to[ProgramaRespuesta])
           }
       }
@@ -129,7 +130,9 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
       authenticateOAuth2("auth", jwt.autenticarWithGClaims) { user =>
         onComplete(borrarPrograma(id)(user.gCredentials).runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(
+              s"Exception while deleting the programa with id $id: $ex"
+            )
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
@@ -140,7 +143,7 @@ trait ProgramRoutes extends Directives with ProgramServices with LazyLogging {
                 ),
               pr =>
                 complete {
-                  logger.info(s"Programa borrado con id: ${pr.id}")
+                  logger.info(s"Programa ${pr.nombre} was deleted successfully")
                   OK -> pr.to[ProgramaRespuesta]
                 }
             )

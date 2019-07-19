@@ -38,7 +38,9 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
               agregarPlanDeEstudio(planDeEstudio, programId)(user.gCredentials).runToFuture
             ) {
               case Failure(ex) => {
-                logger.error(s"Exception: $ex")
+                logger.error(
+                  s"Exception while adding new plan de estudio ${planDeEstudio.inp} to $programId: $ex"
+                )
                 complete(InternalServerError -> ErrorInterno())
               }
               case Success(response) =>
@@ -50,7 +52,7 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
                   pr =>
                     complete {
                       logger.info(
-                        s"Plan de estudio creado: ${pr.programId} con INP: ${pr.inp}"
+                        s"Plan de estudio ${pr.inp} created in programa id: ${pr.programId}"
                       )
                       Created -> pr.to[PlanDeEstudioRespuesta]
                     }
@@ -66,13 +68,17 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
       get {
         onComplete(planDeEstudioPorInp(programId, inp).runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(
+              s"Exception while getting plan de estudio by programaId $programId and inp $inp: $ex"
+            )
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
             response.fold(complete(NotFound -> CurriculumNotFound())) { r =>
               complete {
-                logger.info(s"Plan de estudio por INP: $r")
+                logger.info(
+                  s"Plan de estudio $inp for programaId $programId returned correctly"
+                )
                 OK -> r.to[PlanDeEstudioRespuesta]
               }
             }
@@ -85,12 +91,13 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
       get {
         onComplete(planesDeEstudio(programId).runToFuture) {
           case Failure(ex) => {
-            logger.error(s"Exception: $ex")
+            logger.error(
+              s"Exception while getting all planes de estudio by programaId $programId: $ex"
+            )
             complete(InternalServerError -> ErrorInterno())
           }
           case Success(response) =>
             complete {
-              logger.info(s"Lista de planes de estudio: ${response}")
               OK -> response.map(_.to[PlanDeEstudioRespuesta])
             }
         }
@@ -107,7 +114,9 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
             ).runToFuture
           ) {
             case Failure(ex) => {
-              logger.error(s"Exception: $ex")
+              logger.error(
+                s"Exception while deleting plan de estudio id: $id for programaId $programaId $ex"
+              )
               complete(InternalServerError -> ErrorInterno())
             }
             case Success(response) =>
@@ -118,7 +127,9 @@ trait PlanEstudioRoutes extends Directives with PlanEstudioServices {
                   ),
                 r =>
                   complete {
-                    logger.info(s"Plan de estudio eliminado con INP: ${r.inp}")
+                    logger.info(
+                      s"Plan de estudio with id ${r.id} deleted from programa with id ${r.programaId} successfully"
+                    )
                     OK -> r.to[PlanDeEstudioRespuesta]
                   }
               )
