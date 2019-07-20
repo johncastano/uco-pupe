@@ -61,7 +61,7 @@ trait AsignaturaRoutes extends Directives with AsignaturaServices {
                     asignatura =>
                       complete {
                         logger.info(
-                          s"Asignatura created successfully ${asignatura._1.codigo}"
+                          s"Asignatura ${asignatura._1.codigo} was created successfully"
                         )
                         Created -> asignatura.to[AsignaturaRespuesta]
                       }

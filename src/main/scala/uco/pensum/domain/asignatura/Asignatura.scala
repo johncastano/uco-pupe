@@ -55,6 +55,10 @@ object Asignatura {
       )
       hTeoricas <- esMenorQueCero(dto.horasTeoricas, "horas teoricas")
       hLab <- esMenorQueCero(dto.horasLaboratorio, "horas de laboratorio")
+      tie <- esMenorQueCero(
+        dto.tie,
+        "trabajo independiente del estudiante (TIE)"
+      )
       hPracticas <- esMenorQueCeroOpcional(
         dto.horasPracticas,
         "horas practicas"
@@ -70,7 +74,7 @@ object Asignatura {
           hTeoricas,
           hLab,
           hPracticas.getOrElse(0),
-          dto.horasTeoricas + dto.horasLaboratorio
+          tie
         ),
         nivel = nivel,
         requisitoNivel = reqNivel,
@@ -87,6 +91,7 @@ object Asignatura {
       "Creditos" -> arg.creditos.toString,
       "Horas teoricas" -> arg.horas.teoricas.toString,
       "Horas laboratorio" -> arg.horas.laboratorio.toString,
+      "TIE" -> arg.horas.independietesDelEstudiante.toString,
       "Horas practicas" -> arg.horas.practicas.toString,
       "Nivel" -> arg.nivel.toString,
       "Requisito de nivel" -> arg.requisitoNivel
@@ -102,6 +107,10 @@ object Asignatura {
       creditos <- esMenorOIgualACero(dto.creditos, "creditos")
       hTeoricas <- esMenorQueCero(dto.horasTeoricas, "horas teoricas")
       hLab <- esMenorQueCero(dto.horasLaboratorio, "horas de laboratorio")
+      tie <- esMenorQueCero(
+        dto.tie,
+        "trabajo independiente del estudiante (TIE)"
+      )
       hPracticas <- esMenorQueCeroOpcional(
         dto.horasPracticas,
         "horas practicas"
@@ -122,7 +131,7 @@ object Asignatura {
           hTeoricas,
           hLab,
           hPracticas.getOrElse(0),
-          dto.horasTeoricas + dto.horasLaboratorio
+          tie
         ),
         nivel = nivel,
         requisitoNivel = reqNivel,

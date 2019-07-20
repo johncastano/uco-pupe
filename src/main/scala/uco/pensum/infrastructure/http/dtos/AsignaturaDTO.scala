@@ -9,6 +9,7 @@ case class AsignaturaAsignacion(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    tie: Int,
     horasPracticas: Option[Int],
     nivel: Int,
     requisitoNivel: String
@@ -20,6 +21,7 @@ case class AsignaturaActualizacion(
     creditos: Int,
     horasTeoricas: Int,
     horasLaboratorio: Int,
+    tie: Int,
     horasPracticas: Option[Int],
     nivel: Int,
     requisitoNivel: String
