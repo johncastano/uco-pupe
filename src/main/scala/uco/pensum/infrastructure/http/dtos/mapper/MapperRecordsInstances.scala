@@ -24,7 +24,6 @@ import uco.pensum.infrastructure.postgres.{
 
 class MapperRecordsInstances extends MapperSugar {
 
-  //TODO: Modify format of dates
   implicit def ProgramaToProgramaRecord: Mapper[Programa, ProgramaRecord] =
     Mapper(
       programa =>
@@ -151,7 +150,7 @@ class MapperRecordsInstances extends MapperSugar {
       AuthRecord(
         correo = usuario.correo,
         password = usuario.password,
-        userId = usuario.id.getOrElse(0) //TODO: Change getOrElse userId must exist
+        userId = usuario.id.getOrElse(0)
       )
   )
 

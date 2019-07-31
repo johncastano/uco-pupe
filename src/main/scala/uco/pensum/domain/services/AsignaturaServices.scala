@@ -173,7 +173,6 @@ trait AsignaturaServices extends LazyLogging {
         repository.asignaturaRepository
           .buscarAsignaturaPorCodigo(r.codigoAsignatura)
           .map {
-            //TODO: Move this validations into Asignatura.agregarRequisito method
             case Some(requisito)
                 if requisito.codigo.equalsIgnoreCase(a.codigoAsignatura) =>
               Left(RequisitoInvalido())
