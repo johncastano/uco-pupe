@@ -1,1 +1,1 @@
-web: target/universal/scripts/bin/pupe
+web: target/universal/stage/bin/pupe
