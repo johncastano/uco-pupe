@@ -82,7 +82,7 @@ gradle-app.setting
 hs_err_pid*
 
 #### project ####
-
+credentials.json
 
 #### scala ####
 
