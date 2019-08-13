@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/pupe
+web: target/universal/stage/bin/pupe -Dhttp.port=${PORT}
